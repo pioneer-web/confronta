@@ -1,0 +1,25 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Assinaturas Asaas — CONFRONTA{% endblock %}
+{% block content %}
+<div class="page-header d-print-none cf-admin-header"><div class="container-xl"><div class="row g-2 align-items-center"><div class="col"><div class="page-pretitle">Financeiro</div><h2 class="page-title">Assinaturas Asaas</h2><div class="text-secondary mt-1">Conciliação de assinaturas, cobranças e webhooks do CONFRONTA.</div></div></div></div></div>
+<div class="page-body cf-admin-content"><div class="container-xl">
+    <div class="row row-cards mb-3">
+        <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Assinaturas</div><div class="h2 mb-0">{{ total_assinaturas }}</div></div></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Ativas</div><div class="h2 mb-0 text-success">{{ ativas }}</div></div></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Em atraso</div><div class="h2 mb-0 text-warning">{{ em_atraso }}</div></div></div></div>
+        <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Canceladas</div><div class="h2 mb-0 text-secondary">{{ canceladas }}</div></div></div></div>
+    </div>
+
+    <div class="card cf-admin-table-card mb-3"><div class="card-header"><h3 class="card-title">Assinaturas atuais</h3></div><div class="table-responsive"><table class="table table-vcenter card-table"><thead><tr><th>Cliente</th><th>Modalidade</th><th>Valor</th><th>Status</th><th>Acesso até</th><th>ID Asaas</th></tr></thead><tbody>
+    {% for a in assinaturas %}<tr><td><strong>{{ a.perfil.usuario.get_full_name|default:a.perfil.usuario.email }}</strong><div class="text-secondary small">{{ a.perfil.usuario.email }}</div></td><td>{{ a.get_ciclo_display }}</td><td>R$ {{ a.valor|floatformat:2 }}</td><td>{{ a.get_status_display }}</td><td>{{ a.acesso_ate|date:'d/m/Y'|default:'—' }}</td><td class="text-secondary small">{{ a.asaas_subscription_id|default:'Aguardando vínculo' }}</td></tr>{% empty %}<tr><td colspan="6" class="text-center text-secondary py-4">Nenhuma assinatura Asaas registrada ainda.</td></tr>{% endfor %}
+    </tbody></table></div></div>
+
+    <div class="card cf-admin-table-card mb-3"><div class="card-header"><h3 class="card-title">Cobranças recentes</h3></div><div class="table-responsive"><table class="table table-vcenter card-table"><thead><tr><th>Cliente</th><th>Vencimento</th><th>Valor</th><th>Status</th><th>Forma</th></tr></thead><tbody>
+    {% for p in pagamentos %}<tr><td>{% if p.assinatura %}{{ p.assinatura.perfil.usuario.email }}{% else %}<span class="text-secondary">Aguardando vínculo</span>{% endif %}</td><td>{{ p.vencimento|date:'d/m/Y'|default:'—' }}</td><td>{% if p.valor %}R$ {{ p.valor|floatformat:2 }}{% else %}—{% endif %}</td><td>{{ p.status|default:'—' }}</td><td>{{ p.forma_pagamento|default:'—' }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-secondary py-4">Nenhuma cobrança sincronizada ainda.</td></tr>{% endfor %}
+    </tbody></table></div></div>
+
+    <div class="card cf-admin-table-card"><div class="card-header"><h3 class="card-title">Webhooks pendentes / erro</h3></div><div class="table-responsive"><table class="table table-vcenter card-table"><thead><tr><th>Recebido</th><th>Evento</th><th>Status</th><th>Tentativas</th><th>Detalhe</th></tr></thead><tbody>
+    {% for e in eventos_erro %}<tr><td>{{ e.recebido_em|date:'d/m/Y H:i:s' }}</td><td>{{ e.event_type }}</td><td>{{ e.get_status_display }}</td><td>{{ e.tentativas }}</td><td class="text-secondary small">{{ e.erro|default:'—' }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-success py-4">Nenhum webhook pendente ou com erro.</td></tr>{% endfor %}
+    </tbody></table></div></div>
+</div></div>
+{% endblock %}

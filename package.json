@@ -1,0 +1,19 @@
+{
+  "name": "confronta-frontend",
+  "private": true,
+  "version": "0.4.1",
+  "scripts": {
+    "build:css": "npx @tailwindcss/cli -i ./frontend/app.css -o ./aplicativo/static/aplicativo/css/tailwind.css --minify",
+    "build:vendor": "mkdir -p ./aplicativo/static/aplicativo/js/vendor ./administracao/static/administracao/vendor && cp ./node_modules/flowbite/dist/flowbite.min.js ./aplicativo/static/aplicativo/js/vendor/flowbite.min.js && cp ./node_modules/@tabler/core/dist/css/tabler.min.css ./administracao/static/administracao/vendor/tabler.min.css && cp ./node_modules/@tabler/core/dist/js/tabler.min.js ./administracao/static/administracao/vendor/tabler.min.js",
+    "build": "npm run build:css && npm run build:vendor",
+    "watch": "npx @tailwindcss/cli -i ./frontend/app.css -o ./aplicativo/static/aplicativo/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3"
+  },
+  "dependencies": {
+    "flowbite": "4.0.1",
+    "@tabler/core": "1.4.0"
+  }
+}

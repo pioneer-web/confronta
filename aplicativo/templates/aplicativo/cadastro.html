@@ -1,0 +1,72 @@
+{% extends 'aplicativo/base.html' %}
+{% load static %}
+{% block title %}Criar conta — CONFRONTA{% endblock %}
+{% block public_content %}
+<main class="cf-contract-page">
+    <header class="cf-contract-header">
+        <a class="cf-contract-brand" href="/">
+            <img src="{% static 'aplicativo/img/logo-icon.png' %}" alt="">
+            <span><strong>CONFRONTA</strong><small>Inteligência Territorial</small></span>
+        </a>
+        <a class="cf-contract-login" href="{% url 'aplicativo:login' %}">Entrar</a>
+    </header>
+
+    <section class="cf-contract-shell">
+        <div class="cf-contract-copy">
+            <span class="cf-auth-eyebrow">Assinatura online</span>
+            <h1>Crie sua conta e conclua o pagamento no Asaas.</h1>
+            <p>Seu cadastro nasce sem acesso pago. O CONFRONTA libera automaticamente o plano somente após a confirmação financeira enviada pelo Asaas.</p>
+            <div class="cf-contract-steps">
+                <div><strong>1</strong><span>Crie sua conta no CONFRONTA.</span></div>
+                <div><strong>2</strong><span>Informe os dados de pagamento no Checkout seguro do Asaas.</span></div>
+                <div><strong>3</strong><span>Pagamento confirmado: o acesso é liberado automaticamente.</span></div>
+            </div>
+        </div>
+
+        <div class="cf-contract-card">
+            <div class="cf-contract-mobile-login">
+                <span>Já possui uma conta?</span>
+                <a href="{% url 'aplicativo:login' %}">Entrar agora</a>
+            </div>
+
+            {% if plano_selecionado %}
+            <div class="cf-selected-plan">
+                <span>Modalidade selecionada</span>
+                {% if ciclo == 'YEARLY' %}
+                    <strong>CONFRONTA Anual — R$ 49,90/mês</strong>
+                    <small>R$ {{ plano_selecionado.preco_anual|floatformat:2 }} cobrados anualmente · economia de R$ 216,00/ano</small>
+                {% else %}
+                    <strong>CONFRONTA Mensal — R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês</strong>
+                    <small>Cobrança recorrente mensal</small>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="cf-auth-form" novalidate style="margin-top:24px">
+                {% csrf_token %}
+                <input type="hidden" name="ciclo" value="{{ ciclo }}">
+                <div class="security-honeypot" aria-hidden="true"><label>Website<input type="text" name="{{ honeypot_field }}" value="" tabindex="-1" autocomplete="off"></label></div>
+
+                {% if form.non_field_errors %}<div class="cf-auth-alert">{{ form.non_field_errors }}</div>{% endif %}
+
+                <div class="cf-field"><label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>{{ form.nome }}{% for error in form.nome.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+                <div class="cf-field"><label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>{{ form.email }}{% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+                <div class="cf-field"><label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>{{ form.telefone }}{% for error in form.telefone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+                <div class="cf-field"><label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>{{ form.password1 }}{% for error in form.password1.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+                <div class="cf-field"><label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>{{ form.password2 }}{% for error in form.password2.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+
+                <button class="cf-auth-submit" type="submit">Criar conta e ir para o pagamento</button>
+            </form>
+
+            <div class="cf-contract-plans">
+                <strong>Prefere outra modalidade?</strong>
+                {% if ciclo == 'YEARLY' %}
+                    <a href="{% url 'aplicativo:cadastro' %}?ciclo=MONTHLY"><span>Mensal — R$ 67,90/mês</span><span>Selecionar →</span></a>
+                {% else %}
+                    <a href="{% url 'aplicativo:cadastro' %}?ciclo=YEARLY"><span>Anual — R$ 49,90/mês</span><span>Selecionar →</span></a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

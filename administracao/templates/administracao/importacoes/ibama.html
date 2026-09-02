@@ -1,0 +1,58 @@
+{% extends 'administracao/base.html' %}
+{% block title %}IBAMA — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+  <div class="mc-page-heading"><div class="mc-page-icon"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8h14M7 8l-3 5h6L7 8zm10 0l-3 5h6l-3-5z"/><path d="M8 21h8"/></svg></div><div><div class="mc-eyebrow">Atualização automática nacional</div><h1>IBAMA — Termos de Embargo</h1><p class="mc-page-subtitle">Atualização diária às 05:00. A base anterior permanece disponível até a nova carga ser validada e promovida.</p></div></div>
+  <form method="post" action="{% url 'administracao:atualizar_ibama_agora' %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Atualizar agora</button></form>
+</div>
+
+<section class="mc-card mc-detail-section" id="sync-card" {% if ibama_job %}data-status-url="{% url 'administracao:status_sincronizacao_fonte' ibama_job.pk %}"{% endif %}>
+  <div class="mc-card-header"><div><div class="mc-eyebrow">Sincronização</div><h2 class="mc-card-title">Brasil</h2><p class="mc-card-subtitle">Coletor atual: Dados Abertos IBAMA. O arquivo principal é validado antes de qualquer promoção; complementos indisponíveis não derrubam a base principal.</p></div>
+  {% if ibama_job %}<span id="sync-badge" class="mc-badge {% if ibama_job.status == 'FALHOU' %}mc-badge-danger{% elif ibama_job.status == 'CONCLUIDO' or ibama_job.status == 'SEM_ALTERACAO' %}mc-badge-success{% else %}mc-badge-warning{% endif %}">{{ ibama_job.get_status_display }}</span>{% endif %}</div>
+  <div class="mc-card-body">
+    {% if ibama_job %}
+    <div class="sicar-progress-line"><div class="sicar-progress-meta"><strong id="sync-stage">{{ ibama_job.etapa|default:ibama_job.get_status_display }}</strong><span id="sync-progress">{{ ibama_job.progresso }}%</span></div><div class="progress-shell sicar-progress-track"><div id="sync-fill" class="progress-fill" style="width:{{ ibama_job.progresso }}%"></div></div></div>
+    <div class="mc-metrics" style="margin-top:18px">
+      <div class="mc-card mc-metric"><div class="mc-metric-label">Registros na fonte</div><div id="sync-records" class="mc-metric-value">{{ ibama_job.registros_fonte|default:'—' }}</div></div>
+      <div class="mc-card mc-metric"><div class="mc-metric-label">Novos detectados</div><div id="sync-new" class="mc-metric-value">{{ ibama_job.novos }}</div></div>
+      <div class="mc-card mc-metric"><div class="mc-metric-label">Alterados</div><div id="sync-changed" class="mc-metric-value">{{ ibama_job.alterados }}</div></div>
+      <div class="mc-card mc-metric"><div class="mc-metric-label">Removidos detectados</div><div id="sync-removed" class="mc-metric-value">{{ ibama_job.removidos }}</div></div>
+    </div>
+    {% if ibama_job.erro %}<div class="alert alert-danger" id="sync-error">{{ ibama_job.erro }}</div>{% else %}<div class="alert alert-danger" id="sync-error" hidden></div>{% endif %}
+    {% else %}<p class="text-secondary">Nenhuma sincronização registrada. Use “Atualizar agora” ou aguarde o agendamento das 05:00.</p>{% endif %}
+  </div>
+</section>
+
+{% if ibama_job.detalhes.qualidade_fonte_principal %}
+<section class="mc-card mc-detail-section"><div class="mc-card-header"><div><div class="mc-eyebrow">Qualidade da fonte</div><h2 class="mc-card-title">Validação do arquivo oficial</h2></div></div><div class="mc-card-body"><div class="mc-metrics">
+<div class="mc-card mc-metric"><div class="mc-metric-label">Registros válidos</div><div class="mc-metric-value">{{ ibama_job.detalhes.qualidade_fonte_principal.registros_validos|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Sem SEQ_TAD</div><div class="mc-metric-value">{{ ibama_job.detalhes.qualidade_fonte_principal.sem_seq_tad|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Chaves duplicadas na fonte</div><div class="mc-metric-value">{{ ibama_job.detalhes.qualidade_fonte_principal.chaves_duplicadas|default:0 }}</div></div>
+</div>{% if ibama_job.detalhes.qualidade_fonte_principal.sem_seq_tad or ibama_job.detalhes.qualidade_fonte_principal.chaves_duplicadas %}<div class="alert alert-warning" style="margin-top:16px">Inconsistências isoladas da fonte foram registradas de forma rastreável. Registros sem chave oficial não entram na base operacional; duplicidades são consolidadas pela chave SEQ_TAD.</div>{% endif %}</div></section>
+{% endif %}
+
+{% if ibama_job.detalhes.status_normalizados %}
+<section class="mc-card mc-detail-section"><div class="mc-card-header"><div><div class="mc-eyebrow">Situação normalizada</div><h2 class="mc-card-title">Leitura para planejamento</h2></div></div><div class="mc-card-body"><div class="mc-metrics">
+<div class="mc-card mc-metric"><div class="mc-metric-label">Ativos</div><div class="mc-metric-value">{{ ibama_job.detalhes.status_normalizados.ATIVO|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Desembargados</div><div class="mc-metric-value">{{ ibama_job.detalhes.status_normalizados.DESEMBARGADO|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Cancelados</div><div class="mc-metric-value">{{ ibama_job.detalhes.status_normalizados.CANCELADO|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">A verificar</div><div class="mc-metric-value">{{ ibama_job.detalhes.status_normalizados.A_VERIFICAR|default:0 }}</div></div>
+</div></div></section>
+{% endif %}
+
+{% if ibama_job.detalhes.geometrias %}
+<section class="mc-card mc-detail-section"><div class="mc-card-header"><div><div class="mc-eyebrow">Qualidade espacial</div><h2 class="mc-card-title">Geometrias dos embargos</h2></div></div><div class="mc-card-body"><div class="mc-metrics">
+<div class="mc-card mc-metric"><div class="mc-metric-label">Sem WKT no arquivo principal</div><div class="mc-metric-value">{{ ibama_job.detalhes.geometrias.sem_wkt_inicial|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Reconstruídas por coordenadas</div><div class="mc-metric-value">{{ ibama_job.detalhes.geometrias.reconstruidas_coordenadas|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Obtidas pela API WKT</div><div class="mc-metric-value">{{ ibama_job.detalhes.geometrias.obtidas_api_wkt|default:0 }}</div></div>
+<div class="mc-card mc-metric"><div class="mc-metric-label">Sem geometria final</div><div class="mc-metric-value">{{ ibama_job.detalhes.geometrias.sem_geometria_final|default:0 }}</div></div>
+</div></div></section>
+{% endif %}
+
+<section class="mc-card mc-detail-section"><div class="mc-card-header"><div><div class="mc-eyebrow">Base operacional</div><h2 class="mc-card-title">Embargos para análise espacial</h2></div></div><div class="mc-card-body"><div class="mc-profile-row"><div class="mc-profile-main"><span class="mc-source-mark">IBA</span><div><strong>Termos de Embargo</strong><small>Destino: dados_ibama.ibama_embargo{% if ibama_layer %} · última promoção {{ ibama_layer.ultima_importacao|date:'d/m/Y H:i' }}{% endif %}</small></div></div><div class="mc-profile-actions">{% if ibama_layer %}<span class="mc-badge mc-badge-success">Disponível ao CONFRONTA</span>{% else %}<span class="mc-badge mc-badge-neutral">Ainda não importado</span>{% endif %}</div></div></div></section>
+
+<section class="mc-card mc-table-card"><div class="mc-card-header"><div><h2 class="mc-card-title">Últimas atualizações</h2><p class="mc-card-subtitle">A execução manual usa a mesma validação da rotina automática.</p></div></div><div class="mc-table-wrap"><table><thead><tr><th>Data</th><th>Origem</th><th>Coletor</th><th>Status</th><th>Registros</th><th>Resultado</th></tr></thead><tbody>{% for job in jobs %}<tr><td>{{ job.criado_em|date:'d/m/Y H:i' }}</td><td>{{ job.get_origem_display }}</td><td>{{ job.detalhes.estrategia_ibama|default:"legado" }}</td><td>{{ job.get_status_display }}</td><td>{{ job.registros_fonte|default:'—' }}</td><td>{% if job.erro %}{{ job.erro|truncatechars:90 }}{% else %}+{{ job.novos }} · ~{{ job.alterados }} · -{{ job.removidos }}{% endif %}</td></tr>{% empty %}<tr><td colspan="6">Nenhuma atualização registrada.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}
+{% block extra_js %}{% if ibama_job %}<script>
+(function(){const card=document.getElementById('sync-card');if(!card||!card.dataset.statusUrl)return;const fill=document.getElementById('sync-fill'),pct=document.getElementById('sync-progress'),stage=document.getElementById('sync-stage'),badge=document.getElementById('sync-badge'),records=document.getElementById('sync-records'),novos=document.getElementById('sync-new'),changed=document.getElementById('sync-changed'),removed=document.getElementById('sync-removed'),error=document.getElementById('sync-error');async function refresh(){try{const r=await fetch(card.dataset.statusUrl,{cache:'no-store'});if(!r.ok)return;const d=await r.json();fill.style.width=`${d.progress}%`;pct.textContent=`${d.progress}%`;stage.textContent=d.stage;badge.textContent=d.status_label;records.textContent=d.remote_records??'—';novos.textContent=d.new_records??0;changed.textContent=d.changed_records??0;removed.textContent=d.removed_records??0;if(d.error){error.hidden=false;error.textContent=d.error}else{error.hidden=true}if(!d.active){clearInterval(timer);setTimeout(()=>window.location.reload(),700)}}catch(e){}}const timer=setInterval(refresh,2500);refresh()})();
+</script>{% endif %}{% endblock %}

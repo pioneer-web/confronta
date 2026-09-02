@@ -1,0 +1,138 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Lote #{{ lote.pk }} — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M18 15v6m-3-3h6"/></svg></div>
+        <div>
+            <div class="mc-eyebrow">Lote #{{ lote.pk }}</div>
+            <h1>{{ lote.get_fonte_display }}</h1>
+            <p class="mc-page-subtitle">{{ lote.nome_arquivo_original }}</p>
+        </div>
+    </div>
+    <div class="mc-page-actions">
+        <span class="mc-badge {% if lote.status == 'CONCLUIDO' %}mc-badge-green{% elif lote.status == 'FALHOU' %}mc-badge-red{% elif lote.status == 'CONCLUIDO_COM_PENDENCIAS' or lote.status == 'AGUARDANDO_CONFIRMACAO' %}mc-badge-amber{% else %}mc-badge-neutral{% endif %}" id="batch-status-label">{{ lote.get_status_display }}</span>
+        {% if lote.pode_interromper and lote.status != 'INTERROMPENDO' %}<form method="post" action="{% url 'administracao:interromper_lote_importacao' lote.pk %}" onsubmit="return confirm('Interromper este lote no próximo ponto seguro?');">{% csrf_token %}<input type="hidden" name="retorno" value="detalhe"><button class="btn btn-outline-warning" type="submit">Interromper</button></form>{% endif %}
+        {% if lote.pode_excluir and user.is_superuser %}<form method="post" action="{% url 'administracao:excluir_lote_importacao' lote.pk %}" onsubmit="return confirm('Excluir este lote somente da fila do Manage? Nenhum dado publicado no banco será apagado.');">{% csrf_token %}<input type="hidden" name="confirmacao" value="EXCLUIR"><button class="btn btn-outline-danger" type="submit">Excluir da fila</button></form>{% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'administracao:lotes_recentes' %}">Lotes recentes</a>
+    </div>
+</div>
+
+{% if source_is_sicar and lote.status == 'AGUARDANDO_CONFIRMACAO' %}
+<section class="mc-card mc-action-card mc-action-primary">
+    <div><div class="mc-eyebrow">Pré-análise concluída</div><h2>Revise antes de alterar o PostGIS</h2><p>{{ contagens.PRONTO_IMPORTAR|default:0 }} alteração(ões), {{ contagens.SEM_ALTERACAO|default:0 }} sem alteração e {{ contagens.REQUER_REVISAO|default:0 }} para revisão.</p></div>
+    <form method="post" action="{% url 'administracao:confirmar_lote_importacao' lote.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Importar alterações</button></form>
+</section>
+{% endif %}
+
+{% if contagens.FALHOU %}
+<section class="mc-card mc-action-card mc-action-warning">
+    <div><div class="mc-eyebrow">Falha técnica</div><h2>{{ contagens.FALHOU }} arquivo(s) podem ser tentados novamente</h2><p>Somente falhas técnicas entram na nova tentativa; itens em revisão continuam aguardando decisão humana.</p></div>
+    <form method="post" action="{% url 'administracao:reprocessar_falhas_lote' lote.pk %}">{% csrf_token %}<button class="btn btn-outline-primary" type="submit">Tentar falhas novamente</button></form>
+</section>
+{% endif %}
+
+{% if not source_is_sicar and contagens.REQUER_REVISAO %}
+<section class="mc-card mc-action-card mc-action-info">
+    <div><div class="mc-eyebrow">Classificação pendente</div><h2>{{ contagens.REQUER_REVISAO }} arquivo(s) podem ser reanalisados</h2><p>Reexecuta somente a identificação com a política atual. Se continuar ambíguo, o item permanece em revisão e nada é promovido.</p></div>
+    <form method="post" action="{% url 'administracao:reanalisar_revisoes_lote' lote.pk %}">{% csrf_token %}<button class="btn btn-outline-primary" type="submit">Reanalisar classificação</button></form>
+</section>
+{% endif %}
+
+<section class="mc-card mc-progress-card" data-batch-status-url="{% url 'administracao:lote_importacao_status' lote.pk %}" data-batch-status="{{ lote.status }}">
+    <div class="mc-card-body">
+        <div class="mc-progress-heading">
+            <div><strong id="batch-phase-label">{% if source_is_sicar and fase == 'ANALISE' %}Pré-análise dos arquivos{% elif source_is_sicar and fase == 'IMPORTACAO' %}Importação das alterações{% else %}Progresso geral{% endif %}</strong><small id="batch-progress-help">{% if lote.status == 'ANALISANDO' %}Identificando e comparando sem alterar a base ativa.{% elif lote.status == 'PROCESSANDO' %}Validando e promovendo os itens da fila.{% elif lote.status == 'AGUARDANDO_CONFIRMACAO' %}Aguardando sua confirmação para publicar as alterações.{% elif lote.status == 'INTERROMPENDO' %}Interrupção solicitada; aguardando o próximo ponto seguro.{% elif lote.status == 'INTERROMPIDO' %}Lote interrompido sem iniciar novos itens.{% else %}Processamento finalizado.{% endif %}</small></div>
+            <span id="batch-progress-value">{{ progresso }}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="batch-progress-fill" style="width: {{ progresso }}%"></div></div>
+    </div>
+</section>
+
+<div class="mc-metrics mc-batch-metrics">
+    <div class="mc-metric"><span>ZIPs recebidos</span><strong>{{ lote.resultado.arquivos_zip_encontrados|default:0 }}</strong></div>
+    {% if source_is_sicar %}
+    <div class="mc-metric"><span>Alterações</span><strong>{{ contagens.PRONTO_IMPORTAR|default:0 }}</strong></div>
+    <div class="mc-metric"><span>Sem alteração</span><strong>{{ contagens.SEM_ALTERACAO|default:0 }}</strong></div>
+    {% elif lote.fonte == 'PRODES' and lote.resultado.filtros.ano_inicial %}
+    <div class="mc-metric"><span>Corte temporal PRODES</span><strong>≥ {{ lote.resultado.filtros.ano_inicial }}</strong></div>
+    {% else %}
+    <div class="mc-metric mc-metric-wide"><span>SHA-256 do lote</span><code>{{ lote.hash_sha256 }}</code></div>
+    {% endif %}
+    {% if lote.resultado.pendencias_geometria %}<div class="mc-metric"><span>Pendências GIS</span><strong>{{ lote.resultado.pendencias_geometria }}</strong></div>{% endif %}
+    <div class="mc-metric mc-metric-wide"><span>Administrador</span><strong class="mc-email-value">{{ lote.administrador.email }}</strong></div>
+</div>
+
+{% if lote.motivo_falha %}<div class="alert alert-danger"><strong>Motivo:</strong> {{ lote.motivo_falha }}</div>{% endif %}
+
+<section class="mc-card mc-table-card">
+    <div class="mc-card-header">
+        <div class="mc-card-title-group"><span class="mc-card-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><div><h2 class="mc-card-title">Arquivos do lote</h2><p class="mc-card-subtitle">Identificação, andamento e resultado de cada arquivo.</p></div></div>
+    </div>
+
+    {% if source_is_sicar %}
+    <div class="mc-batch-list">
+    {% for item in itens %}
+        <div class="mc-batch-list-item" id="batch-item-{{ item.pk }}">
+            <div class="mc-batch-file">
+                <div class="mc-file-icon"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5"/></svg></div>
+                <div><strong>{{ item.nome_arquivo }}</strong><small><span id="batch-item-dataset-{{ item.pk }}">{{ item.dataset_label|default:'Dataset a identificar' }}</span><span id="batch-item-stage-{{ item.pk }}">{% if item.etapa %} · {{ item.etapa }}{% endif %}</span></small></div>
+            </div>
+            <div>{% if item.uf %}<span class="uf-pill">{{ item.uf }}</span>{% else %}<span class="text-secondary">UF pendente</span>{% endif %}</div>
+            <div class="mc-item-progress"><span>{{ item.progresso }}%</span><div class="progress-track slim"><div class="progress-fill" id="batch-item-progress-{{ item.pk }}" style="width: {{ item.progresso }}%"></div></div></div>
+            <div><span class="mc-badge batch-item-status status-{{ item.status|lower }}" id="batch-item-status-{{ item.pk }}">{{ item.get_status_display }}</span><small class="mc-item-reason" id="batch-item-message-{{ item.pk }}">{{ item.motivo }}</small></div>
+            <div class="mc-row-actions">
+                {% if item.importacao %}<a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:importacao_detalhe' item.importacao.pk %}">Relatório</a>{% endif %}
+                {% if item.status == 'REQUER_REVISAO' or item.status == 'FALHOU' %}
+                <form method="post" action="{% url 'administracao:definir_uf_item_lote' lote.pk item.pk %}" class="mc-inline-review">{% csrf_token %}<select class="form-select form-select-sm" name="uf" required><option value="">Selecionar UF</option>{% for value,label in uf_choices %}{% if value %}<option value="{{ value }}" {% if item.uf == value %}selected{% endif %}>{{ label }}</option>{% endif %}{% endfor %}</select><button class="btn btn-outline-secondary btn-sm" type="submit">Reanalisar</button></form>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}<div class="mc-table-empty">Nenhum item no lote.</div>{% endfor %}
+    </div>
+    {% else %}
+    <div class="mc-table-wrap">
+        <table class="mc-batch-table">
+            <thead><tr><th>Arquivo</th><th>Dataset</th><th>Progresso</th><th>Status</th><th class="text-end">Relatório</th></tr></thead>
+            <tbody>
+            {% for item in itens %}
+                <tr>
+                    <td><div class="mc-table-file"><strong>{{ item.nome_arquivo }}</strong><small>{{ item.caminho_relativo }}</small></div></td>
+                    <td><strong id="batch-item-dataset-{{ item.pk }}">{{ item.dataset_label|default:'A identificar' }}</strong></td>
+                    <td class="mc-table-progress"><strong>{{ item.progresso }}%</strong><small id="batch-item-stage-{{ item.pk }}">{{ item.etapa }}</small></td>
+                    <td><span class="mc-badge batch-item-status status-{{ item.status|lower }}" id="batch-item-status-{{ item.pk }}">{{ item.get_status_display }}</span>{% if item.motivo %}<small class="mc-item-reason" id="batch-item-message-{{ item.pk }}">{{ item.motivo }}</small>{% endif %}</td>
+                    <td class="text-end">{% if item.importacao %}<a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:importacao_detalhe' item.importacao.pk %}">Abrir relatório</a>{% else %}<span class="text-secondary">—</span>{% endif %}</td>
+                </tr>
+            {% empty %}<tr><td colspan="5" class="mc-table-empty">Nenhum item no lote.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</section>
+
+{% if lote.status == 'ANALISANDO' or lote.status == 'PROCESSANDO' or lote.status == 'INTERROMPENDO' %}
+<script>
+(function () {
+    const card = document.querySelector('[data-batch-status-url]'); if (!card) return;
+    const endpoint = card.dataset.batchStatusUrl; let previousStatus = card.dataset.batchStatus; let stopped = false;
+    function text(id, value) { const el = document.getElementById(id); if (el) el.textContent = value || ''; }
+    function width(id, value) { const el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, Number(value) || 0)) + '%'; }
+    async function poll() {
+        if (stopped) return;
+        try {
+            const response = await fetch(endpoint, {headers: {'X-Requested-With': 'XMLHttpRequest'}, cache: 'no-store'}); if (!response.ok) throw new Error('status');
+            const data = await response.json(); text('batch-status-label', data.status_label); text('batch-progress-value', data.progresso + '%'); width('batch-progress-fill', data.progresso);
+            (data.itens || []).forEach(function (item) {
+                const statusEl = document.getElementById('batch-item-status-' + item.id); if (statusEl) { statusEl.textContent = item.status_label || ''; statusEl.className = 'mc-badge batch-item-status status-' + String(item.status || '').toLowerCase(); }
+                text('batch-item-dataset-' + item.id, item.dataset_label || 'Dataset a identificar'); text('batch-item-stage-' + item.id, item.etapa || ''); text('batch-item-message-' + item.id, item.motivo || ''); width('batch-item-progress-' + item.id, item.progresso);
+            });
+            if (data.status !== previousStatus && !['ANALISANDO', 'PROCESSANDO', 'INTERROMPENDO'].includes(data.status)) { stopped = true; window.location.reload(); return; }
+            previousStatus = data.status;
+        } catch (e) {}
+        window.setTimeout(poll, 2500);
+    }
+    window.setTimeout(poll, 1200);
+})();
+</script>
+{% endif %}
+{% endblock %}

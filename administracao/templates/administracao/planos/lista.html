@@ -1,0 +1,41 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Planos — CONFRONTA{% endblock %}
+{% block content %}
+<div class="page-header d-print-none cf-admin-header">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col"><div class="page-pretitle">Gestão comercial</div><h2 class="page-title">Planos</h2><div class="text-secondary mt-1">Os planos ativos alimentam a Home e a área de contratação.</div></div>
+            <div class="col-auto ms-auto"><a class="btn btn-primary cf-admin-primary" href="{% url 'administracao:plano_novo' %}">+ Novo plano</a></div>
+        </div>
+    </div>
+</div>
+<div class="page-body cf-admin-content">
+    <div class="container-xl">
+        <div class="row row-cards mb-3">
+            <div class="col-sm-4"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Total</div><div class="h2 mb-0">{{ total_planos }}</div></div></div></div>
+            <div class="col-sm-4"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Publicados</div><div class="h2 mb-0 text-success">{{ ativos }}</div></div></div></div>
+            <div class="col-sm-4"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Em destaque</div><div class="h2 mb-0 text-warning">{{ destaques }}</div></div></div></div>
+        </div>
+        <div class="card cf-admin-table-card">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead><tr><th>Plano</th><th>Nível</th><th>Mensal</th><th>Anual</th><th>Publicação</th><th>Clientes</th><th class="w-1"></th></tr></thead>
+                    <tbody>
+                    {% for plano in planos %}
+                    <tr>
+                        <td><div class="fw-bold">{{ plano.nome }}</div><div class="text-secondary small">{{ plano.subtitulo|default:plano.slug }}</div></td>
+                        <td><span class="badge bg-azure-lt">{{ plano.get_nivel_acesso_display }}</span></td>
+                        <td>R$ {{ plano.preco_mensal|floatformat:2 }}</td>
+                        <td>R$ {{ plano.valor_anual_exibicao|floatformat:2 }}</td>
+                        <td>{% if plano.ativo %}<span class="badge bg-success-lt">Publicado</span>{% else %}<span class="badge bg-secondary-lt">Oculto</span>{% endif %}{% if plano.destaque %} <span class="badge bg-warning-lt">Destaque</span>{% endif %}</td>
+                        <td>{{ plano.clientes.count }}</td>
+                        <td><div class="dropdown"><button class="btn dropdown-toggle align-text-top" data-bs-toggle="dropdown">Ações</button><div class="dropdown-menu dropdown-menu-end"><a class="dropdown-item" href="{% url 'administracao:plano_editar' plano.pk %}">Editar plano</a><form method="post" action="{% url 'administracao:plano_alternar' plano.pk %}">{% csrf_token %}<button class="dropdown-item" type="submit">{% if plano.ativo %}Ocultar da Home{% else %}Publicar na Home{% endif %}</button></form></div></div></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="7" class="text-center text-secondary py-5">Nenhum plano cadastrado.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends 'administracao/base.html' %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">RELATÓRIO #{{ importacao.pk }}</div>
+        <h1>{{ importacao.dataset_label|default:importacao.get_fonte_display }}</h1>
+        <p>{{ importacao.get_fonte_display }} — {{ importacao.nome_arquivo_original }}</p>
+    </div>
+    <span class="badge large">{{ importacao.get_status_display }}</span>
+</div>
+
+<div class="cards">
+    <div class="card"><b>Identidade</b><span>{{ importacao.identidade_status }}</span></div>
+    <div class="card"><b>SHA-256</b><code>{{ importacao.hash_sha256 }}</code></div>
+    <div class="card"><b>Administrador</b><span>{{ importacao.administrador.email }}</span></div>
+</div>
+
+
+
+{% if importacao.motivo_rejeicao %}
+<div class="message error"><strong>Motivo:</strong> {{ importacao.motivo_rejeicao }}</div>
+{% endif %}
+
+{% if importacao.identidade_relatorio %}
+<div class="card">
+    <h2>Validação da identidade do dataset</h2>
+    <p><b>Resultado:</b> {{ importacao.identidade_status }}</p>
+    <p><b>Camada:</b> {{ importacao.identidade_relatorio.camada|default:'—' }}</p>
+    <p><b>Geometria:</b> {{ importacao.identidade_relatorio.geometria|default:'—' }}</p>
+    {% if importacao.identidade_relatorio.motivo %}<p><b>Motivo:</b> {{ importacao.identidade_relatorio.motivo }}</p>{% endif %}
+    {% if importacao.identidade_relatorio.dataset_sugerido %}
+        <p><b>Dataset sugerido:</b> {{ importacao.identidade_relatorio.dataset_sugerido.fonte }} — {{ importacao.identidade_relatorio.dataset_sugerido.label }}</p>
+    {% endif %}
+    {% if importacao.identidade_relatorio.possiveis_outros_datasets %}
+        <h3>Compatibilidades alternativas detectadas</h3>
+        <pre>{{ importacao.identidade_relatorio.possiveis_outros_datasets }}</pre>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if sicar_metadata.present %}
+<div class="card">
+    <h2>Metadados oficiais SICAR</h2>
+    <p>A tabela <code>{{ sicar_metadata.table_name }}</code> foi usada como dicionário de dados e não como camada geográfica.</p>
+    <div class="stats">
+        <div><span>Campos documentados</span><b>{{ sicar_metadata.row_count }}</b></div>
+        <div><span>EPSG espacial</span><b>{{ sicar_metadata.comparison.actual_epsg|default:'—' }}</b></div>
+        <div><span>SRID declarado</span><b>{{ sicar_metadata.comparison.dictionary_srids|join:", "|default:"—" }}</b></div>
+        <div><span>Charset</span><b>{{ sicar_metadata.comparison.character_sets|join:", "|default:"—" }}</b></div>
+    </div>
+    {% if sicar_metadata.comparison.crs_divergence %}
+    <div class="alert alert-warning"><strong>Divergência de metadados:</strong> o GeoPackage espacial declara EPSG:{{ sicar_metadata.comparison.actual_epsg }}, enquanto o DICIONARIO informa {{ sicar_metadata.comparison.dictionary_srids|join:', ' }}. O Manage usa o CRS efetivo da camada espacial e registra o SRID do dicionário apenas como metadado auxiliar.</div>
+    {% endif %}
+    {% if sicar_metadata.unknown_dictionary_columns %}
+    <p><b>Novas colunas no DICIONARIO preservadas:</b> {{ sicar_metadata.unknown_dictionary_columns|join:', ' }}</p>
+    {% endif %}
+    {% if sicar_metadata.comparison.missing_in_layer %}<p><b>Campos documentados ausentes na camada:</b> {{ sicar_metadata.comparison.missing_in_layer|join:', ' }}</p>{% endif %}
+    {% if sicar_metadata.comparison.undocumented_in_dictionary %}<p><b>Campos da camada ainda não documentados no DICIONARIO:</b> {{ sicar_metadata.comparison.undocumented_in_dictionary|join:', ' }}</p>{% endif %}
+    {% if sicar_metadata.comparison.type_differences %}<p><b>Divergências de tipo:</b></p><pre>{{ sicar_metadata.comparison.type_differences }}</pre>{% endif %}
+    {% if importacao.resultado.alteracoes_estrutura.source_metadata_changes %}<p><b>Mudanças no DICIONARIO em relação à versão anterior:</b></p><pre>{{ importacao.resultado.alteracoes_estrutura.source_metadata_changes }}</pre>{% endif %}
+    <p class="text-secondary">Todos os campos recebidos permanecem na RAW. O modelo operacional usa apenas os campos já mapeados pelo CONFRONTA; campos novos ficam preservados e sinalizados para mapeamento seguro, sem quebrar o SaaS.</p>
+    <h3>Catálogo de campos</h3>
+    <div class="mc-table-wrap"><table class="mc-batch-table"><thead><tr><th>Campo</th><th>Tipo SICAR</th><th>Descrição</th><th>SRID</th></tr></thead><tbody>
+    {% for field in sicar_metadata.field_catalog %}<tr><td><code>{{ field.name }}</code></td><td>{{ field.type|default:'—' }}</td><td>{{ field.description|default:'—' }}</td><td>{{ field.srid|default:'—' }}</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endif %}
+
+{% if importacao.resultado.sem_alteracao %}
+<div class="card">
+    <h2>Verificação concluída — sem alteração</h2>
+    <p>{{ importacao.resultado.motivo }}</p>
+    {% if importacao.contexto.uf %}<p><b>UF:</b> {{ importacao.contexto.uf }}</p>{% endif %}
+    {% if importacao.resultado.fingerprint_conteudo.sha256 %}<p><b>Fingerprint do conteúdo tratado:</b> <code>{{ importacao.resultado.fingerprint_conteudo.sha256 }}</code></p>{% endif %}
+    {% if importacao.resultado.importacao_anterior_id %}<p><b>Versão equivalente:</b> importação #{{ importacao.resultado.importacao_anterior_id }}</p>{% endif %}
+    <p>A base operacional existente foi preservada e o PostGIS não foi reprocessado.</p>
+</div>
+{% elif importacao.resultado.duplicado %}
+<div class="card">
+    <h2>Arquivo já processado</h2>
+    <p>O SHA-256 é idêntico a uma importação concluída do mesmo dataset. A base não foi reprocessada.</p>
+    <p><b>Importação anterior:</b> #{{ importacao.resultado.importacao_anterior_id }}</p>
+</div>
+{% elif importacao.resultado.sicor_csv.aplicado %}
+<div class="card">
+    <h2>SICOR / Crédito Rural</h2>
+    <div class="stats">
+        <div><span>Registros recebidos</span><b>{{ importacao.resultado.sicor_csv.registros_recebidos }}</b></div>
+        <div><span>Operacional</span><b>{{ importacao.resultado.sicor_csv.registros_operacionais }}</b></div>
+        <div><span>Pendências</span><b>{{ importacao.resultado.sicor_csv.registros_pendentes }}</b></div>
+        {% if importacao.resultado.sicor_csv.ano_arquivo %}<div><span>Ano</span><b>{{ importacao.resultado.sicor_csv.ano_arquivo }}</b></div>{% endif %}
+    </div>
+    {% if importacao.resultado.promocao.glebas_identificadas %}
+    <div class="stats">
+        <div><span>Glebas identificadas</span><b>{{ importacao.resultado.promocao.glebas_identificadas }}</b></div>
+        <div><span>Glebas publicadas</span><b>{{ importacao.resultado.promocao.glebas_publicadas }}</b></div>
+        <div><span>Geometrias reparadas</span><b>{{ importacao.resultado.promocao.geometrias_reparadas }}</b></div>
+        <div><span>Glebas pendentes</span><b>{{ importacao.resultado.promocao.geometrias_pendentes }}</b></div>
+    </div>
+    <p><b>Geometria:</b> polígonos reconstruídos pela ordem dos vértices em SIRGAS 2000 (EPSG:{{ importacao.resultado.promocao.srid }}).</p>
+    {% endif %}
+    <p><b>Encoding detectado:</b> {{ importacao.resultado.sicor_csv.encoding }}</p>
+    <p><b>Delimitador detectado:</b> <code>{{ importacao.resultado.sicor_csv.delimitador }}</code></p>
+    <p><b>Fingerprint do conteúdo:</b> <code>{{ importacao.resultado.fingerprint_conteudo.sha256 }}</code></p>
+    {% if importacao.resultado.alteracoes_estrutura.campos_extras_raw %}
+    <div class="alert alert-info"><strong>Campos adicionais preservados na RAW:</strong> {{ importacao.resultado.alteracoes_estrutura.campos_extras_raw|join:', ' }}. A estrutura operacional não foi alterada silenciosamente.</div>
+    {% endif %}
+    {% if importacao.resultado.alteracoes_estrutura.campos_adicionados_desde_ultima_versao %}<p><b>Novos campos na fonte:</b> {{ importacao.resultado.alteracoes_estrutura.campos_adicionados_desde_ultima_versao|join:', ' }}</p>{% endif %}
+    {% if importacao.resultado.alteracoes_estrutura.campos_ausentes_desde_ultima_versao %}<p><b>Campos ausentes nesta versão:</b> {{ importacao.resultado.alteracoes_estrutura.campos_ausentes_desde_ultima_versao|join:', ' }}</p>{% endif %}
+    {% if importacao.resultado.pendencias.quantidade %}
+    <div class="alert alert-warning"><strong>Concluído com pendências.</strong> As linhas problemáticas foram preservadas na RAW e não entraram na tabela operacional.</div>
+    {% if importacao.resultado.pendencias.valores_invalidos_por_campo %}<p><b>Valores inválidos por campo:</b></p><pre>{{ importacao.resultado.pendencias.valores_invalidos_por_campo }}</pre>{% endif %}
+    {% if importacao.resultado.pendencias.amostras_geometrias %}
+    {% if importacao.resultado.promocao.glebas_identificadas %}
+    <div class="mc-table-wrap"><table class="mc-batch-table"><thead><tr><th>REF_BACEN</th><th>NU_ORDEM</th><th>Identificador</th><th>Índice da gleba</th><th>Pontos</th></tr></thead><tbody>
+    {% for row in importacao.resultado.pendencias.amostras_geometrias %}<tr><td>{{ row.ref_bacen|default:'—' }}</td><td>{{ row.nu_ordem|default:'—' }}</td><td>{{ row.nu_identificador|default:'—' }}</td><td>{{ row.nu_indice_gleba|default:'—' }}</td><td>{{ row.qtd_pontos|default:'—' }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% else %}
+    <div class="mc-table-wrap"><table class="mc-batch-table"><thead><tr><th>Linha</th><th>REF_BACEN</th><th>NU_ORDEM</th><th>Motivo WKT</th></tr></thead><tbody>
+    {% for row in importacao.resultado.pendencias.amostras_geometrias %}<tr><td>{{ row.linha }}</td><td>{{ row.ref_bacen|default:'—' }}</td><td>{{ row.nu_ordem|default:'—' }}</td><td>{{ row.motivo }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+</div>
+<div class="card">
+    <h2>Banco de dados</h2>
+    <p><b>RAW:</b> <code>{{ importacao.resultado.promocao.schema }}.{{ importacao.resultado.promocao.tabela_raw }}</code></p>
+    <p><b>Operacional:</b> <code>{{ importacao.resultado.promocao.schema }}.{{ importacao.resultado.promocao.tabela_operacional }}</code></p>
+    <p><b>Modo:</b> {{ importacao.resultado.promocao.modo }}</p>
+    {% if importacao.resultado.promocao.particao_ano_substituida %}<p><b>Partição anual atualizada:</b> {{ importacao.resultado.promocao.particao_ano_substituida }}</p>{% endif %}
+</div>
+<div class="card"><h2>Segurança</h2><pre>{{ importacao.resultado.seguranca_arquivo }}</pre><p><b>Antimalware externo:</b> {{ importacao.resultado.antimalware.resultado }}</p></div>
+{% elif importacao.resultado.totais %}
+<div class="card">
+    <h2>Resumo GIS</h2>
+    <div class="stats">
+        <div><span>Camadas</span><b>{{ importacao.resultado.totais.camadas_encontradas }}</b></div>
+        <div><span>Registros</span><b>{{ importacao.resultado.totais.registros }}</b></div>
+        <div><span>Inválidas</span><b>{{ importacao.resultado.totais.geometrias_invalidas }}</b></div>
+        <div><span>Corrigidas</span><b>{{ importacao.resultado.totais.geometrias_corrigidas_operacional }}</b></div>
+        <div><span>Pendentes</span><b>{{ importacao.resultado.totais.geometrias_nao_reparaveis|default:0 }}</b></div>
+        <div><span>Operacional</span><b>{{ importacao.resultado.totais.registros_inseridos_operacional|default:0 }}</b></div>
+    </div>
+    {% if importacao.resultado.reparo_geometrias.nao_reparaveis %}
+    <div class="alert alert-warning mt-3">
+        <strong>Concluído com pendências geométricas.</strong>
+        {{ importacao.resultado.reparo_geometrias.nao_reparaveis }} feição(ões) não puderam ser reparadas com segurança. A geometria original permanece na RAW e somente essas feições ficaram fora da tabela operacional.
+    </div>
+    {% if importacao.resultado.reparo_geometrias.amostras_pendencias %}
+    <div class="mc-table-wrap"><table class="mc-batch-table"><thead><tr><th>Identificador</th><th>Motivo</th><th>Após reparo</th></tr></thead><tbody>
+    {% for row in importacao.resultado.reparo_geometrias.amostras_pendencias %}<tr><td><code>{{ row.identificador|default:'—' }}</code></td><td>{{ row.motivo_original|default:'—' }}</td><td>{{ row.tipo_apos_reparo|default:'vazio/nulo' }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    <p class="text-secondary">Amostra limitada a {{ importacao.resultado.reparo_geometrias.amostras_limitadas_a|default:50 }} ocorrência(s); a RAW preserva integralmente a fonte recebida.</p>
+    {% endif %}
+    {% endif %}
+    {% if importacao.resultado.ufs_sicar_detectadas.aplicavel and importacao.resultado.ufs_sicar_detectadas.detectadas %}
+        <p><b>UFs confirmadas nos números de CAR:</b> {{ importacao.resultado.ufs_sicar_detectadas.detectadas|join:", " }}.</p>
+        {% if importacao.resultado.ufs_sicar_detectadas.uf_administrativa %}
+            <p><b>UF administrativa da carga:</b> {{ importacao.resultado.ufs_sicar_detectadas.uf_administrativa }}.</p>
+        {% endif %}
+        {% if importacao.resultado.ufs_sicar_detectadas.ufs_adicionais_aceitas %}
+            <p><b>UFs vizinhas aceitas como registros de divisa:</b> {{ importacao.resultado.ufs_sicar_detectadas.ufs_adicionais_aceitas|join:", " }}.</p>
+        {% endif %}
+    {% endif %}
+</div>
+{% if importacao.resultado.reparo_texto_encoding.aplicado %}
+<div class="card">
+    <h2>Reparo controlado de texto</h2>
+    <p>O arquivo oficial continha texto UTF-8 malformado em campo DBF. O CONFRONTA criou uma cópia operacional temporária, corrigiu somente os bytes inválidos e preservou todas as feições.</p>
+    <p><b>Registros corrigidos:</b> {{ importacao.resultado.reparo_texto_encoding.registros_corrigidos }}</p>
+    <p><b>Bytes substituídos:</b> {{ importacao.resultado.reparo_texto_encoding.bytes_substituidos }}</p>
+    {% if importacao.resultado.reparo_texto_encoding.detalhes %}
+        <p><b>Ocorrências:</b></p>
+        <pre>{{ importacao.resultado.reparo_texto_encoding.detalhes }}</pre>
+    {% endif %}
+    <p>Nenhuma feição foi ignorada com <code>-skipfailures</code>.</p>
+</div>
+{% endif %}
+{% if importacao.resultado.filtro_prodes.aplicado %}
+<div class="card">
+    <h2>Filtro temporal PRODES</h2>
+    <p><b>Ano inicial aplicado:</b> {{ importacao.resultado.filtro_prodes.ano_inicial }}</p>
+    <p><b>Campo de ano:</b> {{ importacao.resultado.filtro_prodes.campo_ano }}</p>
+    <p><b>Registros originais:</b> {{ importacao.resultado.filtro_prodes.registros_originais }}</p>
+    <p><b>Descartados antes do corte:</b> {{ importacao.resultado.filtro_prodes.registros_descartados_antes_do_ano }}</p>
+    <p><b>Sem ano válido:</b> {{ importacao.resultado.filtro_prodes.registros_ano_invalido }}</p>
+    <p><b>Registros mantidos:</b> {{ importacao.resultado.filtro_prodes.registros_mantidos }}</p>
+    <p><b>Intervalo encontrado:</b> {{ importacao.resultado.filtro_prodes.ano_minimo_encontrado }}–{{ importacao.resultado.filtro_prodes.ano_maximo_encontrado }}</p>
+    {% if importacao.resultado.filtro_prodes.registros_ano_invalido %}
+    <div class="alert alert-warning"><strong>Pendência:</strong> os registros sem ano válido não foram importados. Os registros válidos seguiram normalmente e esta ocorrência ficou registrada no relatório.</div>
+    {% endif %}
+    {% if importacao.resultado.fingerprint_conteudo.sha256 %}<p><b>Fingerprint do conteúdo tratado:</b> <code>{{ importacao.resultado.fingerprint_conteudo.sha256 }}</code></p>{% endif %}
+    {% if importacao.resultado.substituicao_forcada %}<div class="alert alert-warning"><strong>Substituição solicitada:</strong> a versão anterior deste dataset foi substituída durante a promoção transacional, somente após as validações.</div>{% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+    <h2>Banco de dados</h2>
+    <p><b>RAW:</b> <code>{{ importacao.resultado.promocao.tabela_raw }}</code></p>
+    <p><b>Operacional:</b> <code>{{ importacao.resultado.promocao.tabela_operacional }}</code></p>
+    <p><b>Estrutura alterada:</b> {{ importacao.resultado.promocao.estrutura_alterada|yesno:'Sim,Não' }}</p>
+    {% if importacao.resultado.promocao.normalizacao.consolidacao_por_chave %}<p><b>Consolidação SICAR:</b> atualização por <code>{{ importacao.resultado.promocao.normalizacao.consolidacao_por_chave }}</code>; a UF administrativa é substituída como snapshot e CARs de UFs vizinhas presentes no arquivo são atualizados por chave, sem apagar o restante desses estados.</p>{% endif %}
+    {% if importacao.resultado.promocao.normalizacao.registros_substituidos_por_chave %}<p><b>Registros anteriores dos CARs atualizados:</b> {{ importacao.resultado.promocao.normalizacao.registros_substituidos_por_chave }}</p>{% endif %}
+    {% if importacao.resultado.promocao.normalizacao.particao.uf %}<p><b>Atualização estadual:</b> somente {{ importacao.resultado.promocao.normalizacao.particao.uf }} foi substituída; os demais estados foram preservados.</p>{% endif %}
+    {% if importacao.resultado.promocao.normalizacao.registros_substituidos_uf %}<p><b>Registros anteriores removidos da UF:</b> {{ importacao.resultado.promocao.normalizacao.registros_substituidos_uf }}</p>{% endif %}
+    <h3>Mapeamento lógico</h3>
+    <pre>{{ importacao.resultado.promocao.normalizacao.mapeamento_campos }}</pre>
+    {% if importacao.resultado.promocao.normalizacao.normalizacao_datas %}
+    <h3>Normalização de datas</h3>
+    <div class="mc-table-wrap"><table class="mc-batch-table"><thead><tr><th>Campo</th><th>Origem</th><th>DD/MM</th><th>MM/DD</th><th>Ambíguas</th><th>YMD</th><th>Reparadas</th><th>Não reconhecidas</th><th>Não convertidas</th><th>Regra para ambíguas</th></tr></thead><tbody>
+    {% for campo, perfil in importacao.resultado.promocao.normalizacao.normalizacao_datas.items %}
+    <tr><td><code>{{ campo }}</code></td><td><code>{{ perfil.campo_origem }}</code></td><td>{{ perfil.dmy_inequivocos|default:'—' }}</td><td>{{ perfil.mdy_inequivocos|default:'—' }}</td><td>{{ perfil.ambiguos|default:'—' }}</td><td>{{ perfil.ymd|default:'—' }}</td><td>{{ perfil.dmy_compacto|default:'—' }}</td><td>{{ perfil.nao_reconhecidos|default:'—' }}</td><td>{{ perfil.nao_convertidos|default:0 }}</td><td>{% if perfil.preferencia_ambiguos %}{{ perfil.preferencia_ambiguos }}{% elif perfil.politica %}{{ perfil.politica }}{% else %}sem inferência segura{% endif %}</td></tr>
+    {% if perfil.amostras_nao_convertidas %}<tr><td colspan="10"><span class="text-secondary">Valores preservados somente na RAW:</span> <code>{{ perfil.amostras_nao_convertidas|join:', ' }}</code></td></tr>{% endif %}
+    {% endfor %}
+    </tbody></table></div>
+    <p class="text-secondary">Datas inequívocas são interpretadas individualmente. Valores realmente não reconhecidos permanecem na RAW e ficam NULL somente na tabela operacional; a importação não é bloqueada por um registro isolado.</p>
+    {% endif %}
+</div>
+<div class="card">
+    <h2>Segurança</h2>
+    <pre>{{ importacao.resultado.seguranca_zip }}</pre>
+    <p><b>Antimalware externo:</b> {{ importacao.resultado.antimalware.resultado }}</p>
+</div>
+{% endif %}
+{% endblock %}

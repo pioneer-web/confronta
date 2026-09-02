@@ -1,0 +1,7 @@
+{% extends 'administracao/base.html' %}
+{% block content %}
+<div class="page-head"><div><h1>Administradores</h1><p>Somente o Superadministrador pode criar e alterar contas administrativas.</p></div><a class="button primary" href="{% url 'administracao:administrador_novo' %}">Novo administrador</a></div>
+<div class="card"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Nível</th><th>Status</th><th></th></tr></thead><tbody>
+{% for u in usuarios %}<tr><td>{{ u.get_full_name|default:'—' }}</td><td>{{ u.email }}</td><td>{{ u.get_role_display }}</td><td>{% if u.is_active %}Ativo{% else %}Desativado{% endif %}</td><td><a href="{% url 'administracao:administrador_editar' u.pk %}">Editar</a></td></tr>{% empty %}<tr><td colspan="5">Nenhum administrador adicional cadastrado.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,395 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Importação em lote — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 14.5A4.5 4.5 0 0 0 9.5 19h8a3.5 3.5 0 0 0 .6-6.95A6 6 0 0 0 6.6 10.4 4.5 4.5 0 0 0 5 14.5z"/></svg>
+        </div>
+        <div>
+            <div class="mc-eyebrow">Importação de dados</div>
+            <h1>Importação em lote{% if fonte_locked_label %} — {{ fonte_locked_label }}{% endif %}</h1>
+            <p class="mc-page-subtitle">Selecione os arquivos. O Manage envia e processa um arquivo por vez, libera o temporário após sucesso e só então inicia o próximo.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mc-import-grid">
+    <section class="mc-card mc-upload-card">
+        <div class="mc-card-header">
+            <div class="mc-card-title-group">
+                <span class="batch-source-badge">{% if fonte_locked %}{{ fonte_locked|upper }}{% else %}MULTIFONTE{% endif %}</span>
+                <div>
+                    <h2 class="mc-card-title">Selecionar arquivos</h2>
+                    <p class="mc-card-subtitle">Os arquivos não ficam todos acumulados no servidor durante o lote.</p>
+                </div>
+            </div>
+        </div>
+        <div class="mc-card-body">
+            <form method="post" enctype="multipart/form-data" id="batch-import-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% if fonte_locked %}{{ form.fonte }}{% endif %}
+
+                {% if not fonte_locked %}
+                <div class="mc-form-group">
+                    <label class="mc-form-label" for="{{ form.fonte.id_for_label }}">{{ form.fonte.label }}</label>
+                    {{ form.fonte }}{{ form.fonte.errors }}
+                    <span class="mc-help">A fonte define as regras de validação e o destino técnico.</span>
+                </div>
+                <div class="mc-form-group" id="sicar-uf-group" hidden>
+                    <label class="mc-form-label" for="{{ form.uf.id_for_label }}">Estado do SICAR</label>
+                    {{ form.uf }}{{ form.uf.errors }}
+                    <span class="mc-help">Disponível apenas para CAR/SICAR.</span>
+                </div>
+                {% if form.ano_inicial %}
+                <div class="mc-form-group" id="prodes-year-group" hidden>
+                    <label class="mc-form-label" for="{{ form.ano_inicial.id_for_label }}">{{ form.ano_inicial.label }}</label>
+                    {{ form.ano_inicial }}{{ form.ano_inicial.errors }}
+                    <span class="mc-help">Aplicado somente ao PRODES. O mínimo do projeto é 2019.</span>
+                </div>
+                {% endif %}
+                {% endif %}
+
+                {% if fonte_locked == 'prodes' %}
+                <div class="mc-form-group">
+                    <label class="mc-form-label" for="{{ form.ano_inicial.id_for_label }}">{{ form.ano_inicial.label }}</label>
+                    {{ form.ano_inicial }}{{ form.ano_inicial.errors }}
+                    <span class="mc-help">Somente registros com ano igual ou superior ao valor escolhido seguem para a base.</span>
+                </div>
+                {% endif %}
+
+                {% if fonte_locked == 'sicar' %}
+                    {% if uf_locked %}
+                        {{ form.uf }}
+                        <div class="mc-form-group">
+                            <span class="mc-form-label">Estado</span>
+                            <div class="batch-uf-locked"><span class="uf-pill">{{ uf_locked }}</span><strong>{{ uf_locked_label }}</strong></div>
+                        </div>
+                    {% else %}
+                        <div class="mc-form-group">
+                            <label class="mc-form-label" for="{{ form.uf.id_for_label }}">{{ form.uf.label }}</label>
+                            {{ form.uf }}{{ form.uf.errors }}
+                            <span class="mc-help">Selecione a UF quando todos os arquivos pertencerem ao mesmo estado.</span>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <div class="mc-form-group">
+                    <span class="mc-form-label">Arquivos do lote</span>
+                    <div class="mc-upload-zone">
+                        <div class="mc-upload-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 7.5h6l2 2h9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 2.5 19V9a1.5 1.5 0 0 1 1-1.5z"/></svg></div>
+                        <div class="mc-upload-copy">
+                            <strong>Escolher arquivos</strong>
+                            <span id="batch-file-summary">Nenhum arquivo escolhido</span>
+                        </div>
+                        <button class="mc-upload-button" type="button" data-file-trigger="id_arquivos">Procurar</button>
+                        {{ form.arquivos }}
+                    </div>
+                    <span class="mc-help" id="batch-file-help">Selecione um ou mais arquivos oficiais. O navegador enviará e o Manage processará um por vez.</span>
+                    {{ form.arquivos.errors }}
+                </div>
+
+                <div class="mc-submit-row">
+                    <button class="mc-primary-action" type="submit" id="batch-import-submit">
+                        <svg viewBox="0 0 24 24"><path d="M12 16V5m0 0L8 9m4-4 4 4"/><path d="M5 14v5h14v-5"/></svg>
+                        Iniciar processamento sequencial
+                    </button>
+                </div>
+            </form>
+
+            <div class="import-progress-card" id="batch-upload-progress" hidden aria-live="polite">
+                <div class="import-progress-section">
+                    <div class="import-progress-title"><strong id="batch-progress-title">Processamento do lote</strong><span id="batch-upload-value">0%</span></div>
+                    <div class="progress-track"><div class="progress-fill" id="batch-upload-fill" style="width:0%"></div></div>
+                    <small id="batch-upload-help">Aguardando início.</small>
+                </div>
+                <div class="import-progress-result" id="batch-upload-result" hidden></div>
+            </div>
+        </div>
+    </section>
+
+    <aside class="mc-card mc-flow-card">
+        <div class="mc-card-header"><div><h2 class="mc-card-title">Fluxo sequencial</h2><p class="mc-card-subtitle">Menor uso de disco e fila previsível.</p></div></div>
+        <div class="mc-card-body">
+            <ol class="mc-flow-list">
+                <li class="mc-flow-item"><span class="mc-flow-icon">1</span><div class="mc-flow-copy"><strong>Envia um arquivo</strong><small>O arquivo é persistido integralmente antes de entrar na fila.</small></div></li>
+                <li class="mc-flow-item"><span class="mc-flow-icon">2</span><div class="mc-flow-copy"><strong>Valida e compara</strong><small>Identidade, regras GIS, SHA-256 e fingerprint.</small></div></li>
+                <li class="mc-flow-item"><span class="mc-flow-icon">3</span><div class="mc-flow-copy"><strong>Atualiza se necessário</strong><small>Conteúdo idêntico não é reimportado.</small></div></li>
+                <li class="mc-flow-item"><span class="mc-flow-icon">4</span><div class="mc-flow-copy"><strong>Libera o temporário</strong><small>Somente depois de sucesso confirmado.</small></div></li>
+                <li class="mc-flow-item"><span class="mc-flow-icon">5</span><div class="mc-flow-copy"><strong>Segue para o próximo</strong><small>Falhas e revisões preservam o arquivo para diagnóstico.</small></div></li>
+            </ol>
+        </div>
+    </aside>
+</div>
+
+{% if request.user.is_superuser %}
+<section class="mc-card" style="margin-top:24px;">
+    <div class="mc-card-header">
+        <div>
+            <h2 class="mc-card-title">Excluir dados atuais</h2>
+            <p class="mc-card-subtitle">Ação separada da importação. Esvazia as tabelas da fonte implementada e preserva estrutura, índices e histórico.</p>
+        </div>
+    </div>
+    <div class="mc-card-body">
+        <form method="post" action="{% url 'administracao:excluir_dados_fonte' %}" id="delete-source-form">
+            {% csrf_token %}
+            <input type="hidden" name="source_slug" id="delete-source-slug" value="{{ fonte_locked|default:'' }}">
+            <label class="form-check mc-danger-check" for="confirm-delete-source">
+                <input class="form-check-input" type="checkbox" name="confirmar_exclusao" id="confirm-delete-source">
+                <span><strong>Confirmo que quero deixar os dados atuais desta fonte vazios</strong><small>Não executa DROP TABLE e não acontece automaticamente antes de uma importação.</small></span>
+            </label>
+            <div class="mc-submit-row" style="margin-top:16px;">
+                <button class="btn btn-danger" type="submit" id="execute-source-delete" disabled>Executar exclusão</button>
+            </div>
+            <div class="mc-help" id="delete-source-help"></div>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+<section class="mc-card mc-table-card" style="margin-top:24px;">
+    <div class="mc-card-header">
+        <div class="mc-card-title-group">
+            <span class="mc-card-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></span>
+            <div><h2 class="mc-card-title">Lotes recentes</h2><p class="mc-card-subtitle">Últimos envios registrados no Manage.</p></div>
+        </div>
+    </div>
+    <div class="mc-table-wrap">
+        <table>
+            <thead><tr><th>Data</th><th>Fonte</th><th>Arquivo</th><th>Status</th><th>Administrador</th></tr></thead>
+            <tbody>
+            {% for lote in lotes %}
+                <tr>
+                    <td class="text-nowrap">{{ lote.data_inicio|date:'d/m/Y H:i' }}</td>
+                    <td>{{ lote.get_fonte_display }}</td>
+                    <td><a href="{% url 'administracao:lote_importacao_detalhe' lote.pk %}">{{ lote.nome_arquivo_original }}</a></td>
+                    <td>
+                        {% if lote.status == 'CONCLUIDO' %}<span class="mc-badge mc-badge-green">✓ {{ lote.get_status_display }}</span>
+                        {% elif lote.status == 'CONCLUIDO_COM_PENDENCIAS' or lote.status == 'AGUARDANDO_CONFIRMACAO' %}<span class="mc-badge mc-badge-amber">{{ lote.get_status_display }}</span>
+                        {% elif lote.status == 'FALHOU' %}<span class="mc-badge" style="color:#a83227;background:#fff0ef;border-color:#ffd8d4;">{{ lote.get_status_display }}</span>
+                        {% else %}<span class="mc-badge mc-badge-neutral">{{ lote.get_status_display }}</span>{% endif %}
+                    </td>
+                    <td class="text-secondary">{{ lote.administrador.email }}</td>
+                </tr>
+            {% empty %}<tr><td colspan="5" class="mc-table-empty">Nenhum lote registrado.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{{ batch_source_accepts|json_script:"batch-source-accepts" }}
+{{ batch_source_formats|json_script:"batch-source-formats" }}
+<script>
+(function () {
+    const form = document.getElementById('batch-import-form');
+    const input = document.getElementById('id_arquivos');
+    const summary = document.getElementById('batch-file-summary');
+    const fileHelp = document.getElementById('batch-file-help');
+    const submit = document.getElementById('batch-import-submit');
+    const progressCard = document.getElementById('batch-upload-progress');
+    const progressFill = document.getElementById('batch-upload-fill');
+    const progressValue = document.getElementById('batch-upload-value');
+    const progressHelp = document.getElementById('batch-upload-help');
+    const progressResult = document.getElementById('batch-upload-result');
+    const sourceSelect = document.getElementById('id_fonte');
+    const sicarUfGroup = document.getElementById('sicar-uf-group');
+    const ufSelect = document.getElementById('id_uf');
+    const prodesYearGroup = document.getElementById('prodes-year-group');
+    const prodesYearInput = document.getElementById('id_ano_inicial');
+    const deleteForm = document.getElementById('delete-source-form');
+    const deleteSource = document.getElementById('delete-source-slug');
+    const deleteCheck = document.getElementById('confirm-delete-source');
+    const deleteButton = document.getElementById('execute-source-delete');
+    const deleteHelp = document.getElementById('delete-source-help');
+    const supportedDeleteSources = new Set([{% for source in maintenance_sources %}'{{ source.slug }}'{% if not forloop.last %},{% endif %}{% endfor %}]);
+    const terminalStatuses = new Set(['CONCLUIDO','IGNORADO_DUPLICADO','SEM_ALTERACAO','REQUER_REVISAO','FALHOU','PRONTO_IMPORTAR']);
+    const sourceAcceptMap = JSON.parse((document.getElementById('batch-source-accepts') || {textContent:'{}'}).textContent || '{}');
+    const sourceFormatMap = JSON.parse((document.getElementById('batch-source-formats') || {textContent:'{}'}).textContent || '{}');
+
+    document.querySelectorAll('[data-file-trigger]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            const target = document.getElementById(button.dataset.fileTrigger);
+            if (target) target.click();
+        });
+    });
+
+    function formatBytes(bytes) {
+        const mb = Number(bytes || 0) / (1024 * 1024);
+        return mb ? mb.toFixed(mb >= 10 ? 0 : 1) + ' MB' : '';
+    }
+    function updateSummary() {
+        const files = Array.from((input && input.files) || []);
+        if (!summary) return;
+        if (!files.length) { summary.textContent = 'Nenhum arquivo escolhido'; return; }
+        const bytes = files.reduce((total, file) => total + (file.size || 0), 0);
+        summary.textContent = files.length + ' arquivo(s) · ' + formatBytes(bytes);
+    }
+    if (input) input.addEventListener('change', updateSummary);
+    updateSummary();
+
+    function currentSource() {
+        return sourceSelect ? String(sourceSelect.value || '').toLowerCase() : '';
+    }
+    function updateSourceFields() {
+        const source = currentSource();
+        if (sicarUfGroup) sicarUfGroup.hidden = source !== 'sicar';
+        if (ufSelect && sicarUfGroup) {
+            ufSelect.disabled = source !== 'sicar';
+            if (source !== 'sicar') ufSelect.value = '';
+        }
+        if (prodesYearGroup) prodesYearGroup.hidden = source !== 'prodes';
+        if (prodesYearInput && prodesYearGroup) prodesYearInput.disabled = source !== 'prodes';
+        if (input && sourceAcceptMap[source]) input.accept = sourceAcceptMap[source];
+        if (fileHelp) {
+            const formats = sourceFormatMap[source] || 'formatos permitidos pela fonte';
+            fileHelp.textContent = 'Formatos aceitos: ' + formats + '. O navegador enviará e o Manage processará um arquivo por vez.';
+        }
+        if (deleteSource) deleteSource.value = source;
+        if (deleteCheck) deleteCheck.checked = false;
+        if (deleteButton) deleteButton.disabled = true;
+        if (deleteHelp) {
+            deleteHelp.textContent = supportedDeleteSources.has(source)
+                ? 'A exclusão está disponível para esta fonte.'
+                : 'Esta fonte ainda não possui tabelas técnicas implementadas para exclusão.';
+        }
+    }
+    if (sourceSelect) sourceSelect.addEventListener('change', updateSourceFields);
+    updateSourceFields();
+
+    if (deleteCheck && deleteButton) {
+        deleteCheck.addEventListener('change', function () {
+            deleteButton.disabled = !deleteCheck.checked || !supportedDeleteSources.has(String(deleteSource.value || '').toLowerCase());
+        });
+    }
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function (event) {
+            const source = String(deleteSource.value || '').toLowerCase();
+            if (!deleteCheck.checked || !supportedDeleteSources.has(source)) {
+                event.preventDefault(); return;
+            }
+            if (!window.confirm('Confirma a exclusão dos dados atuais desta fonte? As tabelas permanecerão existentes, porém vazias.')) {
+                event.preventDefault();
+            }
+        });
+    }
+
+    function csrfToken() {
+        const el = form.querySelector('input[name="csrfmiddlewaretoken"]');
+        return el ? el.value : '';
+    }
+    function setOverall(percent, text) {
+        const p = Math.max(0, Math.min(100, Number(percent || 0)));
+        progressFill.style.width = p + '%';
+        progressValue.textContent = Math.round(p) + '%';
+        if (text) progressHelp.textContent = text;
+    }
+    async function jsonPost(url, data) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest'},
+            body: data,
+            credentials: 'same-origin',
+        });
+        const payload = await response.json().catch(function(){ return {}; });
+        if (!response.ok || payload.ok === false) throw new Error(payload.error || 'A operação foi rejeitada pelo servidor.');
+        return payload;
+    }
+    function uploadOne(url, file, index, total) {
+        return new Promise(function (resolve, reject) {
+            const xhr = new XMLHttpRequest();
+            const data = new FormData();
+            data.append('csrfmiddlewaretoken', csrfToken());
+            data.append('arquivo', file, file.name);
+            data.append('indice', String(index));
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.upload.addEventListener('progress', function (event) {
+                const fraction = event.lengthComputable ? event.loaded / event.total : 0;
+                const overall = ((index - 1) + (fraction * 0.35)) / total * 100;
+                setOverall(overall, 'Enviando ' + index + ' de ' + total + ': ' + file.name);
+            });
+            xhr.addEventListener('load', function () {
+                let payload = {};
+                try { payload = JSON.parse(xhr.responseText || '{}'); } catch (_) {}
+                if (xhr.status >= 200 && xhr.status < 300 && payload.ok !== false) resolve(payload);
+                else reject(new Error(payload.error || 'Falha ao enviar ' + file.name));
+            });
+            xhr.addEventListener('error', function () { reject(new Error('Falha de comunicação ao enviar ' + file.name)); });
+            xhr.send(data);
+        });
+    }
+    async function waitForItem(statusUrl, itemId, index, total, fileName) {
+        while (true) {
+            await new Promise(function(resolve){ setTimeout(resolve, 1800); });
+            const response = await fetch(statusUrl, {headers: {'X-Requested-With':'XMLHttpRequest'}, cache:'no-store', credentials:'same-origin'});
+            if (!response.ok) throw new Error('Não foi possível consultar o andamento do lote.');
+            const data = await response.json();
+            const item = (data.itens || []).find(function(value){ return Number(value.id) === Number(itemId); });
+            if (!item) continue;
+            const itemProgress = Number(item.progresso || 0) / 100;
+            const overall = ((index - 1) + (0.35 + itemProgress * 0.65)) / total * 100;
+            setOverall(overall, 'Arquivo ' + index + ' de ' + total + ' — ' + (item.etapa || item.status_label || fileName));
+            if (terminalStatuses.has(item.status)) {
+                const successNeedsCleanup = ['CONCLUIDO','IGNORADO_DUPLICADO','SEM_ALTERACAO'].includes(item.status);
+                if (item.limpeza_temporaria_pendente) {
+                    throw new Error('O arquivo foi processado, mas o temporário não pôde ser excluído. A sequência foi interrompida para não acumular arquivos.');
+                }
+                if (!successNeedsCleanup || item.temporario_liberado) return item;
+            }
+        }
+    }
+
+    if (!form || !input || !submit || !progressCard || !window.fetch || !window.FormData) return;
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const files = Array.from(input.files || []);
+        if (!files.length) { progressCard.hidden = false; progressResult.hidden = false; progressResult.textContent = 'Selecione pelo menos um arquivo.'; return; }
+        const source = currentSource();
+        if (!source) { progressCard.hidden = false; progressResult.hidden = false; progressResult.textContent = 'Selecione a fonte.'; return; }
+
+        submit.disabled = true;
+        progressCard.hidden = false;
+        progressResult.hidden = true;
+        progressFill.classList.remove('error');
+        setOverall(0, 'Criando lote sequencial...');
+
+        try {
+            const startData = new FormData();
+            startData.append('csrfmiddlewaretoken', csrfToken());
+            startData.append('fonte', source);
+            startData.append('total_arquivos', String(files.length));
+            startData.append('nomes_arquivos', JSON.stringify(files.map(function(file){ return file.name; })));
+            if (ufSelect && !ufSelect.disabled) startData.append('uf', ufSelect.value || '');
+            if (prodesYearInput && !prodesYearInput.disabled) startData.append('ano_inicial', prodesYearInput.value || '2019');
+
+            const batch = await jsonPost('{% url "administracao:iniciar_lote_sequencial" %}', startData);
+            const results = [];
+            for (let i = 0; i < files.length; i++) {
+                const index = i + 1;
+                const file = files[i];
+                const uploaded = await uploadOne(batch.upload_url, file, index, files.length);
+                const item = await waitForItem(batch.status_url, uploaded.item_id, index, files.length, file.name);
+                results.push(item);
+            }
+            const finalData = new FormData();
+            finalData.append('csrfmiddlewaretoken', csrfToken());
+            await jsonPost(batch.finalize_url, finalData);
+            setOverall(100, 'Lote concluído. Abrindo o relatório...');
+            progressResult.hidden = false;
+            progressResult.className = 'import-progress-result success';
+            const failed = results.filter(function(item){ return item.status === 'FALHOU' || item.status === 'REQUER_REVISAO'; }).length;
+            progressResult.textContent = failed ? ('Processamento finalizado com ' + failed + ' item(ns) para revisão.') : 'Todos os arquivos selecionados foram processados.';
+            setTimeout(function(){ window.location.assign(batch.detail_url); }, 700);
+        } catch (error) {
+            progressFill.classList.add('error');
+            progressResult.hidden = false;
+            progressResult.className = 'import-progress-result error';
+            progressResult.textContent = error.message || 'O processamento sequencial foi interrompido.';
+            progressHelp.textContent = 'O fluxo parou para evitar envio duplicado. Consulte o lote criado antes de tentar novamente.';
+            submit.disabled = false;
+        }
+    });
+})();
+</script>
+{% endblock %}

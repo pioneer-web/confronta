@@ -1,0 +1,80 @@
+{% extends 'aplicativo/base.html' %}
+{% load static %}
+{% block title %}Entrar — CONFRONTA{% endblock %}
+{% block public_content %}
+<main class="cf-auth-page">
+    <section class="cf-auth-visual" aria-hidden="true">
+        <div class="cf-auth-visual-overlay"></div>
+        <a class="cf-auth-brand" href="/" aria-label="CONFRONTA — início">
+            <img src="{% static 'aplicativo/img/logo-branca.png' %}" alt="">
+            <span><strong>CONFRONTA</strong><small>Inteligência Territorial</small></span>
+        </a>
+        <div class="cf-auth-visual-copy">
+            <span>Inteligência territorial rural</span>
+            <h1>O território certo para uma decisão mais segura.</h1>
+            <p>Consulte imóveis, visualize cruzamentos e trabalhe com informações territoriais em uma única experiência.</p>
+        </div>
+    </section>
+
+    <section class="cf-auth-form-side">
+        <a class="cf-auth-mobile-brand" href="/" aria-label="CONFRONTA — início">
+            <img src="{% static 'aplicativo/img/logo-icon.png' %}" alt="">
+            <span><strong>CONFRONTA</strong><small>Inteligência Territorial</small></span>
+        </a>
+        <div class="cf-auth-card">
+            <div class="cf-auth-heading">
+                <span class="cf-auth-eyebrow">Área do cliente</span>
+                <h1>Acesse sua conta</h1>
+                <p>Entre para consultar imóveis e utilizar as ferramentas disponíveis no seu plano.</p>
+            </div>
+
+            <form method="post" class="cf-auth-form" novalidate>
+                {% csrf_token %}
+                <div class="security-honeypot" aria-hidden="true"><label>Website<input type="text" name="{{ honeypot_field }}" value="" tabindex="-1" autocomplete="off"></label></div>
+
+                {% if form.non_field_errors %}
+                    <div class="cf-auth-alert" role="alert">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="cf-field">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+
+                <div class="cf-field">
+                    <div class="cf-field-label-row"><label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label></div>
+                    <div class="cf-password-wrap">
+                        {{ form.password }}
+                        <button type="button" class="cf-password-toggle" data-password-toggle aria-label="Mostrar senha" title="Mostrar senha">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                        </button>
+                    </div>
+                    {% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+
+                <button class="cf-auth-submit" type="submit">Entrar no CONFRONTA</button>
+            </form>
+
+            <div class="cf-auth-footer">
+                <span>Ainda não possui acesso?</span>
+                <a href="{% url 'aplicativo:cadastro' %}">Conhecer os planos</a>
+            </div>
+        </div>
+    </section>
+</main>
+<script>
+(function () {
+    const button = document.querySelector('[data-password-toggle]');
+    if (!button) return;
+    const input = button.parentElement.querySelector('input');
+    if (!input) return;
+    button.addEventListener('click', function () {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
+        button.title = show ? 'Ocultar senha' : 'Mostrar senha';
+    });
+})();
+</script>
+{% endblock %}

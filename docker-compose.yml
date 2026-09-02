@@ -1,0 +1,111 @@
+name: saas-confronta-main
+
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dbconfronta}
+      POSTGRES_USER: ${POSTGRES_USER:-confronta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-confronta} -d ${POSTGRES_DB:-dbconfronta}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - manage_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    ports:
+      - "8000:8000"
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+  worker:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - manage_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until python manage.py migrate --check >/dev/null 2>&1; do sleep 3; done;
+        exec python manage.py processar_fila_importacoes --loop --interval 3
+
+  billing_worker:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until python manage.py migrate --check >/dev/null 2>&1; do sleep 3; done;
+        exec python manage.py processar_webhooks_asaas --loop --interval 3
+
+  source_monitor:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - manage_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until python manage.py migrate --check >/dev/null 2>&1; do sleep 3; done;
+        exec python manage.py processar_sincronizacoes_fontes --loop --interval 30
+
+volumes:
+  postgis_data:
+    name: saas-confronta-main_postgis_data
+  manage_var:
+    name: saas-confronta-main_manage_var
+  manage_batches:
+    name: saas-confronta-main_manage_batches

@@ -1,0 +1,595 @@
+{% extends 'aplicativo/base.html' %}
+{% load static aplicativo_extras %}
+{% block title %}CONFRONTA — Área do Cliente{% endblock %}
+{% block client_content_class %}client-content-app{% endblock %}
+{% block extra_head %}
+{% if possui_plano %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-rotate-map@0.3.2/leaflet.css">
+{% if pode_desenhar_glebas %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" crossorigin="">
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block client_rail_tools %}
+<a class="client-rail-link client-rail-home is-active" href="{% url 'aplicativo:inicio' %}" aria-label="Início">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.8l8.5 7v8.1a1.6 1.6 0 0 1-1.6 1.6H15v-6H9v6H5.1a1.6 1.6 0 0 1-1.6-1.6Z"/></svg>
+    <span class="client-rail-label">Home</span>
+</a>
+{% if possui_plano %}
+<button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-alerts"{% else %}data-requires-car="1"{% endif %} aria-label="Alertas">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+    <span class="client-rail-label">Alertas</span>
+</button>
+<button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-fit-car"{% else %}data-requires-car="1"{% endif %} aria-label="Mapa">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2Z"/><path d="M8 4v13M16 7v13"/></svg>
+    <span class="client-rail-label">Mapa</span>
+</button>
+<button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-layers"{% else %}data-requires-car="1"{% endif %} aria-label="Camadas">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 8.2 4.1L12 11.7 3.8 7.6 12 3.5Z"/><path d="m4.8 12 7.2 3.6 7.2-3.6"/><path d="m4.8 16.4 7.2 3.6 7.2-3.6"/></svg>
+    <span class="client-rail-label">Camadas</span>
+</button>
+{% if pode_desenhar_glebas %}
+<button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-glebas"{% else %}data-requires-car="1"{% endif %} aria-label="Desenhar gleba">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5 9 4l5 1.6 5 4.9-1.8 6.4-5.7 3.1-5.5-2-2-5.5Z"/><path d="M9 4l.5 5.2m4.5-3.6-.7 5.7m5-1-5.7.2m-.8 9.3.8-9.5M4.5 12.5l5 .7"/></svg>
+    <span class="client-rail-label">Desenhar Gleba</span>
+</button>
+<button type="button" class="client-rail-link car-rail-tool" id="rail-measure-distance" aria-label="Medir distância">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 18 4"/><path d="M7 18H4v-3M15 4h3v3"/><path d="m8 14 2 2M11 11l2 2M14 8l2 2"/></svg>
+    <span class="client-rail-label">Medir Distância</span>
+</button>
+{% endif %}
+<button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-report"{% else %}data-requires-car="1"{% endif %} aria-label="Relatórios">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8.5L19 8v12.5H6Z"/><path d="M14.5 3.5V8H19M9.5 12h6M9.5 16h6"/></svg>
+    <span class="client-rail-label">Relatórios</span>
+</button>
+{% if consulta %}
+<a class="client-rail-link car-rail-tool" href="{% url 'aplicativo:exportar_car_kml' %}" aria-label="Exportações">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg>
+    <span class="client-rail-label">Exportações</span>
+</a>
+{% else %}
+<button type="button" class="client-rail-link car-rail-tool" data-requires-car="1" aria-label="Exportações">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg>
+    <span class="client-rail-label">Exportações</span>
+</button>
+{% endif %}
+<button type="button" class="client-rail-link car-rail-tool is-disabled" disabled aria-label="Histórico em breve">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/><path d="M12 7v5l3 2"/></svg>
+    <span class="client-rail-label">Histórico</span>
+</button>
+<a class="client-rail-link car-rail-tool" href="{% url 'aplicativo:conta' %}" aria-label="Configurações">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21h-4v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H3v-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V3h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+    <span class="client-rail-label">Configurações</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block client_topbar_query %}
+{% if possui_plano %}
+<div class="top-query-cluster top-query-cluster-slim">
+    <button type="button" class="new-query-button" id="open-new-query" aria-haspopup="dialog" aria-controls="new-query-modal">
+        <span aria-hidden="true">＋</span> Consulta
+    </button>
+    <form class="client-global-search cf-global-search topbar-car-search" method="post" action="{% url 'aplicativo:nova_consulta' %}" role="search">
+        {% csrf_token %}
+        <div class="client-global-search-field cf-global-search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+            <input type="text" name="car" maxlength="120" autocomplete="off" spellcheck="false" placeholder="Buscar CAR (ex.: PE-1234567...)" aria-label="Buscar imóvel pelo número do CAR">
+        </div>
+        <button class="client-global-search-submit cf-search-submit" type="submit" aria-label="Buscar CAR">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+        </button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block client_topbar_context %}{% endblock %}
+
+{% block content %}
+{% if possui_plano %}
+<div class="new-query-modal" id="new-query-modal" hidden aria-hidden="true">
+    <div class="new-query-backdrop" data-close-new-query></div>
+    <section class="new-query-dialog" role="dialog" aria-modal="true" aria-labelledby="new-query-title">
+        <header class="new-query-head">
+            <div>
+                <h2 id="new-query-title">Nova consulta</h2>
+                <p>Escolha a forma de consulta que deseja utilizar.</p>
+            </div>
+            <button type="button" class="new-query-close" data-close-new-query aria-label="Fechar">×</button>
+        </header>
+
+        <div class="new-query-options" data-query-view="menu">
+            <button type="button" class="new-query-option is-car" data-query-mode="car">
+                <span class="new-query-option-icon">CAR</span>
+                <span><strong>Código do CAR</strong><small>Informe o código do imóvel.</small></span><b>›</b>
+            </button>
+            <button type="button" class="new-query-option is-kml" data-query-mode="arquivo">
+                <span class="new-query-option-icon">KML</span>
+                <span><strong>Upload KML / KMZ</strong><small>Envie a geometria da gleba.</small></span><b>›</b>
+            </button>
+            <button type="button" class="new-query-option is-coord" data-query-mode="coordenada">
+                <span class="new-query-pin" aria-hidden="true">⌖</span>
+                <span><strong>Latitude / Longitude</strong><small>Localize o CAR pelo ponto informado.</small></span><b>›</b>
+            </button>
+            <button type="button" class="new-query-option is-draw" data-query-mode="desenho" {% if not pode_desenhar_glebas %}disabled title="Disponível no plano Total"{% endif %}>
+                <span class="new-query-polygon" aria-hidden="true">⬡</span>
+                <span><strong>Desenhar Gleba</strong><small>Desenhe a área diretamente no mapa.</small></span><b>›</b>
+            </button>
+        </div>
+
+        <div class="new-query-form-view" data-query-view="car" hidden>
+            <button type="button" class="new-query-back" data-query-back>← Voltar</button>
+            <h3>Consultar pelo código do CAR</h3>
+            <form method="post" action="{% url 'aplicativo:nova_consulta' %}" class="new-query-form">
+                {% csrf_token %}
+                <label for="modal-car">Código do CAR</label>
+                <input id="modal-car" name="car" type="text" maxlength="120" autocomplete="off" placeholder="PE-0000000-00000000000000000000000000000000" required>
+                <button type="submit">Consultar imóvel</button>
+            </form>
+        </div>
+
+        <div class="new-query-form-view" data-query-view="arquivo" hidden>
+            <button type="button" class="new-query-back" data-query-back>← Voltar</button>
+            <h3>Consultar por KML / KMZ</h3>
+            <form method="post" enctype="multipart/form-data" action="{% url 'aplicativo:nova_consulta_arquivo' %}" class="new-query-form">
+                {% csrf_token %}
+                <label class="new-query-drop" for="query-file"><strong>Selecionar arquivo</strong><span>KML ou KMZ, até 5 MB</span></label>
+                <input id="query-file" name="arquivo" type="file" accept=".kml,.kmz,application/vnd.google-earth.kml+xml,application/vnd.google-earth.kmz" required>
+                <div class="new-query-file-name" id="query-file-name">Nenhum arquivo selecionado</div>
+                <button type="submit">Localizar e consultar</button>
+            </form>
+        </div>
+
+        <div class="new-query-form-view" data-query-view="coordenada" hidden>
+            <button type="button" class="new-query-back" data-query-back>← Voltar</button>
+            <h3>Consultar por coordenadas</h3>
+            <form method="post" action="{% url 'aplicativo:nova_consulta_coordenada' %}" class="new-query-form coordinate-form">
+                {% csrf_token %}
+                <label>Latitude<input name="latitude" type="number" step="any" min="-90" max="90" placeholder="-8.071234" required></label>
+                <label>Longitude<input name="longitude" type="number" step="any" min="-180" max="180" placeholder="-37.273456" required></label>
+                <small>Use coordenadas geográficas em graus decimais (WGS84/SIRGAS 2000).</small>
+                <button type="submit">Localizar e consultar</button>
+            </form>
+        </div>
+
+        <div class="new-query-form-view" data-query-view="desenho" hidden>
+            <button type="button" class="new-query-back" data-query-back>← Voltar</button>
+            <h3>Desenhar Gleba</h3>
+            <p>O painel será fechado e o modo de desenho será ativado sobre o mapa. Conclua o polígono para localizar os CARs com interseção real.</p>
+            <button type="button" class="new-query-primary" id="start-query-draw">Começar a desenhar</button>
+        </div>
+    </section>
+</div>
+<form method="post" action="{% url 'aplicativo:nova_consulta_geometria' %}" id="query-geometry-form" hidden>
+    {% csrf_token %}<input type="hidden" name="geojson" id="query-geometry-input">
+</form>
+<div class="query-draw-hud" id="query-draw-hud" hidden><strong>Desenhando área de consulta</strong><span>Marque os vértices e clique no primeiro ponto para concluir.</span><button type="button" id="cancel-query-draw">Cancelar</button></div>
+{% endif %}
+
+{% if not possui_plano %}
+<section class="subscription-gate client-home-gate">
+    <div>
+        <span class="eyebrow">Conta criada</span>
+        <h2>Você ainda não possui um plano ativo</h2>
+        <p>Seu login está funcionando. Escolha um plano para consultar imóveis e acessar as ferramentas territoriais.</p>
+    </div>
+    <a class="button button-primary" href="{% url 'aplicativo:planos' %}">Contratar um plano</a>
+</section>
+{% elif not consulta %}
+<section class="territorial-screen territorial-screen-empty" id="territorial-screen" aria-label="Mapa inicial do CONFRONTA">
+    <div class="territorial-map-column">
+        <div id="map" class="territorial-map territorial-map-empty" aria-label="Mapa de satélite"></div>
+
+        <div class="empty-map-car-message" id="select-car-message" hidden role="status" aria-live="polite">
+            Use a busca do CAR ou o botão Nova consulta.
+        </div>
+    </div>
+</section>
+{% else %}
+<section class="territorial-screen" id="territorial-screen">
+    <div class="territorial-map-column">
+        <div id="map" class="territorial-map" aria-label="Mapa de satélite do imóvel consultado"></div>
+
+
+        <aside class="map-layer-drawer" id="map-layer-drawer" hidden aria-label="Camadas do mapa">
+            <header class="map-layer-drawer-head">
+                <div>
+                    <span>CAMADAS</span>
+                    <small>Exibir no mapa</small>
+                </div>
+                <button type="button" id="close-layer-drawer" title="Fechar camadas" aria-label="Fechar camadas">×</button>
+            </header>
+            <div class="map-layer-drawer-list">
+                <button type="button" class="map-layer-eye is-active" data-layer-eye="perimetro" aria-pressed="true">
+                    <span class="map-layer-swatch layer-color-car"></span>
+                    <span class="map-layer-name">Área do CAR</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
+                </button>
+                {% for chave, camada in consulta.camadas.items %}
+                {% if camada.disponivel and camada.features %}
+                <button type="button" class="map-layer-eye is-active" data-layer-eye="{{ chave }}" aria-pressed="true">
+                    <span class="map-layer-swatch layer-color-{{ chave }}"></span>
+                    <span class="map-layer-name">{{ camada.label }}</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
+                </button>
+                {% endif %}
+                {% endfor %}
+
+                {% for chave, camada in consulta.camadas_externas.items %}
+                {% if camada.disponivel and camada.features %}
+                <button type="button" class="map-layer-eye" data-layer-eye="ext_{{ chave }}" aria-pressed="false">
+                    <span class="map-layer-swatch layer-color-ext-{{ chave }}"></span>
+                    <span class="map-layer-name">{{ camada.label }}</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
+                </button>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </aside>
+        <div id="gleba-live-area-map" class="map-live-area" hidden aria-live="polite">
+            <span>Área da gleba</span>
+            <strong id="gleba-live-area-value">0,00 ha</strong>
+        </div>
+
+        {% if pode_desenhar_glebas %}
+        <div id="gleba-drawing-hud" class="gleba-drawing-hud" hidden aria-live="polite">
+            <div class="gleba-drawing-hud-info">
+                <button type="button" id="gleba-hud-color" class="gleba-drawing-hud-color" aria-label="Alterar cor da gleba" title="Alterar cor"></button>
+                <div class="gleba-drawing-hud-copy">
+                    <strong>Desenhando gleba</strong>
+                    <span id="gleba-hud-area">Marque pelo menos 3 pontos</span>
+                </div>
+            </div>
+            <div class="gleba-drawing-hud-actions">
+                <button type="button" class="gleba-hud-button" id="gleba-draw-undo">↶ Desfazer</button>
+                <button type="button" class="gleba-hud-button is-primary" id="gleba-draw-finish">✓ Concluir</button>
+                <button type="button" class="gleba-hud-button is-danger" id="gleba-draw-cancel" aria-label="Cancelar desenho">×</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div id="overlap-alert"
+             class="map-overlap-alert"
+             data-server-message="{{ consulta.alertas.resumo_mapa|default:'' }}"
+             {% if not consulta.alertas.tem_alerta %}hidden{% endif %}
+             aria-live="assertive">{{ consulta.alertas.resumo_mapa }}</div>
+
+        <section class="map-top-insight-bar" aria-label="Resumo do imóvel">
+            <article class="map-top-insight-item">
+                <span class="map-top-insight-label">Área total</span>
+                <strong>{% if consulta.imovel.area_total_ha != None %}{{ consulta.imovel.area_total_ha|floatformat:2 }} ha{% else %}Não informada{% endif %}</strong>
+            </article>
+            <article class="map-top-insight-item">
+                <span class="map-top-insight-label">Município</span>
+                <strong>{{ consulta.imovel.municipio|default:'Não informado' }}{% if consulta.imovel.uf %} - {{ consulta.imovel.uf }}{% endif %}</strong>
+            </article>
+            <article class="map-top-insight-item">
+                <span class="map-top-insight-label">Situação do CAR</span>
+                <strong class="is-positive">{{ consulta.imovel.situacao_apresentacao|default:'Não informada' }}</strong>
+            </article>
+            <button type="button" class="map-top-insight-item map-top-insight-alert" id="summary-card-alerts">
+                <span class="map-top-insight-label">Alertas</span>
+                <strong>{{ consulta.alertas.resumo.quantidade|default:0 }} identificado{{ consulta.alertas.resumo.quantidade|pluralize:'s' }}</strong>
+                <small>{% if consulta.alertas.resumo.tipos %}{{ consulta.alertas.resumo.tipos|join:' • ' }}{% else %}Nenhum alerta territorial identificado{% endif %}</small>
+            </button>
+        </section>
+    </div>
+
+    <aside class="territorial-side-panel territorial-tool-drawer" id="territorial-side-panel" hidden aria-label="Ferramentas do imóvel">
+        <header class="territorial-side-top territorial-tool-drawer-head">
+            <div class="territorial-tool-drawer-title">
+                <span id="territorial-tool-kicker">CAR</span>
+                <strong id="territorial-tool-title">{{ consulta.imovel.cod_imovel }}</strong>
+            </div>
+            <button type="button" class="territorial-tool-close" id="territorial-tool-close" title="Fechar painel" aria-label="Fechar painel">×</button>
+        </header>
+
+        <div class="territorial-side-body" data-territorial-view-panel="map">
+            <section class="car-summary-card">
+                <div class="car-preview" id="car-preview" aria-label="Desenho do perímetro do CAR"></div>
+                <div class="car-summary-copy">
+                    <strong>{{ consulta.imovel.municipio|default:'Município não informado' }}{% if consulta.imovel.uf %} / {{ consulta.imovel.uf }}{% endif %}</strong>
+                    {% if consulta.imovel.area_total_ha != None %}<span>{{ consulta.imovel.area_total_ha|floatformat:2 }} ha</span>{% endif %}
+                </div>
+                <a class="button button-secondary button-block button-compact" href="{% url 'aplicativo:exportar_car_kml' %}">Baixar perímetro do CAR (KML)</a>
+            </section>
+
+            <div class="territorial-tabs" role="tablist" aria-label="Ferramentas do imóvel">
+                <button type="button" class="territorial-tab is-active" data-side-tab="layers" role="tab" aria-selected="true">Camadas</button>
+                {% if pode_desenhar_glebas %}<button type="button" class="territorial-tab" data-side-tab="glebas" role="tab" aria-selected="false">Glebas</button>{% endif %}
+            </div>
+
+            <section class="territorial-tab-panel is-active" data-side-panel="layers">
+                <div class="panel-section-title">
+                    <h3>Áreas do CAR</h3>
+                    <span>Ative, desative ou baixe cada camada.</span>
+                </div>
+                <div class="car-layer-list">
+                    {% for chave, camada in consulta.camadas.items %}
+                    <article class="car-layer-row">
+                        <label>
+                            <input type="checkbox" class="layer-toggle side-layer-toggle" data-layer="{{ chave }}" {% if camada.disponivel and camada.features %}checked{% else %}disabled{% endif %}>
+                            <span>{{ camada.label }}</span>
+                        </label>
+                        <div class="car-layer-row-actions">
+                            {% if camada.total_area_ha != None %}<span>{{ camada.total_area_ha|floatformat:2 }} ha</span>{% endif %}
+                            {% if camada.disponivel %}<a href="{% url 'aplicativo:exportar_camada_kml' chave %}">KML</a>{% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+
+                <div class="panel-section-title alert-title">
+                    <h3>Alertas no imóvel</h3>
+                    <span>Resultado das verificações territoriais disponíveis.</span>
+                </div>
+                <div class="property-alert-list">
+                    {% for chave, alerta in consulta.alertas.items %}
+                    {% if chave != 'tem_alerta' and chave != 'resumo_mapa' and chave != 'restricoes' and chave != 'resumo' %}
+                    <article class="property-alert-item state-{{ alerta.estado }}">
+                        <div class="property-alert-head">
+                            <strong>{{ alerta.titulo }}</strong>
+                            <span>{{ alerta.status }}</span>
+                        </div>
+                        <p>{{ alerta.mensagem }}</p>
+                        {% if alerta.anos %}<p><strong>Ano(s):</strong> {{ alerta.anos|join:', ' }}</p>{% endif %}
+                        {% if alerta.nomes %}<p><strong>Local:</strong> {{ alerta.nomes|join:', ' }}</p>{% endif %}
+                        {% if alerta.registros %}
+                        <details>
+                            <summary>Detalhes ({{ alerta.quantidade }})</summary>
+                            <div class="alert-records">
+                                {% for registro in alerta.registros %}
+                                <dl>
+                                    {% for campo, valor in registro.items %}
+                                    <div><dt>{{ campo|field_label }}</dt><dd>{{ valor|display_value }}</dd></div>
+                                    {% endfor %}
+                                </dl>
+                                {% endfor %}
+                            </div>
+                        </details>
+                        {% endif %}
+                    </article>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            {% if pode_desenhar_glebas %}
+            <section class="territorial-tab-panel" data-side-panel="glebas">
+                <div id="gleba-list-view">
+                    <div class="panel-section-title gleba-heading-row">
+                        <div>
+                            <h3>Glebas</h3>
+                            <span>Desenhos temporários desta sessão.</span>
+                        </div>
+                        <button type="button" class="button button-primary button-compact" id="start-new-gleba">＋ Nova gleba</button>
+                    </div>
+                    <div class="gleba-session-summary">
+                        <span id="gleba-status">Nenhuma gleba salva.</span>
+                        <strong id="gleba-area">0,00 ha</strong>
+                    </div>
+                    <div id="gleba-list" class="gleba-list" aria-live="polite"></div>
+                    <button type="button" class="button button-secondary button-block" id="download-drawn-kml" disabled>Baixar todas as glebas (KML)</button>
+                </div>
+
+                <div id="gleba-workflow" class="gleba-workflow" hidden>
+                    <div class="gleba-workflow-head">
+                        <button type="button" class="gleba-back-button" id="gleba-workflow-back" aria-label="Voltar">←</button>
+                        <div>
+                            <span class="eyebrow">Nova gleba</span>
+                            <h3 id="gleba-workflow-title">Criar gleba</h3>
+                        </div>
+                        <button type="button" class="gleba-cancel-button" id="gleba-workflow-cancel">Cancelar</button>
+                    </div>
+
+                    <section class="gleba-step gleba-create-grid" id="gleba-step-create">
+                        <div>
+                            <p>Escolha uma cor com boa leitura sobre o mapa.</p>
+                            <div class="gleba-color-grid" id="gleba-color-picker" role="radiogroup" aria-label="Cor da nova gleba">
+                                <button type="button" class="gleba-color-swatch is-selected" data-color="#2563EB" title="Azul" aria-label="Azul"></button>
+                                <button type="button" class="gleba-color-swatch" data-color="#0891B2" title="Ciano" aria-label="Ciano"></button>
+                                <button type="button" class="gleba-color-swatch" data-color="#EAB308" title="Amarelo" aria-label="Amarelo"></button>
+                                <button type="button" class="gleba-color-swatch" data-color="#F97316" title="Laranja" aria-label="Laranja"></button>
+                                <button type="button" class="gleba-color-swatch" data-color="#DC2626" title="Vermelho" aria-label="Vermelho"></button>
+                                <button type="button" class="gleba-color-swatch" data-color="#A855F7" title="Violeta" aria-label="Violeta"></button>
+                                <button type="button" class="gleba-color-swatch swatch-white" data-color="#FFFFFF" title="Branco" aria-label="Branco"></button>
+                            </div>
+                        </div>
+                        <div class="gleba-create-actions">
+                            <button type="button" class="gleba-method-card" id="gleba-method-draw">
+                                <strong>Desenhar no mapa</strong>
+                                <span>Marque os vértices e acompanhe a área em tempo real.</span>
+                            </button>
+                            <button type="button" class="gleba-method-card" id="gleba-method-import">
+                                <strong>Importar arquivo</strong>
+                                <span>KML, GeoJSON ou JSON.</span>
+                            </button>
+                        </div>
+                        <input class="sr-only" id="import-gleba-file" type="file" accept=".kml,.geojson,.json,application/vnd.google-earth.kml+xml,application/geo+json,application/json">
+                        <div id="gleba-import-status" class="gleba-import-status" aria-live="polite"></div>
+                    </section>
+
+                    <section class="gleba-step" id="gleba-step-drawing" hidden>
+                        <div class="gleba-drawing-instruction">
+                            <strong>Modo desenho ativo</strong>
+                            <span>Marque os pontos no mapa. Use a barra inferior para desfazer, concluir ou cancelar.</span>
+                        </div>
+                    </section>
+
+                    <section class="gleba-step" id="gleba-step-name" hidden>
+                        <label for="gleba-pending-name">Nome da gleba</label>
+                        <input id="gleba-pending-name" type="text" maxlength="80" placeholder="Ex.: Gleba Norte">
+                        <div class="gleba-pending-metric">
+                            <span>Área aproximada</span>
+                            <strong id="gleba-pending-area">0,00 ha</strong>
+                        </div>
+                        <div class="gleba-save-actions">
+                            <button type="button" class="button button-secondary" id="gleba-pending-discard">Voltar</button>
+                            <button type="button" class="button button-primary" id="gleba-pending-save">Salvar gleba</button>
+                        </div>
+                    </section>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+        <div class="territorial-side-body territorial-report-view" data-territorial-view-panel="report" hidden>
+            <div class="report-head">
+                <div>
+                    <span class="eyebrow">Relatório atual</span>
+                    <h2>Inteligência do imóvel</h2>
+                </div>
+                <div class="report-actions">
+                    <button type="button" class="button button-secondary button-compact report-maximize-button" id="toggle-report-maximize" aria-pressed="false" title="Maximizar relatório">
+                        <span class="report-maximize-icon" aria-hidden="true">↗</span>
+                        <span class="report-maximize-label">Maximizar</span>
+                    </button>
+                    <button type="button" class="button button-secondary button-compact" id="print-current-report">Imprimir / Salvar PDF</button>
+                </div>
+            </div>
+
+            <section class="report-section report-map-section">
+                <h3>Mapa da consulta</h3>
+                <div id="report-map-preview" class="report-map-preview" role="img" aria-label="Perímetro do CAR e glebas atuais"></div>
+                <p class="report-map-note">O contorno do imóvel e as glebas representam as geometrias da consulta atual. Cada gleba é identificada pelo nome salvo na sessão.</p>
+            </section>
+
+            <section class="report-section">
+                <h3>Imóvel</h3>
+                <dl class="report-data">
+                    <div><dt>CAR</dt><dd>{{ consulta.imovel.cod_imovel }}</dd></div>
+                    <div><dt>Município</dt><dd>{{ consulta.imovel.municipio|default:'Não informado' }}</dd></div>
+                    <div><dt>UF</dt><dd>{{ consulta.imovel.uf|default:'Não informada' }}</dd></div>
+                    <div><dt>Área cadastrada</dt><dd>{% if consulta.imovel.area_total_ha != None %}{{ consulta.imovel.area_total_ha|floatformat:2 }} ha{% else %}Não informada{% endif %}</dd></div>
+                    <div><dt>Situação do CAR</dt><dd>{{ consulta.imovel.situacao_apresentacao|default:'Não informada' }}</dd></div>
+                    <div><dt>Módulos fiscais</dt><dd>{{ consulta.imovel.modulos_fiscais|display_value }}</dd></div>
+                </dl>
+            </section>
+
+            <section class="report-section">
+                <h3>Áreas do CAR</h3>
+                <div class="report-list">
+                    {% for chave, camada in consulta.camadas.items %}
+                    <div><span>{{ camada.label }}</span><strong>{% if camada.total_area_ha != None %}{{ camada.total_area_ha|floatformat:2 }} ha{% elif camada.disponivel %}Disponível{% else %}Não verificada{% endif %}</strong></div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="report-section">
+                <h3>Alertas</h3>
+                {% if consulta.alertas.resumo.quantidade %}
+                <div class="report-restriction-summary">
+                    <strong>{{ consulta.alertas.resumo.quantidade }} alerta{{ consulta.alertas.resumo.quantidade|pluralize }} identificado{{ consulta.alertas.resumo.quantidade|pluralize }}</strong>
+                    <span>{{ consulta.alertas.resumo.tipos|join:' • ' }}</span>
+                </div>
+                {% else %}
+                <p class="muted">Nenhum alerta foi identificado nas verificações disponíveis para esta consulta.</p>
+                {% endif %}
+            </section>
+
+            <section class="report-section">
+                <h3>Detalhes dos alertas e informações</h3>
+                <div class="report-analysis-list">
+                    {% for chave, alerta in consulta.alertas.items %}
+                    {% if chave != 'tem_alerta' and chave != 'resumo_mapa' and chave != 'restricoes' and chave != 'resumo' %}
+                    <article class="report-analysis-card report-intel-card state-{{ alerta.estado }}">
+                        <div class="report-intel-head">
+                            <span class="report-intel-icon report-intel-icon-{{ chave }}" aria-hidden="true">
+                                {% if chave == 'assentamentos' %}
+                                <svg viewBox="0 0 24 24"><path d="M4 19h16M6 19v-7l6-5 6 5v7M9 19v-4h6v4M4 11l8-7 8 7"/></svg>
+                                {% elif chave == 'quilombolas' %}
+                                <svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="16" cy="10" r="2.5"/><path d="M3.5 19c.4-4 2.4-6 5.5-6s5.1 2 5.5 6M13 14c3.5-.5 6 1.2 6.7 5"/></svg>
+                                {% elif chave == 'ibama' %}
+                                <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8 7 10 4.2-2 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg>
+                                {% elif chave == 'prodes' %}
+                                <svg viewBox="0 0 24 24"><path d="M12 3 6 11h4l-4 6h12l-4-6h4L12 3Z"/><path d="M12 17v4"/></svg>
+                                {% elif chave == 'apa' %}
+                                <svg viewBox="0 0 24 24"><path d="M12 3c-4 3-7 6-7 10a7 7 0 0 0 14 0c0-4-3-7-7-10Z"/><path d="M9 15c2-1 4-3 6-6"/></svg>
+                                {% elif chave == 'sicor' %}
+                                <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 10h10M7 14h5"/><circle cx="17" cy="14" r="1.5"/></svg>
+                                {% elif chave == 'outros_cars' %}
+                                <svg viewBox="0 0 24 24"><path d="M5 5h10v10H5z"/><path d="M9 9h10v10H9z"/></svg>
+                                {% else %}
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16h.01"/></svg>
+                                {% endif %}
+                            </span>
+                            <div class="report-intel-title">
+                                <strong>{{ alerta.titulo }}</strong>
+                                <p>{{ alerta.mensagem }}</p>
+                            </div>
+                            <span class="report-status-badge state-{{ alerta.estado }}">
+                                {% if alerta.estado == 'alerta' or alerta.estado == 'atencao' %}✓{% else %}—{% endif %}
+                                {{ alerta.status }}
+                            </span>
+                        </div>
+
+                        {% if alerta.anos or alerta.tipos or alerta.nomes or alerta.area_soma_ocorrencias_ha != None or alerta.area_unica_sobreposta_ha != None %}
+                        <div class="report-fact-stack">
+                            {% if alerta.anos %}<div class="report-fact-row"><span>Ano(s)</span><strong>{{ alerta.anos|join:', ' }}</strong></div>{% endif %}
+                            {% if alerta.tipos %}<div class="report-fact-row"><span>Tipo(s)</span><strong>{{ alerta.tipos|join:', ' }}</strong></div>{% endif %}
+                            {% if alerta.nomes %}<div class="report-fact-row"><span>Área(s)</span><strong>{{ alerta.nomes|join:', ' }}</strong></div>{% endif %}
+                            {% if alerta.area_soma_ocorrencias_ha != None %}<div class="report-fact-row"><span>Soma das ocorrências dentro do CAR</span><strong>{{ alerta.area_soma_ocorrencias_ha|floatformat:4 }} ha</strong></div>{% endif %}
+                            {% if alerta.area_unica_sobreposta_ha != None %}<div class="report-fact-row"><span>Área física única sobreposta</span><strong>{{ alerta.area_unica_sobreposta_ha|floatformat:4 }} ha</strong></div>{% endif %}
+                        </div>
+                        {% endif %}
+
+                        {% if alerta.cobertura_status == 'COBERTURA_NAO_CONFIRMADA' %}
+                        <p class="report-caution"><b>PRODES:</b> não há geometria oficial de cobertura carregada para concluir ausência de ocorrências nesta localização.</p>
+                        {% endif %}
+                        {% if alerta.confirmacao_externa_necessaria %}
+                        <p class="report-caution"><b>Confirmação necessária:</b> consulte a declaração/consulta oficial do IBAMA para verificar a situação jurídica atual do registro.</p>
+                        {% endif %}
+
+                        {% if alerta.registros %}
+                        <div class="report-record-grid report-record-grid-open">
+                            {% for registro in alerta.registros %}
+                            <dl class="report-record-card">
+                                {% for campo, valor in registro.items %}
+                                <div><dt>{{ campo|field_label }}</dt><dd>{{ valor|display_value }}</dd></div>
+                                {% endfor %}
+                            </dl>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </article>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+
+            {% if pode_desenhar_glebas %}
+            <section class="report-section">
+                <h3>Glebas atuais</h3>
+                <div id="report-glebas-list" class="report-list"><p class="muted">Nenhuma gleba salva nesta sessão.</p></div>
+            </section>
+            {% endif %}
+        </div>
+    </aside>
+</section>
+
+{{ consulta|json_script:"consulta-territorial-data" }}
+{% endif %}
+{% if possui_plano %}
+<div id="app-config"
+     data-can-draw="{% if pode_desenhar_glebas %}1{% else %}0{% endif %}"
+     data-car="{% if consulta %}{{ consulta.imovel.cod_imovel }}{% endif %}"
+     data-user-id="{{ request.user.pk|default:'' }}"></div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if possui_plano %}
+<script src="https://cdn.jsdelivr.net/npm/leaflet-rotate-map@0.3.2/leaflet.js"></script>
+{% if pode_desenhar_glebas %}
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" crossorigin=""></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
+{% endif %}
+<script src="{% static 'aplicativo/js/mapa.js' %}?v=055-home-intelligence"></script>
+<script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
+{% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=055-home-intelligence"></script>{% endif %}
+<script src="{% static 'aplicativo/js/interface.js' %}?v=055-home-intelligence"></script>
+{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=055-home-intelligence"></script>{% endif %}
+{% endif %}
+{% endblock %}

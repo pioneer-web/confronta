@@ -1,0 +1,46 @@
+from .base import DatasetSpec, F
+from administracao.constants import FonteDados
+
+
+CNUC_DATASETS = (
+    DatasetSpec(
+        'cnuc-unidades-conservacao', FonteDados.CNUC, 'cnuc', 'Unidades de Conservação', 'CNUC',
+        'cnuc_unidade_conservacao', 'raw_cnuc_unidade_conservacao',
+        ('cnuc', 'shp_cnuc', 'unidade_conservacao', 'unidades_conservacao'),
+        ('polygon',),
+        (
+            F('uc_id', 'uc_id', 'id_uc', 'codigo_uc', 'cod_uc', 'cd_cnuc', 'cnuc'),
+            F('codigo_cnuc', 'cd_cnuc', 'cnuc', 'codigo_cnuc'),
+            F('wdpa_pid', 'wdpa_pid'),
+            F('nome_uc', 'nome_uc', 'nome', 'nm_uc', required=True),
+            F('nome_abreviado', 'NomeAbrev', 'nomeabrev', 'nome_abreviado'),
+            F('categoria_manejo', 'categoria_manejo', 'categoria', 'cat_manejo'),
+            F('grupo_manejo', 'grupo_manejo', 'grupo'),
+            F('esfera', 'esfera', 'esfera_adm', 'jurisdicao'),
+            F('municipio', 'municipio'),
+            F('uf', 'uf'),
+            F('orgao_gestor', 'org_gestor', 'orgao_gestor'),
+            F('situacao', 'situacao', 'status'),
+            F('ano_criacao', 'ano_criacao', 'ano_cria', 'cria_ano', 'ano', sql_type='year'),
+            F('ato_criacao', 'cria_ato', 'ato_criacao'),
+            F('outro_ato', 'outro_ato'),
+            F('plano_manejo', 'pl_manejo', 'plano_manejo'),
+            F('conselho_gestor', 'co_gestor', 'conselho_gestor'),
+            F('categoria_iucn', 'cat_iucn', 'categoria_iucn'),
+            F('qualidade_poligono', 'quali_pol', 'qualidade_poligono'),
+            F('programa_gestao', 'ppgr', 'programa_gestao'),
+            F('area_ha', 'area_ha', 'ha_total', 'area', sql_type='numeric'),
+            F('area_ato_ha', 'ha_ato', 'area_ato_ha', sql_type='numeric'),
+            F('amazonia_ha', 'amazonia', sql_type='numeric'),
+            F('caatinga_ha', 'caatinga', sql_type='numeric'),
+            F('cerrado_ha', 'cerrado', sql_type='numeric'),
+            F('mata_atlantica_ha', 'matlantica', sql_type='numeric'),
+            F('pampa_ha', 'pampa', sql_type='numeric'),
+            F('pantanal_ha', 'pantanal', sql_type='numeric'),
+            F('marinho_ha', 'marinho', sql_type='numeric'),
+            F('data_base', 'data_base', 'dt_base', 'data_atualizacao', sql_type='date'),
+        ),
+        (('nome_uc', 'nome', 'nm_uc'),),
+        ('categoria', 'grupo', 'esfera', 'cd_cnuc', 'org_gestor', 'situacao'),
+    ),
+)

@@ -1,0 +1,30 @@
+{% extends 'administracao/base.html' %}
+{% block title %}{{ titulo }} — CONFRONTA{% endblock %}
+{% block content %}
+<section class="page-head"><div><span class="eyebrow">Editor de plano</span><h1>{{ titulo }}</h1><p>Edite como uma publicação: conteúdo à esquerda e configurações comerciais à direita.</p></div><a class="button button-secondary" href="{% url 'administracao:planos' %}">Voltar</a></section>
+<form method="post" class="commercial-editor" id="plan-editor">{% csrf_token %}
+<div class="editor-main">
+    {{ form.non_field_errors }}
+    <div class="editor-field editor-title"><label>{{ form.nome.label }}</label>{{ form.nome }}{{ form.nome.errors }}</div>
+    <div class="editor-field"><label>{{ form.slug.label }}</label>{{ form.slug }}{{ form.slug.errors }}<span class="helptext">{{ form.slug.help_text }}</span></div>
+    <div class="editor-field"><label>{{ form.subtitulo.label }}</label>{{ form.subtitulo }}{{ form.subtitulo.errors }}</div>
+    <div class="editor-field"><label>{{ form.descricao.label }}</label>{{ form.descricao }}{{ form.descricao.errors }}</div>
+    <div class="editor-field"><label>{{ form.recursos.label }}</label>{{ form.recursos }}{{ form.recursos.errors }}<span class="helptext">Um item por linha. Cada linha vira um ✓ na Home.</span></div>
+    <div class="editor-field"><label>{{ form.recursos_exclusivos.label }}</label>{{ form.recursos_exclusivos }}{{ form.recursos_exclusivos.errors }}<span class="helptext">Itens opcionais para reforçar diferenciais do plano.</span></div>
+</div>
+<aside class="editor-side">
+    <div class="editor-side-card"><h3>Publicação</h3><div class="editor-field">{{ form.ativo }} <label style="display:inline">{{ form.ativo.label }}</label></div><div class="editor-field">{{ form.destaque }} <label style="display:inline">{{ form.destaque.label }}</label></div><div class="editor-field"><label>{{ form.selo.label }}</label>{{ form.selo }}{{ form.selo.errors }}</div><div class="editor-field"><label>{{ form.ordem.label }}</label>{{ form.ordem }}{{ form.ordem.errors }}</div></div>
+    <div class="editor-side-card"><h3>Preço e acesso</h3><div class="editor-field"><label>{{ form.preco_mensal.label }}</label>{{ form.preco_mensal }}{{ form.preco_mensal.errors }}</div><div class="editor-field"><label>{{ form.preco_anual.label }}</label>{{ form.preco_anual }}{{ form.preco_anual.errors }}</div><div class="editor-field"><label>{{ form.nivel_acesso.label }}</label>{{ form.nivel_acesso }}{{ form.nivel_acesso.errors }}<span class="helptext">Básico = consulta. Total = consulta + ferramentas de gleba.</span></div><div class="editor-field"><label>{{ form.texto_cta.label }}</label>{{ form.texto_cta }}{{ form.texto_cta.errors }}</div></div>
+    <div class="editor-side-card"><h3>Prévia rápida</h3><div class="plan-preview"><h4 id="preview-name">{{ plano.nome|default:'Nome do plano' }}</h4><div id="preview-subtitle">{{ plano.subtitulo|default:'Subtítulo do plano' }}</div><div class="price">R$ <span id="preview-price">{% if plano %}{{ plano.preco_mensal|floatformat:2 }}{% else %}0,00{% endif %}</span><small>/mês</small></div><ul id="preview-features"></ul></div></div>
+    <div class="editor-side-card"><div class="editor-actions"><button class="button button-primary" type="submit">Salvar plano</button><a class="button button-secondary" href="{% url 'administracao:planos' %}">Cancelar</a></div></div>
+</aside>
+</form>
+<script>
+(function(){
+ const name=document.getElementById('id_nome'), sub=document.getElementById('id_subtitulo'), price=document.getElementById('id_preco_mensal'), feats=document.getElementById('id_recursos');
+ const pn=document.getElementById('preview-name'), ps=document.getElementById('preview-subtitle'), pp=document.getElementById('preview-price'), pf=document.getElementById('preview-features');
+ function draw(){ pn.textContent=name.value||'Nome do plano'; ps.textContent=sub.value||'Subtítulo do plano'; pp.textContent=(price.value||'0,00').replace('.',','); pf.innerHTML=''; (feats.value||'').split(/\n/).filter(Boolean).slice(0,7).forEach(x=>{const li=document.createElement('li');li.textContent='✓ '+x.trim();pf.appendChild(li);}); }
+ [name,sub,price,feats].forEach(el=>el&&el.addEventListener('input',draw)); draw();
+})();
+</script>
+{% endblock %}

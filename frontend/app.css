@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "flowbite/src/themes/default";
+@plugin "flowbite/plugin";
+@source "../aplicativo/templates/**/*.html";
+@source "../aplicativo/static/aplicativo/js/**/*.js";
+@source "../node_modules/flowbite";
+
+@theme {
+  --color-confronta-petroleo: #0B2D3C;
+  --color-confronta-floresta: #1F5A2E;
+  --color-confronta-verde: #4FA36A;
+  --color-confronta-claro: #A7D5B0;
+}

@@ -1,0 +1,48 @@
+{% extends 'aplicativo/base.html' %}
+{% block title %}Minha conta — CONFRONTA{% endblock %}
+{% block client_content_class %}client-content-page{% endblock %}
+{% block content %}
+<section class="client-account-page">
+    <header class="client-page-hero">
+        <span class="client-page-kicker">Minha conta</span>
+        <h1>Dados da conta</h1>
+        <p>Atualize os dados básicos do seu acesso. Plano, permissões e nível administrativo não são alterados por esta tela.</p>
+    </header>
+
+    <div class="client-account-layout">
+        <form class="client-account-form" method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="client-account-fields">
+                {% for field in form %}
+                <div class="form-field {% if field.name == 'nome' or field.name == 'email' %}form-field-full{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="client-account-actions">
+                <button class="button button-primary" type="submit">Salvar alterações</button>
+                <a class="button button-secondary" href="{% url 'aplicativo:inicio' %}">Voltar</a>
+            </div>
+        </form>
+
+        <aside class="client-account-summary">
+            <span>Plano atual</span>
+            {% if perfil_cliente %}
+                <strong>{{ perfil_cliente.nome_plano_atual }}</strong>
+                {% if perfil_cliente.fim_acesso %}<p>Vigência até {{ perfil_cliente.fim_acesso|date:'d/m/Y' }}</p>{% endif %}
+            {% else %}
+                <strong>{{ acesso_aplicativo.get_plano_display }}</strong>
+                <p>Acesso operacional definido pelo perfil administrativo.</p>
+            {% endif %}
+            {% if assinatura_asaas %}
+                <p>Assinatura: {{ assinatura_asaas.get_status_display }} · {{ assinatura_asaas.get_ciclo_display }}</p>
+                {% if assinatura_asaas.acesso_ate %}<p>Acesso pago até {{ assinatura_asaas.acesso_ate|date:'d/m/Y' }}</p>{% endif %}
+            {% endif %}
+            <a href="{% url 'aplicativo:planos' %}">Gerenciar assinatura</a>
+        </aside>
+    </div>
+</section>
+{% endblock %}

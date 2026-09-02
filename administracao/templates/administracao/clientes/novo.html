@@ -1,0 +1,40 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Novo cliente — CONFRONTA{% endblock %}
+{% block content %}
+<section class="page-head">
+    <div>
+        <span class="eyebrow">Gestão comercial</span>
+        <h1>Novo cliente</h1>
+        <p>Crie o acesso somente após confirmar a contratação. Um plano comercial ativo é obrigatório para o novo cliente.</p>
+    </div>
+    <a class="button button-secondary" href="{% url 'administracao:clientes' %}">Voltar</a>
+</section>
+
+<form method="post" class="commercial-editor">{% csrf_token %}
+    <div class="editor-main">
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="editor-field editor-title"><label>{{ form.nome.label }}</label>{{ form.nome }}{{ form.nome.errors }}</div>
+        <div class="editor-field"><label>{{ form.sobrenome.label }}</label>{{ form.sobrenome }}{{ form.sobrenome.errors }}</div>
+        <div class="editor-field"><label>{{ form.email.label }}</label>{{ form.email }}{{ form.email.errors }}</div>
+        <div class="editor-field"><label>{{ form.telefone.label }}</label>{{ form.telefone }}{{ form.telefone.errors }}</div>
+        <div class="editor-field"><label>{{ form.password1.label }}</label>{{ form.password1 }}{{ form.password1.errors }}</div>
+        <div class="editor-field"><label>{{ form.password2.label }}</label>{{ form.password2 }}{{ form.password2.errors }}</div>
+        <div class="editor-field"><label>{{ form.observacoes_admin.label }}</label>{{ form.observacoes_admin }}{{ form.observacoes_admin.errors }}<span class="helptext">Uso interno. Não aparece para o cliente.</span></div>
+    </div>
+    <aside class="editor-side">
+        <div class="editor-side-card"><h3>Acesso e assinatura</h3>
+            <div class="editor-field"><label>{{ form.plano_comercial.label }}</label>{{ form.plano_comercial }}{{ form.plano_comercial.errors }}<span class="helptext">Obrigatório: selecione o plano cuja contratação já foi confirmada.</span></div>
+            <div class="editor-field"><label>{{ form.inicio_acesso.label }}</label>{{ form.inicio_acesso }}{{ form.inicio_acesso.errors }}</div>
+            <div class="editor-field"><label>{{ form.fim_acesso.label }}</label>{{ form.fim_acesso }}{{ form.fim_acesso.errors }}<span class="helptext">Deixe em branco para não limitar por data.</span></div>
+            <div class="editor-field">{{ form.ativo }} <label style="display:inline">{{ form.ativo.label }}</label></div>
+            <div class="editor-field">{{ form.renovacao_automatica }} <label style="display:inline">{{ form.renovacao_automatica.label }}</label></div>
+        </div>
+        <div class="editor-side-card">
+            <div class="editor-actions">
+                <button class="button button-primary" type="submit">Criar cliente</button>
+                <a class="button button-secondary" href="{% url 'administracao:clientes' %}">Cancelar</a>
+            </div>
+        </div>
+    </aside>
+</form>
+{% endblock %}

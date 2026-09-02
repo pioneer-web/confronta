@@ -1,0 +1,36 @@
+{% extends 'aplicativo/base.html' %}
+{% block title %}Ajuda — CONFRONTA{% endblock %}
+{% block client_content_class %}client-content-page{% endblock %}
+{% block content %}
+<section class="client-help-page client-help-page-basic">
+    <button type="button" class="client-help-close" aria-label="Fechar ajuda" title="Fechar" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='{% url 'aplicativo:inicio' %}'; }">×</button>
+    <header class="client-page-hero">
+        <span class="client-page-kicker">Ajuda</span>
+        <h1>Instruções básicas</h1>
+        <p>Um guia rápido para começar a usar o CONFRONTA.</p>
+    </header>
+
+    <div class="client-help-grid client-help-grid-basic">
+        <article class="client-help-card">
+            <span class="client-help-number">01</span>
+            <h2>Consultar um CAR</h2>
+            <p>Digite o número do CAR na barra superior e clique em <strong>Buscar</strong>. Se o imóvel estiver na base, ele será aberto diretamente no mapa.</p>
+        </article>
+        <article class="client-help-card">
+            <span class="client-help-number">02</span>
+            <h2>Visualizar informações</h2>
+            <p>Use o mapa e o painel lateral para consultar o perímetro do imóvel, as camadas territoriais e os alertas disponíveis para o CAR.</p>
+        </article>
+        <article class="client-help-card">
+            <span class="client-help-number">03</span>
+            <h2>Camadas e glebas</h2>
+            <p>Ative ou desative as camadas conforme necessário. Quando o seu plano permitir, use a área de glebas para desenhar ou importar polígonos.</p>
+        </article>
+        <article class="client-help-card">
+            <span class="client-help-number">04</span>
+            <h2>Conta e plano</h2>
+            <p>Clique no ícone do usuário no canto superior direito para editar seus dados, verificar seu plano ou sair do sistema.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,272 @@
+{% extends 'administracao/base.html' %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">{{ spec.fonte }} / {{ spec.grupo }}</div>
+        <h1>{{ spec.label }}</h1>
+        <p>{% if spec.fonte_slug == 'sicar' %}Envie o ZIP ou GPKG correspondente a este dataset.{% elif spec.fonte_slug == 'sicor' %}Envie o arquivo oficial GZIP (.gz) ou CSV correspondente a este perfil SICOR.{% else %}Envie somente o ZIP correspondente a este dataset.{% endif %} O nome do arquivo, sozinho, não confirma sua identidade.</p>
+    </div>
+    <a class="button" href="{% url 'administracao:fonte_datasets' spec.fonte_slug %}">Voltar</a>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2>Novo envio</h2>
+        <div class="info-box">
+            <strong>Validação de identidade obrigatória.</strong><br>
+            {% if spec.fonte_slug == 'sicor' %}O CONFRONTA valida cabeçalho, campos oficiais, formato e, nas glebas WKT, a geometria antes de publicar. Campos adicionais permanecem na RAW para suportar mudanças do leiaute oficial.{% else %}O CONFRONTA analisa estrutura, geometria, campos e sinais semânticos. Arquivos incompatíveis ou não confirmados são bloqueados antes do PostGIS operacional.{% endif %}
+        </div>
+        <form method="post" enctype="multipart/form-data" class="form" id="dataset-import-form">
+            {% csrf_token %}
+            {% if form.ano_inicial %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.ano_inicial.id_for_label }}">{{ form.ano_inicial.label }}</label>
+                {{ form.ano_inicial }}
+                <div class="form-hint">{{ form.ano_inicial.help_text }}</div>
+                {{ form.ano_inicial.errors }}
+            </div>
+            {% endif %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                {% if field.name == 'arquivo' %}<label>{{ field.label }}{{ field }}{{ field.errors }}</label>{% endif %}
+            {% endfor %}
+            <button class="button primary" type="submit" id="dataset-import-submit">Validar identidade e importar</button>
+        </form>
+
+        <div class="import-progress-card" id="dataset-import-progress" hidden aria-live="polite">
+            <div class="import-progress-section">
+                <div class="import-progress-title">
+                    <strong>Envio do arquivo</strong>
+                    <span id="upload-progress-value">0%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="upload-progress-fill" style="width:0%"></div></div>
+                <small id="upload-progress-help">Aguardando início do envio.</small>
+            </div>
+
+            <div class="import-progress-section">
+                <div class="import-progress-title">
+                    <strong>Processamento no servidor</strong>
+                    <span id="server-progress-value">0%</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" id="server-progress-fill" style="width:0%"></div></div>
+                <small id="server-progress-stage">Aguardando o arquivo chegar ao servidor.</small>
+            </div>
+
+            <ol class="import-stage-list" id="import-stage-list">
+                {% if spec.fonte_slug == 'sicor' %}
+                <li data-min-progress="2">Registrando importação SICOR</li>
+                <li data-min-progress="18">Validando GZIP/CSV</li>
+                <li data-min-progress="30">Confirmando cabeçalho e perfil</li>
+                <li data-min-progress="42">Preparando staging tabular</li>
+                <li data-min-progress="52">Lendo registros em streaming</li>
+                <li data-min-progress="68">Comparando conteúdo com a versão ativa</li>
+                <li data-min-progress="78">Atualizando RAW e base operacional</li>
+                <li data-min-progress="100">Concluído</li>
+                {% else %}
+                <li data-min-progress="2">Registrando importação</li>
+                <li data-min-progress="18">Validando segurança do arquivo</li>
+                <li data-min-progress="30">Identificando camada e estrutura</li>
+                <li data-min-progress="42">Validando identidade do dataset</li>
+                <li data-min-progress="52">Carregando staging PostGIS</li>
+                <li data-min-progress="66">Validando CRS, geometrias e dados territoriais</li>
+                <li data-min-progress="78">Atualizando base operacional</li>
+                <li data-min-progress="94">Validando resultado</li>
+                <li data-min-progress="100">Concluído</li>
+                {% endif %}
+            </ol>
+
+            <div class="import-progress-result" id="import-progress-result" hidden></div>
+            <a class="button" id="import-report-link" href="#" hidden>Abrir relatório da importação</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Fluxo protegido</h2>
+        {% if spec.fonte_slug == 'sicor' %}
+        <ol class="flow-list">
+            <li>Quarentena</li><li>GZIP / CSV</li><li>Cabeçalho oficial</li><li>Staging</li><li>RAW flexível</li><li>Normalização</li>{% if spec.data_kind == 'sicor_wkt' %}<li>WKT / SIRGAS2000</li>{% elif spec.data_kind == 'sicor_gleba_points' %}<li>Reconstrução das glebas / SIRGAS2000</li>{% endif %}<li>Publicação transacional</li>
+        </ol>
+        <p class="muted">Todos os campos recebidos são preservados na RAW. A tabela operacional mantém o modelo conhecido pelo CONFRONTA; campos novos do Banco Central são sinalizados sem quebrar o sistema.</p>
+        {% else %}
+        <ol class="flow-list">
+            <li>Quarentena</li><li>Segurança do arquivo</li><li>Identidade do dataset</li><li>CRS e geometria</li><li>Staging</li><li>RAW original</li><li>Normalização</li><li>Promoção PostGIS</li>
+        </ol>
+        <p class="muted">A geometria original é preservada na RAW. Geometrias reparáveis são corrigidas apenas na tabela operacional; feições não reparáveis permanecem como pendência sem bloquear toda a base.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2>Últimas importações</h2>
+    <table>
+        <thead><tr><th>Data</th><th>Arquivo</th><th>Identidade</th><th>Status</th><th>Usuário</th></tr></thead>
+        <tbody>
+        {% for i in historico %}
+            <tr>
+                <td>{{ i.data_inicio|date:'d/m/Y H:i' }}</td>
+                <td><a href="{% url 'administracao:importacao_detalhe' i.pk %}">{{ i.nome_arquivo_original }}</a></td>
+                <td>{{ i.identidade_status }}</td>
+                <td>{{ i.get_status_display }}</td>
+                <td>{{ i.administrador.email }}</td>
+            </tr>
+        {% empty %}<tr><td colspan="5">Nenhuma importação deste dataset.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+(function () {
+    const form = document.getElementById('dataset-import-form');
+    const submit = document.getElementById('dataset-import-submit');
+    const card = document.getElementById('dataset-import-progress');
+    if (!form || !submit || !card || !window.XMLHttpRequest || !window.FormData) return;
+
+    const uploadFill = document.getElementById('upload-progress-fill');
+    const uploadValue = document.getElementById('upload-progress-value');
+    const uploadHelp = document.getElementById('upload-progress-help');
+    const serverFill = document.getElementById('server-progress-fill');
+    const serverValue = document.getElementById('server-progress-value');
+    const serverStage = document.getElementById('server-progress-stage');
+    const result = document.getElementById('import-progress-result');
+    const reportLink = document.getElementById('import-report-link');
+    const stages = Array.from(document.querySelectorAll('#import-stage-list li'));
+
+    function clamp(value) { return Math.max(0, Math.min(100, Number(value) || 0)); }
+    function setBar(fill, valueEl, value) {
+        const percent = clamp(value);
+        fill.style.width = percent + '%';
+        valueEl.textContent = Math.round(percent) + '%';
+    }
+    function markStages(percent, failed) {
+        stages.forEach(function (li) {
+            const threshold = Number(li.dataset.minProgress || 0);
+            li.classList.toggle('done', !failed && percent >= threshold);
+            li.classList.toggle('active', !failed && percent < 100 && percent >= Math.max(0, threshold - 12) && percent < threshold);
+        });
+    }
+    function showResult(message, ok) {
+        result.hidden = false;
+        result.className = 'import-progress-result ' + (ok ? 'success' : 'error');
+        result.textContent = message || (ok ? 'Processamento concluído.' : 'A importação não foi concluída.');
+    }
+    function resetUi() {
+        card.hidden = false;
+        result.hidden = true;
+        reportLink.hidden = true;
+        reportLink.removeAttribute('href');
+        setBar(uploadFill, uploadValue, 0);
+        setBar(serverFill, serverValue, 0);
+        serverFill.classList.remove('error');
+        uploadFill.classList.remove('error');
+        uploadHelp.textContent = 'Preparando envio...';
+        serverStage.textContent = 'Aguardando o arquivo chegar ao servidor.';
+        stages.forEach(function (li) { li.classList.remove('done', 'active', 'failed'); });
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        resetUi();
+        submit.disabled = true;
+        submit.textContent = 'Processando...';
+
+        const xhr = new XMLHttpRequest();
+        let consumed = 0;
+        let lastServerPercent = 0;
+
+        function consumeStream() {
+            const text = xhr.responseText || '';
+            const chunk = text.slice(consumed);
+            const lines = chunk.split('\n');
+            if (!chunk.endsWith('\n')) {
+                consumed = text.length - lines[lines.length - 1].length;
+                lines.pop();
+            } else {
+                consumed = text.length;
+            }
+            lines.forEach(function (line) {
+                line = line.trim();
+                if (!line) return;
+                let data;
+                try { data = JSON.parse(line); } catch (e) { return; }
+
+                if (data.type === 'progress') {
+                    lastServerPercent = clamp(data.percent);
+                    setBar(serverFill, serverValue, lastServerPercent);
+                    serverStage.textContent = data.stage || 'Processando...';
+                    markStages(lastServerPercent, false);
+                    return;
+                }
+
+                if (data.type === 'complete') {
+                    if (data.ok) {
+                        setBar(serverFill, serverValue, 100);
+                        markStages(100, false);
+                    } else {
+                        serverFill.classList.add('error');
+                        stages.forEach(function (li) {
+                            if (li.classList.contains('active')) li.classList.add('failed');
+                        });
+                    }
+                    serverStage.textContent = data.status_label || (data.ok ? 'Concluído' : 'Falhou');
+                    showResult(data.message, !!data.ok);
+                    if (data.report_url) {
+                        reportLink.href = data.report_url;
+                        reportLink.hidden = false;
+                    }
+                    if (data.ok && data.report_url) {
+                        window.setTimeout(function () { window.location.assign(data.report_url); }, 1200);
+                    } else {
+                        submit.disabled = false;
+                        submit.textContent = 'Validar identidade e importar';
+                    }
+                    return;
+                }
+
+                if (data.type === 'validation_error' || data.type === 'error') {
+                    serverFill.classList.add('error');
+                    serverStage.textContent = 'Processamento interrompido';
+                    showResult(data.message, false);
+                    submit.disabled = false;
+                    submit.textContent = 'Validar identidade e importar';
+                }
+            });
+        }
+
+        xhr.open('POST', form.action || window.location.href, true);
+        xhr.setRequestHeader('X-Confronta-Progress', 'stream');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.upload.addEventListener('progress', function (e) {
+            if (!e.lengthComputable) {
+                uploadHelp.textContent = 'Enviando arquivo ao servidor...';
+                return;
+            }
+            const percent = (e.loaded / e.total) * 100;
+            setBar(uploadFill, uploadValue, percent);
+            uploadHelp.textContent = percent >= 100 ? 'Arquivo enviado. Iniciando validações no servidor...' : 'Enviando arquivo ao servidor...';
+        });
+        xhr.upload.addEventListener('load', function () {
+            setBar(uploadFill, uploadValue, 100);
+            uploadHelp.textContent = 'Arquivo recebido pelo servidor.';
+        });
+        xhr.addEventListener('progress', consumeStream);
+        xhr.addEventListener('load', function () {
+            consumeStream();
+            if (xhr.status >= 500) {
+                showResult('O servidor não conseguiu concluir a importação. Consulte os logs antes de tentar novamente.', false);
+                submit.disabled = false;
+                submit.textContent = 'Validar identidade e importar';
+            }
+        });
+        xhr.addEventListener('error', function () {
+            serverFill.classList.add('error');
+            serverStage.textContent = 'Falha de comunicação';
+            showResult('A conexão com o servidor foi interrompida durante a importação. Verifique o serviço antes de reenviar.', false);
+            submit.disabled = false;
+            submit.textContent = 'Validar identidade e importar';
+        });
+        xhr.send(new FormData(form));
+    });
+})();
+</script>
+{% endblock %}

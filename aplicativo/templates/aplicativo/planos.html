@@ -1,0 +1,67 @@
+{% extends 'aplicativo/base.html' %}
+{% block title %}Minha assinatura — CONFRONTA{% endblock %}
+{% block content %}
+<section class="page-head plans-head">
+    <div>
+        <span class="eyebrow">Assinatura</span>
+        <h1>CONFRONTA</h1>
+        {% if perfil_cliente %}<p>Escolha a cobrança mensal ou anual. As funcionalidades são as mesmas nas duas modalidades.</p>{% else %}<p>Sua conta administrativa já possui acesso operacional e não precisa contratar.</p>{% endif %}
+    </div>
+    <a class="button button-secondary" href="{% url 'aplicativo:inicio' %}">Voltar ao aplicativo</a>
+</section>
+
+{% if perfil_cliente %}
+    {% if assinatura_asaas %}
+    <div class="plan-pending-note" style="border-color:#b7d8c0;background:#f3fbf5;color:#244b32;margin-bottom:20px">
+        <strong>Assinatura CONFRONTA: {{ assinatura_asaas.get_status_display }}</strong><br>
+        Modalidade: {{ assinatura_asaas.get_ciclo_display }} · Valor: R$ {{ assinatura_asaas.valor|floatformat:2 }}
+        {% if assinatura_asaas.acesso_ate %} · Acesso até {{ assinatura_asaas.acesso_ate|date:'d/m/Y' }}{% endif %}
+        {% if assinatura_asaas.status == 'PAST_DUE' %}<br><strong>Pagamento em atraso:</strong> o período de carência está sendo aplicado.{% endif %}
+    </div>
+    {% endif %}
+
+    {% if plano_confronta %}
+    <div class="plan-choice-grid dynamic-plan-choice-grid">
+        <article class="plan-choice-card">
+            <span class="eyebrow">Mensal</span>
+            <h2>CONFRONTA Mensal</h2>
+            <div class="app-plan-price">R$ {{ plano_confronta.preco_mensal|floatformat:2 }}<small>/mês</small></div>
+            <p>Flexibilidade para começar e cancelar a renovação quando quiser.</p>
+            <ul>{% for recurso in plano_confronta.lista_recursos %}<li>✓ {{ recurso }}</li>{% endfor %}</ul>
+            <form method="post" action="{% url 'billing:iniciar_checkout' %}">{% csrf_token %}<input type="hidden" name="ciclo" value="MONTHLY"><button class="button button-secondary button-block" type="submit" {% if assinatura_asaas.status == 'ACTIVE' or assinatura_asaas.status == 'PENDING' or assinatura_asaas.status == 'PAST_DUE' %}disabled{% endif %}>Assinar R$ 67,90/mês</button></form>
+        </article>
+
+        <article class="plan-choice-card plan-choice-total">
+            <span class="plan-choice-ribbon">Melhor custo-benefício</span>
+            <span class="eyebrow">Anual</span>
+            <h2>CONFRONTA Anual</h2>
+            <div class="app-plan-price">R$ {{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}<small>/mês</small></div>
+            <p>R$ {{ plano_confronta.preco_anual|floatformat:2 }} cobrados anualmente. Economize R$ 216,00 por ano.</p>
+            <ul>{% for recurso in plano_confronta.lista_recursos %}<li>✓ {{ recurso }}</li>{% endfor %}</ul>
+            <form method="post" action="{% url 'billing:iniciar_checkout' %}">{% csrf_token %}<input type="hidden" name="ciclo" value="YEARLY"><button class="button button-primary button-block" type="submit" {% if assinatura_asaas.status == 'ACTIVE' or assinatura_asaas.status == 'PENDING' or assinatura_asaas.status == 'PAST_DUE' %}disabled{% endif %}>Assinar R$ 598,80/ano</button></form>
+        </article>
+    </div>
+    {% else %}<div class="plan-pending-note">O plano CONFRONTA está temporariamente indisponível.</div>{% endif %}
+
+    {% if assinatura_asaas and assinatura_asaas.asaas_subscription_id and not assinatura_asaas.cancelamento_solicitado and assinatura_asaas.status != 'CANCELED' %}
+    <div class="plan-pending-note" style="margin-top:22px">
+        <strong>Renovação automática ativa.</strong> Ao cancelar, novas cobranças são interrompidas; o CONFRONTA mantém o acesso até o fim do período já pago.
+        <form method="post" action="{% url 'billing:cancelar_assinatura' %}" style="margin-top:12px" onsubmit="return confirm('Cancelar a renovação automática desta assinatura?');">{% csrf_token %}<button class="button button-secondary" type="submit">Cancelar renovação</button></form>
+    </div>
+    {% endif %}
+
+    {% if pagamentos_asaas %}
+    <div class="plan-pending-note" style="margin-top:22px;background:#fff;border-color:#dfe7e6;color:#36505a">
+        <strong>Últimas cobranças</strong>
+        <div style="overflow:auto;margin-top:10px">
+            <table style="width:100%;border-collapse:collapse">
+                <thead><tr><th style="text-align:left;padding:8px">Vencimento</th><th style="text-align:left;padding:8px">Valor</th><th style="text-align:left;padding:8px">Status</th></tr></thead>
+                <tbody>{% for pagamento in pagamentos_asaas %}<tr><td style="padding:8px">{{ pagamento.vencimento|date:'d/m/Y'|default:'—' }}</td><td style="padding:8px">R$ {{ pagamento.valor|floatformat:2 }}</td><td style="padding:8px">{{ pagamento.status|default:'—' }}</td></tr>{% endfor %}</tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+{% else %}
+<div class="plan-pending-note">Nenhuma contratação é necessária para esta conta administrativa.</div>
+{% endif %}
+{% endblock %}

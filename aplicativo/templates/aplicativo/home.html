@@ -1,0 +1,274 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#063f34">
+    <meta name="description" content="CONFRONTA — consulte imóveis rurais e confronte dados territoriais oficiais em uma única plataforma.">
+    <title>CONFRONTA — Inteligência Territorial Rural</title>
+    <link rel="stylesheet" href="{% static 'aplicativo/css/tailwind.css' %}?v=070">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/app.css' %}?v=070">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/home-premium.css' %}?v=070">
+</head>
+<body class="cfp-home">
+    <header class="cfp-header" data-home-header>
+        <nav class="cfp-nav" aria-label="Navegação principal">
+            <a class="cfp-brand" href="#inicio" aria-label="CONFRONTA — início">
+                <img src="{% static 'aplicativo/img/logo-branca.png' %}" alt="" width="42" height="42">
+                <span>
+                    <strong>CONFRONTA</strong>
+                    <small>Inteligência Territorial</small>
+                </span>
+            </a>
+
+            <div class="cfp-nav-links" data-home-menu>
+                <a href="#solucoes">Soluções</a>
+                <a href="#como-funciona">Como funciona</a>
+                <a href="#planos">Planos</a>
+            </div>
+
+            <div class="cfp-nav-actions">
+                <a class="cfp-nav-login" href="{% url 'aplicativo:login' %}">Entrar</a>
+                <a class="cfp-nav-cta" href="{% url 'aplicativo:cadastro' %}">Começar agora</a>
+                <button class="cfp-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" data-home-menu-button>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="cfp-hero" id="inicio">
+            <div class="cfp-hero-map" aria-hidden="true"></div>
+            <div class="cfp-hero-wash" aria-hidden="true"></div>
+
+            <div class="cfp-hero-shell">
+                <div class="cfp-hero-copy">
+                    <span class="cfp-kicker"><span></span> Inteligência territorial rural</span>
+                    <h1>Consulte imóveis rurais e <em>confronte dados oficiais</em> em um só lugar.</h1>
+                    <p>Visualize o CAR e analise informações ambientais e fundiárias com dados do SICAR, PRODES, IBAMA, INCRA, ICMBio e outras bases integradas.</p>
+
+                    <div class="cfp-hero-actions">
+                        <a class="cfp-button cfp-button-primary" href="{% url 'aplicativo:cadastro' %}">
+                            Consultar agora
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                        <a class="cfp-button cfp-button-ghost" href="#solucoes">Ver o que oferecemos</a>
+                    </div>
+
+                    <div class="cfp-source-line" aria-label="Principais bases integradas">
+                        <span>Principais fontes</span>
+                        <div><strong>SICAR</strong><strong>PRODES</strong><strong>IBAMA</strong><strong>INCRA</strong><strong>FUNAI</strong><strong>SICOR</strong></div>
+                    </div>
+                </div>
+
+                <div class="cfp-hero-product" aria-label="Prévia da plataforma CONFRONTA">
+                    <div class="cfp-product-glow" aria-hidden="true"></div>
+                    <img class="cfp-product-image" src="{% static 'aplicativo/img/hero.png' %}" alt="Mapa de análise territorial da plataforma CONFRONTA">
+                    <div class="cfp-float-card cfp-float-card-top">
+                        <span class="cfp-float-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span>
+                        <span><small>Consulta territorial</small><strong>CAR localizado no mapa</strong></span>
+                    </div>
+                    <div class="cfp-float-card cfp-float-card-bottom">
+                        <span class="cfp-float-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.8 8 7 10 4.2-2 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span>
+                        <span><small>Confrontação</small><strong>Alertas no contexto do imóvel</strong></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cfp-section cfp-solutions" id="solucoes">
+            <div class="cfp-section-head cfp-section-head-left">
+                <span class="cfp-eyebrow">Soluções</span>
+                <h2>O que você encontra no CONFRONTA.</h2>
+                <p>Uma leitura organizada do imóvel rural, reunindo identificação, contexto ambiental, situação fundiária, crédito, recursos naturais e informações agrícolas.</p>
+            </div>
+
+            <div class="cfp-intelligence-card">
+                <div class="cfp-intelligence-copy">
+                    <span class="cfp-intelligence-badge">Visão consolidada</span>
+                    <h3>Ficha de inteligência do imóvel</h3>
+                    <p>Em vez de consultar cada base separadamente, o CONFRONTA organiza as informações relevantes do imóvel em uma única análise, conectada ao mapa e aos alertas territoriais.</p>
+                    <div class="cfp-intelligence-tags" aria-label="Áreas da ficha de inteligência">
+                        <span>Identificação</span>
+                        <span>Ambiental</span>
+                        <span>Fundiário</span>
+                        <span>Financeiro</span>
+                        <span>Recursos naturais</span>
+                        <span>Agrícola</span>
+                    </div>
+                </div>
+                <div class="cfp-intelligence-visual" aria-hidden="true">
+                    <div class="cfp-intelligence-score">
+                        <small>Inteligência territorial</small>
+                        <strong>16</strong>
+                        <span>fontes mapeadas</span>
+                    </div>
+                    <div class="cfp-intelligence-lines">
+                        <i></i><i></i><i></i><i></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cfp-bases-head">
+                <div>
+                    <span class="cfp-eyebrow">Fontes da inteligência</span>
+                    <h3>Dados organizados por finalidade.</h3>
+                </div>
+                <p>A disponibilidade de cada informação acompanha a integração e a atualização das respectivas bases oficiais.</p>
+            </div>
+
+            <div class="cfp-bases-grid">
+                <article class="cfp-base-group">
+                    <div class="cfp-base-group-head">
+                        <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+                        <div><small>Cadastro e domínio</small><h4>Identificação</h4></div>
+                    </div>
+                    <div class="cfp-base-chips">
+                        <span>CAR / SICAR</span><span>SIGEF</span><span>SNCR</span><span>Dados registrais</span>
+                    </div>
+                </article>
+
+                <article class="cfp-base-group cfp-base-group-wide">
+                    <div class="cfp-base-group-head">
+                        <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-4 3-7 6-7 10a7 7 0 0 0 14 0c0-4-3-7-7-10Z"/><path d="M9 15c2-1 4-3 6-6"/></svg></span>
+                        <div><small>Conformidade e território</small><h4>Ambiental</h4></div>
+                    </div>
+                    <div class="cfp-base-chips">
+                        <span>PRODES</span><span>IBAMA</span><span>CNUC</span><span>ICMBio</span><span>Terras Indígenas</span>
+                    </div>
+                </article>
+
+                <article class="cfp-base-group">
+                    <div class="cfp-base-group-head">
+                        <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3-8 4 8 4 8-4-8-4Z"/><path d="m4 12 8 4 8-4M4 17l8 4 8-4"/></svg></span>
+                        <div><small>Ocupação e regularização</small><h4>Fundiário</h4></div>
+                    </div>
+                    <div class="cfp-base-chips">
+                        <span>INCRA — assentamentos e quilombolas</span>
+                    </div>
+                </article>
+
+                <article class="cfp-base-group">
+                    <div class="cfp-base-group-head">
+                        <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4z"/><path d="M7 11h4M16 10v4"/></svg></span>
+                        <div><small>Operações vinculadas ao rural</small><h4>Financeiro</h4></div>
+                    </div>
+                    <div class="cfp-base-chips">
+                        <span>SICOR / Crédito Rural</span>
+                    </div>
+                </article>
+
+                <article class="cfp-base-group">
+                    <div class="cfp-base-group-head">
+                        <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5 6-11a6 6 0 1 0-12 0c0 6 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span>
+                        <div><small>Água e subsolo</small><h4>Recursos naturais</h4></div>
+                    </div>
+                    <div class="cfp-base-chips">
+                        <span>Dados territoriais integrados</span>
+                    </div>
+                </article>
+
+                <article class="cfp-base-group">
+                    <div class="cfp-base-group-head">
+                        <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c8 0 13-5 14-14-9 1-14 6-14 14Z"/><path d="M5 19c3-4 6-7 11-10"/></svg></span>
+                        <div><small>Risco e planejamento produtivo</small><h4>Agrícola</h4></div>
+                    </div>
+                    <div class="cfp-base-chips">
+                        <span>Dados agrícolas integrados</span>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="cfp-how" id="como-funciona">
+            <div class="cfp-how-shell">
+                <div class="cfp-how-title">
+                    <span class="cfp-eyebrow">Como funciona</span>
+                    <h2>Da consulta à análise, sem complicação.</h2>
+                </div>
+                <div class="cfp-how-steps">
+                    <article><span>01</span><div><strong>Informe o CAR</strong><p>Localize o imóvel rural.</p></div></article>
+                    <article><span>02</span><div><strong>Confronte as bases</strong><p>O sistema cruza os dados disponíveis.</p></div></article>
+                    <article><span>03</span><div><strong>Veja a inteligência do imóvel</strong><p>Analise mapa, dados e alertas no mesmo contexto.</p></div></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="cfp-section cfp-plans" id="planos">
+            <div class="cfp-section-head cfp-section-head-light">
+                <span class="cfp-eyebrow">Preço de lançamento</span>
+                <h2>Um CONFRONTA. Duas formas de assinar.</h2>
+                <p>Mesmas funcionalidades no mensal e no anual. No anual, você economiza R$ 216,00 por ano.</p>
+            </div>
+
+            {% if plano_confronta %}
+            <div class="cfp-plan-grid">
+                <article class="cfp-plan-card">
+                    <div class="cfp-plan-head">
+                        <span>Mensal</span>
+                        <h3>R$ 67,90/mês</h3>
+                        <p>Cobrança recorrente mensal, com flexibilidade para começar.</p>
+                    </div>
+                    <div class="cfp-plan-price"><strong><small>R$</small>{{ plano_confronta.preco_mensal|floatformat:2 }}</strong><span>/mês</span></div>
+                    <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
+                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro' %}?ciclo=MONTHLY">Assinar mensal</a>
+                </article>
+
+                <article class="cfp-plan-card is-featured">
+                    <span class="cfp-plan-label">Melhor custo-benefício</span>
+                    <div class="cfp-plan-head">
+                        <span>Anual</span>
+                        <h3>R$ 49,90/mês</h3>
+                        <p>R$ 598,80 cobrados anualmente. Economia de R$ 216,00 por ano.</p>
+                    </div>
+                    <div class="cfp-plan-price"><strong><small>R$</small>{{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}</strong><span>/mês</span></div>
+                    <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
+                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro' %}?ciclo=YEARLY">Assinar anual</a>
+                </article>
+            </div>
+            {% else %}<div class="cfp-empty-plans">O plano está sendo configurado.</div>{% endif %}
+        </section>
+
+        <section class="cfp-final" id="contato">
+            <div class="cfp-final-shell">
+                <div>
+                    <span class="cfp-eyebrow">CONFRONTA</span>
+                    <h2>Entenda melhor o imóvel antes de decidir.</h2>
+                    <p>Comece sua consulta ou fale com nossa equipe para conhecer a plataforma.</p>
+                </div>
+                <div class="cfp-final-actions">
+                    <a class="cfp-button cfp-button-light" href="{% url 'aplicativo:cadastro' %}">Começar agora</a>
+                    {% if contato_comercial_url %}
+                    <a class="cfp-button cfp-button-outline-light" href="{{ contato_comercial_url }}" target="_blank" rel="noopener noreferrer">Entrar em contato</a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="cfp-footer">
+        <div class="cfp-footer-shell">
+            <a class="cfp-footer-brand" href="#inicio">
+                <img src="{% static 'aplicativo/img/logo-branca.png' %}" alt="" width="38" height="38">
+                <span><strong>CONFRONTA</strong><small>Inteligência Territorial</small></span>
+            </a>
+            <p>Inteligência territorial rural para consultar, confrontar e decidir.</p>
+            <nav aria-label="Links do rodapé">
+                <a href="#solucoes">Soluções</a>
+                <a href="#planos">Planos</a>
+                <a href="{% url 'aplicativo:login' %}">Entrar</a>
+                {% if contato_comercial_url %}
+                <a href="{{ contato_comercial_url }}" target="_blank" rel="noopener noreferrer">Entrar em contato</a>
+                {% else %}
+                <a href="#contato">Entrar em contato</a>
+                {% endif %}
+            </nav>
+        </div>
+    </footer>
+
+    <script src="{% static 'aplicativo/js/vendor/flowbite.min.js' %}?v=070" defer></script>
+    <script src="{% static 'aplicativo/js/home-premium.js' %}?v=070" defer></script>
+</body>
+</html>

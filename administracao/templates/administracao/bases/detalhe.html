@@ -1,0 +1,121 @@
+{% extends 'administracao/base.html' %}
+{% block title %}{{ source.label }} — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="7" cy="6" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="17" cy="18" r="1"/></svg></div>
+        <div>
+            <div class="mc-eyebrow">{{ source.organization }}</div>
+            <h1>{{ source.label }}</h1>
+            <p class="mc-page-subtitle">{{ source.purpose }}</p>
+        </div>
+    </div>
+    <div class="mc-page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'administracao:catalogo_bases' %}">Voltar ao catálogo</a>
+        {% if source.is_importable %}
+            <a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao' %}?fonte={{ source.import_source_slug }}">Importar em lote</a>
+            <a class="btn btn-outline-primary" href="{% url 'administracao:fonte_datasets' source.import_source_slug %}">Ver perfis</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mc-detail-grid">
+    <section class="mc-card">
+        <div class="mc-card-header">
+            <div class="mc-card-title-group">
+                <span class="mc-card-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
+                <div><h2 class="mc-card-title">Arquivos e conjuntos esperados</h2><p class="mc-card-subtitle">Somente itens confirmados pelo escopo consolidado.</p></div>
+            </div>
+        </div>
+        <div class="mc-card-body mc-item-list">
+            {% for item in source.items %}
+            <div class="mc-item-row{% if source.is_importable and item.dataset_slug %} mc-item-row-action{% endif %}">
+                <div class="mc-item-code">{{ item.code }}</div>
+                <div class="mc-item-copy"><strong>{{ item.label }}</strong>{% if item.note %}<small>{{ item.note }}</small>{% endif %}</div>
+                {% if source.is_importable and item.dataset_slug %}
+                <div class="mc-profile-actions">
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:importar_dataset' source.import_source_slug item.dataset_slug %}" title="Selecionar arquivo para importar">
+                        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M3 7h6l2 2h10v10H3z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 12v5m-2-2 2 2 2-2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                        Importar
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <aside class="mc-card mc-source-summary">
+        <div class="mc-card-header"><div><h2 class="mc-card-title">Situação do perfil</h2><p class="mc-card-subtitle">Controle de implementação.</p></div></div>
+        <div class="mc-card-body">
+            <dl class="mc-kv-list">
+                <div><dt>Status</dt><dd>{% if source.implementation == 'OPERACIONAL' %}<span class="mc-badge mc-badge-green">Operacional</span>{% elif source.implementation == 'RAW_FLEXIVEL' %}<span class="mc-badge mc-badge-blue">Importação manual RAW</span>{% elif source.implementation == 'A_VALIDAR' %}<span class="mc-badge mc-badge-amber">Perfil a validar</span>{% else %}<span class="mc-badge mc-badge-neutral">Futuro</span>{% endif %}</dd></div>
+                <div><dt>Prioridade</dt><dd>P{{ source.priority }}</dd></div>
+                <div><dt>Áreas</dt><dd>{% for area in source.areas %}{{ area|title }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd></div>
+                {% if source.is_importable %}<div><dt>Perfis técnicos</dt><dd>{{ source.dataset_count }}</dd></div>{% endif %}
+            </dl>
+            {% if source.rule %}<div class="mc-note-box"><strong>Regra</strong><p>{{ source.rule }}</p></div>{% endif %}
+            {% if source.notes %}<div class="mc-note-box mc-note-muted"><strong>Observação</strong><p>{{ source.notes }}</p></div>{% endif %}
+            {% if source.official_url %}<a class="btn btn-outline-secondary w-100" href="{{ source.official_url }}" target="_blank" rel="noopener noreferrer">Abrir fonte oficial</a>{% endif %}
+        </div>
+    </aside>
+</div>
+
+{% if source.implementation == 'RAW_FLEXIVEL' %}
+<div class="mc-validation-banner">
+    <div class="mc-validation-icon">i</div>
+    <div><strong>Importação manual habilitada em RAW flexível</strong><p>O arquivo será validado e enviado ao PostgreSQL preservando a estrutura oficial recebida. A tabela operacional do Confronta só será criada depois que os campos, chaves, CRS e regras da fonte forem confirmados com uma amostra oficial.</p></div>
+</div>
+{% endif %}
+
+{% if source.is_importable and source.slug != 'sicar' %}
+<section class="mc-card mc-table-card mc-detail-section">
+    <div class="mc-card-header"><div><h2 class="mc-card-title">Perfis de importação manual</h2><p class="mc-card-subtitle">Perfis operacionais ou RAW flexíveis reconhecidos pelo Manage.</p></div></div>
+    <div class="mc-card-body">
+        {% for group_name, specs in groups %}
+            <div class="mc-profile-group">
+                <h3>{{ group_name }}</h3>
+                <div class="mc-profile-list">
+                    {% for spec in specs %}
+                    <div class="mc-profile-row">
+                        <div><strong>{{ spec.label }}</strong><small>{% if spec.mode == 'raw_only' %}RAW flexível: {{ spec.raw_table }}{% else %}{{ spec.stable_table }}{% endif %}</small></div>
+                        <div class="mc-profile-actions">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:importar_dataset' source.import_source_slug spec.slug %}">Importar</a>
+                            {% if request.user.is_superuser %}<a class="btn btn-outline-danger btn-sm" href="{% url 'administracao:limpar_dataset' source.import_source_slug spec.slug %}">Excluir dados atuais</a>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% elif source.is_importable and source.slug == 'sicar' %}
+<section class="mc-card mc-table-card mc-detail-section">
+    <div class="mc-card-header"><div><h2 class="mc-card-title">Camadas operacionais SICAR</h2><p class="mc-card-subtitle">As camadas são atualizadas por UF. A limpeza abaixo atua na tabela nacional da camada selecionada.</p></div><a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:fonte_datasets' 'sicar' %}">Gerenciar estados</a></div>
+    <div class="mc-card-body">
+        {% for group_name, specs in groups %}
+            <div class="mc-profile-group">
+                <h3>{{ group_name }}</h3>
+                <div class="mc-profile-list">
+                    {% for spec in specs %}
+                    <div class="mc-profile-row">
+                        <div><strong>{{ spec.label }}</strong><small>{% if spec.mode == 'raw_only' %}RAW flexível: {{ spec.raw_table }}{% else %}{{ spec.stable_table }}{% endif %}</small></div>
+                        <div class="mc-profile-actions">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:novo_lote_importacao' %}?fonte=sicar">Importar por UF</a>
+                            {% if request.user.is_superuser %}<a class="btn btn-outline-danger btn-sm" href="{% url 'administracao:limpar_dataset' 'sicar' spec.slug %}">Excluir dados atuais</a>{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% elif not source.is_importable %}
+<div class="mc-validation-banner">
+    <div class="mc-validation-icon">!</div>
+    <div><strong>Importação ainda bloqueada por segurança</strong><p>O catálogo já está organizado, mas o Manage não criará campos, CRS, chaves ou regras por suposição. O perfil será habilitado depois da validação de uma amostra oficial.</p></div>
+</div>
+{% endif %}
+{% endblock %}

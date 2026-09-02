@@ -1,0 +1,170 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>{% block title %}CONFRONTA — Administração{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css">
+    <link rel="stylesheet" href="{% static 'administracao/css/app.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="page manage-shell">
+    <aside class="navbar navbar-vertical navbar-expand-lg manage-sidebar" data-bs-theme="dark">
+        <div class="container-fluid">
+            <h1 class="navbar-brand navbar-brand-autodark">
+                <a href="{% url 'administracao:dashboard' %}" class="manage-brand">
+                    <span class="manage-brand-mark" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M8 10.5l4-2.2 4 2.2v4.7l-4 2.2-4-2.2z"/></svg>
+                    </span>
+                    <span class="manage-brand-copy">
+                        <strong>CONFRONTA</strong>
+                        <small>Administração e dados</small>
+                    </span>
+                </a>
+            </h1>
+
+            <div class="collapse navbar-collapse show" id="sidebar-menu">
+                <ul class="navbar-nav pt-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'administracao:dashboard' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9zm0 7h6v-4H4v4zm10 0h6v-9h-6v9zm0-16v4h6V4h-6z"/></svg></span>
+                            <span class="nav-link-title">Visão geral</span>
+                        </a>
+                    </li>
+                    <li class="manage-nav-section">Bases de inteligência</li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'catalogo_bases' or request.resolver_match.url_name == 'base_detalhe' %}active{% endif %}" href="{% url 'administracao:catalogo_bases' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M7 3v6M12 9v6M17 15v6"/></svg></span>
+                            <span class="nav-link-title">Catálogo de bases</span>
+                        </a>
+                    </li>
+                    {% for source in manage_sidebar_sources %}
+                    <li class="nav-item manage-source-nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'novo_lote_importacao' and request.GET.fonte == source.import_source_slug %}active{% elif request.resolver_match.url_name == 'base_detalhe' and request.resolver_match.kwargs.source_slug == source.slug %}active{% elif request.resolver_match.url_name == 'fonte_datasets' and request.resolver_match.kwargs.fonte_slug == source.import_source_slug %}active{% endif %}" href="{% url 'administracao:novo_lote_importacao' %}?fonte={{ source.import_source_slug }}" title="Importar {{ source.label }} em lote">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5h14v-5"/></svg></span>
+                            <span class="nav-link-title">{{ source.label }}</span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                    <li class="manage-nav-section">Operação</li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'novo_lote_importacao' %}active{% endif %}" href="{% url 'administracao:novo_lote_importacao' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 15v4h14v-4"/></svg></span>
+                            <span class="nav-link-title">Nova importação</span>
+                        </a>
+                    </li>
+                    <li class="manage-nav-section">Controle</li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'lotes_recentes' or request.resolver_match.url_name == 'lote_importacao_detalhe' %}active{% endif %}" href="{% url 'administracao:lotes_recentes' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></span>
+                            <span class="nav-link-title">Lotes recentes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'historico_importacoes' %}active{% endif %}" href="{% url 'administracao:historico_importacoes' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+                            <span class="nav-link-title">Histórico</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'alertas' or request.resolver_match.url_name == 'excluir_tabela' %}active{% endif %}" href="{% url 'administracao:alertas' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></span>
+                            <span class="nav-link-title">Alertas do banco</span>
+                        </a>
+                    </li>
+
+                    {% if can_manage_commercial or can_manage_admins %}
+                    <li class="manage-nav-section">Usuários e comercial</li>
+                    {% endif %}
+                    {% if can_manage_commercial %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'clientes' or request.resolver_match.url_name == 'cliente_novo' or request.resolver_match.url_name == 'cliente_editar' %}active{% endif %}" href="{% url 'administracao:clientes' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 8h5M18.5 5.5v5"/></svg></span>
+                            <span class="nav-link-title">Clientes</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'planos' or request.resolver_match.url_name == 'plano_novo' or request.resolver_match.url_name == 'plano_editar' %}active{% endif %}" href="{% url 'administracao:planos' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 14h4"/></svg></span>
+                            <span class="nav-link-title">Planos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'financeiro_asaas' %}active{% endif %}" href="{% url 'administracao:financeiro_asaas' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg></span>
+                            <span class="nav-link-title">Assinaturas Asaas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'avisos_clientes' %}active{% endif %}" href="{% url 'administracao:avisos_clientes' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></span>
+                            <span class="nav-link-title">Avisos aos clientes</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if can_manage_admins %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'administradores' or request.resolver_match.url_name == 'administrador_novo' or request.resolver_match.url_name == 'administrador_editar' %}active{% endif %}" href="{% url 'administracao:administradores' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M17 10l1.5 1.5L21 9"/></svg></span>
+                            <span class="nav-link-title">Administradores</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li class="manage-nav-section">CONFRONTA</li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'aplicativo:inicio' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><path d="M9 3v15M15 6v15"/></svg></span>
+                            <span class="nav-link-title">Abrir mapa</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="manage-sidebar-user mt-auto">
+                    <div class="avatar avatar-sm">{{ user.first_name|default:user.email|slice:":1"|upper }}</div>
+                    <div class="manage-sidebar-user-copy">
+                        <strong>{{ user.get_full_name|default:user.email }}</strong>
+                        <small>{{ user.nivel_display }}</small>
+                    </div>
+                    <form method="post" action="{% url 'administracao:logout' %}">
+                        {% csrf_token %}
+                        <button class="manage-signout" type="submit" title="Sair">Sair</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="page-wrapper manage-page-wrapper">
+        <header class="manage-topbar">
+            <div class="manage-content manage-topbar-content">
+                <div class="manage-topbar-title">Administração CONFRONTA</div>
+                <div class="manage-environment"><span class="manage-online-dot"></span> Ambiente local</div>
+            </div>
+        </header>
+
+        <main class="page-body manage-main">
+            <div class="manage-content">
+                {% if messages %}
+                    <div class="manage-messages">
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">{{ message }}</div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</div>
+{% else %}
+    {% block public_content %}{% endblock %}
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

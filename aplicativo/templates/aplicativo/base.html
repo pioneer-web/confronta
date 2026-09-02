@@ -1,0 +1,127 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#082d3a">
+    <meta name="confronta-channel-ready" content="web,whatsapp,app">
+    <title>{% block title %}CONFRONTA{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'aplicativo/css/tailwind.css' %}?v=053">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/app.css' %}?v=055-home-intelligence">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/modern.css' %}?v=053-home-intelligence">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated and acesso_aplicativo %}
+<div class="client-shell cf-client-shell cf-shell-v15">
+    <aside class="client-rail cf-client-rail" aria-label="Navegação principal">
+        <a class="client-rail-brand" href="{% url 'aplicativo:inicio' %}" aria-label="CONFRONTA — início">
+            <img src="{% static 'aplicativo/img/logo-branca.png' %}" alt="">
+            <strong>CONFRONTA</strong>
+        </a>
+
+        <nav class="client-rail-nav client-rail-nav-single" aria-label="Menu principal">
+            {% block client_rail_tools %}
+            <a class="client-rail-link client-rail-home" href="{% url 'aplicativo:inicio' %}" aria-label="Início">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.8l8.5 7v8.1a1.6 1.6 0 0 1-1.6 1.6H15v-6H9v6H5.1a1.6 1.6 0 0 1-1.6-1.6Z"/></svg>
+                <span class="client-rail-label">Início</span>
+            </a>
+            {% endblock %}
+        </nav>
+
+        <div class="client-rail-footer">
+            <a class="client-rail-link client-rail-help" href="{% url 'aplicativo:ajuda' %}" aria-label="Ajuda">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.2a2.5 2.5 0 0 1 4.8.9c0 1.9-2.6 2.2-2.6 4"/><path d="M12 17.5h.01"/></svg>
+                <span class="client-rail-label">Central de ajuda</span>
+            </a>
+
+            <details class="client-rail-user-menu">
+                <summary aria-label="Abrir opções da conta">
+                    <span class="client-rail-user-avatar" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5.3 20a6.7 6.7 0 0 1 13.4 0"/></svg>
+                    </span>
+                    <span class="client-rail-user-copy">
+                        <strong>{{ user.get_full_name|default:user.email }}</strong>
+                        <small>Plano {{ acesso_aplicativo.get_plano_display }}</small>
+                    </span>
+                    <span class="client-rail-user-status" aria-hidden="true"></span>
+                </summary>
+                <div class="client-rail-user-popover">
+                    <div class="client-user-identity client-user-identity-rail">
+                        <div class="client-user-avatar" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg>
+                        </div>
+                        <div>
+                            <strong>{{ user.get_full_name|default:user.email }}</strong>
+                            <span>{{ user.email }}</span>
+                            <small>Plano {{ acesso_aplicativo.get_plano_display }}</small>
+                        </div>
+                    </div>
+                    <nav class="client-user-links" aria-label="Opções da conta">
+                        <a href="{% url 'aplicativo:conta' %}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                            <span>Minha conta</span>
+                        </a>
+                        <a href="{% url 'aplicativo:planos' %}">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>
+                            <span>Meu plano</span>
+                        </a>
+                    </nav>
+                    <form method="post" action="{% url 'aplicativo:logout' %}" class="client-user-logout-form">
+                        {% csrf_token %}
+                        <button type="submit">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 4h6v16h-6"/></svg>
+                            <span>Sair</span>
+                        </button>
+                    </form>
+                </div>
+            </details>
+        </div>
+    </aside>
+
+    <section class="client-main cf-client-main">
+        <header class="client-topbar cf-client-topbar">
+            <div class="client-topbar-query-area">
+                {% block client_topbar_query %}
+                {% if acesso_aplicativo.possui_plano %}
+                <form class="client-global-search cf-global-search" method="post" action="{% url 'aplicativo:nova_consulta' %}" role="search">
+                    {% csrf_token %}
+                    <div class="client-global-search-field cf-global-search-field">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+                        <input type="text" name="car" maxlength="120" autocomplete="off" spellcheck="false" placeholder="Buscar pelo número do CAR" aria-label="Buscar imóvel pelo número do CAR">
+                    </div>
+                    <button class="client-global-search-submit cf-search-submit" type="submit" aria-label="Buscar CAR">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+                    </button>
+                </form>
+                {% else %}
+                <a class="client-global-search client-global-search-disabled cf-global-search" href="{% url 'aplicativo:planos' %}">Ative um plano para consultar</a>
+                {% endif %}
+                {% endblock %}
+            </div>
+
+            <div class="client-topbar-context">
+                {% block client_topbar_context %}{% endblock %}
+            </div>
+        </header>
+
+        <main class="client-content {% block client_content_class %}{% endblock %}">
+            {% if messages %}
+            <div class="message-stack cf-message-stack">
+                {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </section>
+</div>
+{% else %}
+    {% block public_content %}{% endblock %}
+{% endif %}
+{% block scripts %}{% endblock %}
+<script src="{% static 'aplicativo/js/vendor/flowbite.min.js' %}?v=046" defer></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Catálogo de bases — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M7 3v6M12 9v6M17 15v6"/></svg></div>
+        <div>
+            <div class="mc-eyebrow">Ficha de inteligência do imóvel</div>
+            <h1>Catálogo de bases</h1>
+            <p class="mc-page-subtitle">Bases organizadas por finalidade. Apenas perfis técnicos validados ficam habilitados para importação.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mc-metrics mc-metrics-four">
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">Fontes mapeadas</span><span class="metric-dot metric-dot-blue"></span></div><div class="mc-metric-value">{{ summary.total_sources }}</div><div class="mc-metric-help">Catálogo consolidado</div></div>
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">Perfis operacionais</span><span class="metric-dot metric-dot-green"></span></div><div class="mc-metric-value">{{ summary.operational_sources }}</div><div class="mc-metric-help">Pipeline já existente</div></div>
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">A validar</span><span class="metric-dot metric-dot-warning"></span></div><div class="mc-metric-value">{{ summary.validation_sources }}</div><div class="mc-metric-help">Precisam de amostra oficial</div></div>
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">Prioridade 1</span><span class="metric-dot metric-dot-blue"></span></div><div class="mc-metric-value">{{ summary.priority_1 }}</div><div class="mc-metric-help">CAR, PRODES, SIGEF, SNCR e SICOR</div></div>
+</div>
+
+{% for section in sections %}
+<section class="mc-catalog-section" id="{{ section.slug }}">
+    <div class="mc-section-heading">
+        <div>
+            <span class="mc-eyebrow">Área de inteligência</span>
+            <h2>{{ section.label }}</h2>
+        </div>
+        <span class="mc-section-count">{{ section.sources|length }} fonte{{ section.sources|length|pluralize }}</span>
+    </div>
+    <div class="mc-source-grid">
+        {% for source in section.sources %}
+        <a class="mc-source-card" href="{% url 'administracao:base_detalhe' source.slug %}">
+            <div class="mc-source-card-top">
+                <div class="mc-source-mark">{{ source.label|slice:':2'|upper }}</div>
+                {% if source.implementation == 'OPERACIONAL' %}
+                    <span class="mc-badge mc-badge-green">Operacional</span>
+                {% elif source.implementation == 'RAW_FLEXIVEL' %}
+                    <span class="mc-badge mc-badge-blue">Importação manual RAW</span>
+                {% elif source.implementation == 'A_VALIDAR' %}
+                    <span class="mc-badge mc-badge-amber">Perfil a validar</span>
+                {% else %}
+                    <span class="mc-badge mc-badge-neutral">Futuro</span>
+                {% endif %}
+            </div>
+            <h3>{{ source.label }}</h3>
+            <p>{{ source.purpose }}</p>
+            <div class="mc-source-meta">
+                <span>P{{ source.priority }}</span>
+                <span>{{ source.items|length }} conjunto{{ source.items|length|pluralize }}</span>
+                {% if source.is_importable %}<span>{{ source.dataset_count }} perfil{{ source.dataset_count|pluralize }} técnico{{ source.dataset_count|pluralize }}</span>{% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

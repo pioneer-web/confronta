@@ -1,0 +1,53 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Clientes — CONFRONTA{% endblock %}
+{% block content %}
+<div class="page-header d-print-none cf-admin-header">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col"><div class="page-pretitle">Gestão comercial</div><h2 class="page-title">Clientes</h2><div class="text-secondary mt-1">Acompanhe plano, período de acesso e situação de cada cliente.</div></div>
+            <div class="col-auto ms-auto"><a class="btn btn-primary cf-admin-primary" href="{% url 'administracao:cliente_novo' %}">+ Novo cliente</a></div>
+        </div>
+    </div>
+</div>
+<div class="page-body cf-admin-content">
+    <div class="container-xl">
+        <div class="row row-cards mb-3">
+            <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Total</div><div class="h2 mb-0">{{ total_clientes }}</div></div></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Ativos</div><div class="h2 mb-0 text-success">{{ ativos }}</div></div></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Expirados</div><div class="h2 mb-0 text-danger">{{ expirados }}</div></div></div></div>
+            <div class="col-sm-6 col-lg-3"><div class="card cf-metric-card"><div class="card-body"><div class="subheader">Vencendo em 7 dias</div><div class="h2 mb-0 text-warning">{{ vencendo }}</div></div></div></div>
+        </div>
+
+        <div class="card mb-3 cf-admin-filter-card">
+            <div class="card-body">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-lg-5"><label class="form-label" for="q">Buscar cliente</label><input class="form-control" id="q" name="q" value="{{ filtros.q }}" placeholder="Nome, e-mail ou telefone"></div>
+                    <div class="col-md-3 col-lg-2"><label class="form-label" for="status">Status</label><select class="form-select" id="status" name="status"><option value="">Todos</option><option value="ativos" {% if filtros.status == 'ativos' %}selected{% endif %}>Ativos</option><option value="inativos" {% if filtros.status == 'inativos' %}selected{% endif %}>Inativos</option><option value="expirados" {% if filtros.status == 'expirados' %}selected{% endif %}>Expirados</option><option value="agendados" {% if filtros.status == 'agendados' %}selected{% endif %}>Agendados</option><option value="vencendo" {% if filtros.status == 'vencendo' %}selected{% endif %}>Vencendo</option><option value="sem_plano" {% if filtros.status == 'sem_plano' %}selected{% endif %}>Sem plano</option></select></div>
+                    <div class="col-md-3 col-lg-2"><label class="form-label" for="plano">Plano</label><select class="form-select" id="plano" name="plano"><option value="">Todos</option>{% for p in planos %}<option value="{{ p.pk }}" {% if filtros.plano == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select></div>
+                    <div class="col-md-6 col-lg-3"><div class="btn-list"><button class="btn btn-primary cf-admin-primary" type="submit">Filtrar</button><a class="btn btn-outline-secondary" href="{% url 'administracao:clientes' %}">Limpar</a></div></div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card cf-admin-table-card">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead><tr><th>Cliente</th><th>Plano</th><th>Acesso</th><th>Último acesso</th><th>Status</th><th class="w-1"></th></tr></thead>
+                    <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td><div class="fw-bold">{{ cliente.usuario.get_full_name|default:cliente.usuario.email }}</div><div class="text-secondary small">{{ cliente.usuario.email }}{% if cliente.telefone %} · {{ cliente.telefone }}{% endif %}</div></td>
+                        <td><div class="fw-semibold">{{ cliente.nome_plano_atual }}</div>{% if cliente.plano_desejado_comercial %}<div class="text-secondary small">Desejado: {{ cliente.plano_desejado_comercial.nome }}</div>{% endif %}</td>
+                        <td><div class="small">{% if cliente.inicio_acesso %}{{ cliente.inicio_acesso|date:'d/m/Y' }}{% else %}—{% endif %} → {% if cliente.fim_acesso %}{{ cliente.fim_acesso|date:'d/m/Y' }}{% else %}sem limite{% endif %}</div></td>
+                        <td class="text-secondary small">{% if cliente.usuario.last_login %}{{ cliente.usuario.last_login|date:'d/m/Y H:i' }}{% else %}Nunca acessou{% endif %}</td>
+                        <td>{% if not cliente.ativo %}<span class="badge bg-secondary-lt">Inativo</span>{% elif cliente.acesso_expirado %}<span class="badge bg-danger-lt">Expirado</span>{% elif cliente.acesso_agendado %}<span class="badge bg-info-lt">Agendado</span>{% elif cliente.dias_restantes != None and cliente.dias_restantes <= 7 %}<span class="badge bg-warning-lt">Vence em {{ cliente.dias_restantes }} dia{{ cliente.dias_restantes|pluralize }}</span>{% else %}<span class="badge bg-success-lt">Ativo</span>{% endif %}</td>
+                        <td><div class="dropdown"><button class="btn dropdown-toggle align-text-top" data-bs-toggle="dropdown" aria-expanded="false">Ações</button><div class="dropdown-menu dropdown-menu-end"><a class="dropdown-item" href="{% url 'administracao:cliente_editar' cliente.pk %}">Editar cliente</a><form method="post" action="{% url 'administracao:cliente_alternar' cliente.pk %}">{% csrf_token %}<button class="dropdown-item" type="submit">{% if cliente.ativo %}Desativar acesso{% else %}Ativar acesso{% endif %}</button></form></div></div></td>
+                    </tr>
+                    {% empty %}<tr><td colspan="6" class="text-center text-secondary py-5">Nenhum cliente encontrado com os filtros informados.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,155 @@
+name: saas-confronta-main
+
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dbconfronta}
+      POSTGRES_USER: ${POSTGRES_USER:-confronta}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-confronta} -d ${POSTGRES_DB:-dbconfronta}
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DJANGO_COLLECTSTATIC: "true"
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    volumes:
+      - confronta_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+      - staticfiles:/app/staticfiles
+    expose:
+      - "8000"
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --bind
+      - 0.0.0.0:8000
+      - --workers
+      - "2"
+      - --timeout
+      - "180"
+      - --graceful-timeout
+      - "30"
+      - --max-requests
+      - "1000"
+      - --max-requests-jitter
+      - "100"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - confronta_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until python manage.py migrate --check >/dev/null 2>&1; do sleep 3; done;
+        exec python manage.py processar_fila_importacoes --loop --interval 3
+
+  billing_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until python manage.py migrate --check >/dev/null 2>&1; do sleep 3; done;
+        exec python manage.py processar_webhooks_asaas --loop --interval 3
+
+  source_monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - confronta_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until python manage.py migrate --check >/dev/null 2>&1; do sleep 3; done;
+        exec python manage.py processar_sincronizacoes_fontes --loop --interval 30
+
+  nginx:
+    build:
+      context: ./deploy/nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - web
+    volumes:
+      - staticfiles:/app/staticfiles:ro
+    expose:
+      - "80"
+
+volumes:
+  postgis_data:
+    name: saas-confronta-main_postgis_data
+  confronta_var:
+    name: saas-confronta-main_confronta_var
+  manage_batches:
+    name: saas-confronta-main_manage_batches
+  staticfiles:
+    name: saas-confronta-main_staticfiles
+
+networks:
+  default:
+    name: saas-confronta-main_default

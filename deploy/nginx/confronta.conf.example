@@ -1,0 +1,67 @@
+server {
+    listen 80;
+    server_name SEU_DOMINIO_AQUI;
+    server_tokens off;
+    # Regra padrão: nenhum endpoint comum precisa receber corpos grandes.
+    client_max_body_size 1m;
+
+    # Rotas públicas/cliente: corpos pequenos. O Django repete esta proteção.
+    location ^~ /mapa/ {
+        client_max_body_size 64k;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180;
+        proxy_pass http://web:8000;
+    }
+
+    location = /painel/login/ {
+        client_max_body_size 64k;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 180;
+        proxy_pass http://web:8000;
+    }
+
+    location /static/ {
+        alias /app/staticfiles/;
+    }
+
+    # Exceções exclusivas para upload GIS administrativo. Essas rotas continuam
+    # protegidas pelas permissões do painel e pelas validações do pipeline.
+    location = /painel/importacoes/lote/novo/ {
+        client_max_body_size 0;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600;
+        proxy_pass http://web:8000;
+    }
+
+    location ^~ /painel/importar/ {
+        client_max_body_size 0;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600;
+        proxy_pass http://web:8000;
+    }
+
+    # As rotas administrativas de importação preservam a política de tamanho
+    # já definida pelo pipeline/MIN_UPLOAD no Django. Ajuste o limite no proxy
+    # ao tamanho real das bases antes da implantação definitiva.
+    location / {
+        client_max_body_size 1m;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600;
+        proxy_pass http://web:8000;
+    }
+}

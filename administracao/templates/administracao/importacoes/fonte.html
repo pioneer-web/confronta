@@ -1,0 +1,42 @@
+{% extends 'administracao/base.html' %}
+{% block title %}{{ fonte.label }} — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/><path d="M17 15l3 3-3 3"/></svg></div>
+        <div>
+            <div class="mc-eyebrow">Importação de dados</div>
+            <h1>{{ fonte.label }}</h1>
+            <p class="mc-page-subtitle">{% if fonte_slug == 'sicor' %}Escolha qual conjunto oficial do SICOR deseja importar. Cada perfil é validado e atualizado separadamente.{% else %}Escolha um perfil para importar individualmente ou envie vários arquivos em um único lote.{% endif %}</p>
+        </div>
+    </div>
+    <div class="mc-page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'administracao:catalogo_bases' %}">Catálogo</a>
+        {% if batch_enabled %}<a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao' %}?fonte={{ fonte_slug }}">Importar em lote</a>{% endif %}
+    </div>
+</div>
+
+{% for grupo, itens in grupos %}
+<section class="mc-card mc-detail-section">
+    <div class="mc-card-header">
+        <div><div class="mc-eyebrow">Conjunto de dados</div><h2 class="mc-card-title">{{ grupo }}</h2><p class="mc-card-subtitle">{% if itens|length == 1 %}1 perfil técnico disponível{% else %}{{ itens|length }} perfis técnicos disponíveis{% endif %}</p></div>
+    </div>
+    <div class="mc-card-body">
+        <div class="mc-profile-list">
+        {% for d in itens %}
+            <div class="mc-profile-row">
+                <div class="mc-profile-main">
+                    <span class="mc-source-mark">{{ d.fonte_slug|upper|slice:':3' }}</span>
+                    <div><strong>{{ d.label }}</strong><small>{% if d.mode == 'raw_only' %}Destino: RAW flexível — {{ d.raw_table }}{% else %}Destino: {{ d.stable_table }}{% endif %}</small></div>
+                </div>
+                <div class="mc-profile-actions">
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:importar_dataset' d.fonte_slug d.slug %}">Importar arquivo</a>
+                    {% if request.user.is_superuser %}<a class="btn btn-outline-danger btn-sm" href="{% url 'administracao:limpar_dataset' d.fonte_slug d.slug %}">Excluir dados atuais</a>{% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

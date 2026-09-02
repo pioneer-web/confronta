@@ -1,0 +1,51 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Excluir dados de {{ spec.label }} — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon mc-page-icon-danger" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
+        </div>
+        <div>
+            <div class="mc-eyebrow">Operação administrativa</div>
+            <h1>Excluir dados atuais de {{ spec.label }}</h1>
+            <p class="mc-page-subtitle">Esvazia os dados deste perfil sem excluir tabelas, schemas, índices ou histórico de auditoria.</p>
+        </div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'administracao:base_detalhe' source_slug %}">Cancelar</a>
+</div>
+
+<div class="mc-danger-layout">
+    <section class="mc-card">
+        <div class="mc-card-header">
+            <div><h2 class="mc-card-title">O que será esvaziado</h2><p class="mc-card-subtitle">A operação acontece em uma transação e não usa CASCADE.</p></div>
+        </div>
+        <div class="mc-card-body">
+            <div class="mc-clean-grid">
+                {% if not storage.raw_only %}<div class="mc-clean-stat"><span>Operacional</span><strong>{{ storage.operational_rows }}</strong><small>{{ storage.schema }}.{{ storage.operational_table }}</small></div>{% endif %}
+                <div class="mc-clean-stat"><span>RAW{% if storage.raw_only %} flexível{% endif %}</span><strong>{{ storage.raw_rows }}</strong><small>{{ storage.schema }}.{{ storage.raw_table }}</small></div>
+            </div>
+            {% if storage.partitioned %}
+            <div class="mc-note-box"><strong>Base consolidada</strong><p>Somente a partição lógica deste dataset será removida da tabela operacional compartilhada. Os demais perfis permanecem intactos.</p></div>
+            {% endif %}
+            {% if spec.fonte_slug == 'sicar' %}
+            <div class="mc-note-box"><strong>SICAR</strong><p>Os fingerprints deste dataset serão invalidados e os estados ficarão em atenção até uma nova carga validada.</p></div>
+            {% endif %}
+        </div>
+    </section>
+
+    <aside class="mc-card mc-danger-card">
+        <div class="mc-card-header"><div><h2 class="mc-card-title">Confirmar exclusão</h2><p class="mc-card-subtitle">Disponível somente para Superadministrador.</p></div></div>
+        <div class="mc-card-body">
+            <p class="mc-danger-copy">Esta ação deixa os registros atuais deste dataset vazios. Ela não apaga a estrutura da tabela.</p>
+            <form method="post">
+                {% csrf_token %}
+                <label class="mc-form-label" for="id_confirmacao">Digite exatamente</label>
+                <code class="mc-confirm-token">{{ confirmation_token }}</code>
+                <input class="form-control" type="text" id="id_confirmacao" name="confirmacao" autocomplete="off" required>
+                <button class="btn btn-danger w-100 mt-3" type="submit">Excluir dados atuais do dataset</button>
+            </form>
+        </div>
+    </aside>
+</div>
+{% endblock %}

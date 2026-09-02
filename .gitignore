@@ -1,0 +1,21 @@
+.env
+__pycache__/
+*.py[cod]
+*.sqlite3
+.pytest_cache/
+.coverage
+htmlcov/
+staticfiles/
+var/
+*.log
+.DS_Store
+.vscode/
+.idea/
+import_inbox/*
+!import_inbox/.gitkeep
+.venv-sicar-portal/
+manage_batches/*
+!manage_batches/.gitkeep
+import_inbox/.manage_batches/
+echo ".envback" >> .gitignore
+echo ".env" >> .gitignore

@@ -1,0 +1,76 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Avisos aos clientes — CONFRONTA{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <div class="eyebrow">COMUNICAÇÃO</div>
+        <h1>Avisos aos clientes</h1>
+        <p>Publique mensagens que aparecerão no sino da Área do Cliente.</p>
+    </div>
+</div>
+
+<div class="notice-admin-grid">
+    <section class="card notice-editor-card">
+        <h2>Novo aviso</h2>
+        <p class="muted">Cada novo aviso aumenta o contador de não lidos do cliente até que ele clique na mensagem.</p>
+        <form method="post" class="form notice-admin-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <label>
+                Mensagem do alerta
+                {{ form.mensagem }}
+                {% if form.mensagem.errors %}{{ form.mensagem.errors }}{% endif %}
+            </label>
+            <div class="notice-editor-actions">
+                <button class="button primary" type="submit">Publicar aviso</button>
+            </div>
+        </form>
+    </section>
+
+    <aside class="card notice-help-card">
+        <span class="notice-help-icon">!</span>
+        <h2>Como funciona</h2>
+        <p>O aviso é exibido para os usuários da Área do Cliente. O sino fica âmbar enquanto houver mensagens não lidas.</p>
+        <p>O contador é individual: se um cliente leu a mensagem, ela deixa de contar apenas para aquele usuário.</p>
+    </aside>
+</div>
+
+<section class="card">
+    <div class="notice-list-head">
+        <div>
+            <h2>Avisos publicados</h2>
+            <p class="muted">Os avisos encerrados ficam no histórico administrativo, mas deixam de aparecer aos clientes.</p>
+        </div>
+    </div>
+
+    <div class="notice-admin-list">
+        {% for aviso in avisos_clientes %}
+        <article class="notice-admin-item {% if not aviso.ativo %}is-inactive{% endif %}">
+            <div class="notice-admin-main">
+                <div class="notice-admin-meta">
+                    {% if aviso.ativo %}
+                    <span class="badge success">Ativo</span>
+                    {% else %}
+                    <span class="badge neutral">Encerrado</span>
+                    {% endif %}
+                    <span>{{ aviso.criado_em|date:'d/m/Y H:i' }}</span>
+                    <span>Leituras: {{ aviso.total_leituras }}</span>
+                </div>
+                <p>{{ aviso.mensagem|linebreaksbr }}</p>
+                <small>Publicado por {{ aviso.criado_por.get_full_name|default:aviso.criado_por.email|default:'Usuário removido' }}</small>
+            </div>
+            <form method="post" action="{% url 'administracao:aviso_cliente_alternar' aviso.pk %}">
+                {% csrf_token %}
+                {% if aviso.ativo %}
+                <button class="button notice-stop-button" type="submit">Encerrar aviso</button>
+                {% else %}
+                <button class="button" type="submit">Reativar aviso</button>
+                {% endif %}
+            </form>
+        </article>
+        {% empty %}
+        <div class="notice-admin-empty">Nenhum aviso foi publicado ainda.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

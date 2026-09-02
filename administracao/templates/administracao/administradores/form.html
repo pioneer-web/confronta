@@ -1,0 +1,5 @@
+{% extends 'administracao/base.html' %}
+{% block content %}
+<div class="page-head"><div><h1>{{ titulo }}</h1><p>Os níveis disponíveis são Administrador Total e Administrador Júnior.</p></div></div>
+<div class="card narrow"><form method="post" class="form">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<label>{{ field.label }}{{ field }}{{ field.errors }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}</label>{% endfor %}<button class="button primary">Salvar</button></form></div>
+{% endblock %}

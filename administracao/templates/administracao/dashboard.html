@@ -1,0 +1,39 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Visão geral — CONFRONTA — Manage{% endblock %}
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9zm0 7h6v-4H4v4zm10 0h6v-9h-6v9zm0-16v4h6V4h-6z"/></svg></div>
+        <div><div class="mc-eyebrow">CONFRONTA — Manage</div><h1>Controle de importações</h1><p class="mc-page-subtitle">Acompanhe análises, aprovações e atualizações do PostGIS.</p></div>
+    </div>
+    <a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao' %}?fonte=sicar">Nova importação SICAR</a>
+</div>
+
+<div class="mc-metrics">
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">Aguardando aprovação</span><span class="metric-dot metric-dot-warning"></span></div><div class="mc-metric-value">{{ aguardando_confirmacao }}</div><div class="mc-metric-help">Lotes esperando decisão</div></div>
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">Em processamento</span><span class="metric-dot metric-dot-blue"></span></div><div class="mc-metric-value">{{ em_processamento }}</div><div class="mc-metric-help">Análises em execução</div></div>
+    <div class="mc-card mc-metric"><div class="mc-metric-top"><span class="mc-metric-label">UFs com histórico</span><span class="metric-dot metric-dot-green"></span></div><div class="mc-metric-value">{{ ufs_monitoradas }}</div><div class="mc-metric-help">Estados monitorados</div></div>
+</div>
+
+<section class="mc-card mc-intelligence-banner">
+    <div class="mc-intelligence-copy">
+        <div class="mc-eyebrow">Estrutura da ficha do imóvel</div>
+        <h2>Bases de inteligência territorial</h2>
+        <p>Identificação, ambiental, fundiário, financeiro, recursos naturais e agrícola em um catálogo único de atualização.</p>
+    </div>
+    <div class="mc-intelligence-stats">
+        <div><strong>{{ catalog_summary.total_sources }}</strong><span>fontes mapeadas</span></div>
+        <div><strong>{{ catalog_summary.operational_sources }}</strong><span>perfis operacionais</span></div>
+        <div><strong>{{ catalog_summary.validation_sources }}</strong><span>a validar</span></div>
+    </div>
+    <a class="btn btn-primary" href="{% url 'administracao:catalogo_bases' %}">Abrir catálogo</a>
+</section>
+
+<section class="mc-card mc-table-card">
+    <div class="mc-card-header"><div class="mc-card-title-group"><span class="mc-card-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></span><div><h2 class="mc-card-title">Lotes recentes</h2><p class="mc-card-subtitle">Fila manual e atividade recente do Manage.</p></div></div><a href="{% url 'administracao:lotes_recentes' %}" class="btn btn-outline-secondary btn-sm">Gerenciar lotes</a></div>
+    <div class="mc-table-wrap"><table><thead><tr><th>Data</th><th>Fonte</th><th>Arquivo</th><th>Status</th><th>Administrador</th><th class="text-end">Ações</th></tr></thead><tbody>
+    {% for lote in lotes_recentes %}<tr><td class="text-secondary text-nowrap">{{ lote.data_inicio|date:'d/m/Y H:i' }}</td><td><span class="mc-badge mc-badge-blue">{{ lote.get_fonte_display }}</span></td><td><a href="{% url 'administracao:lote_importacao_detalhe' lote.pk %}">{{ lote.nome_arquivo_original }}</a></td><td>{% if lote.status == 'CONCLUIDO' %}<span class="mc-badge mc-badge-green">✓ {{ lote.get_status_display }}</span>{% elif lote.status == 'CONCLUIDO_COM_PENDENCIAS' or lote.status == 'AGUARDANDO_CONFIRMACAO' %}<span class="mc-badge mc-badge-amber">{{ lote.get_status_display }}</span>{% elif lote.status == 'FALHOU' %}<span class="mc-badge mc-badge-red">{{ lote.get_status_display }}</span>{% else %}<span class="mc-badge mc-badge-neutral">{{ lote.get_status_display }}</span>{% endif %}</td><td class="text-secondary">{{ lote.administrador.email }}</td><td class="text-end"><div class="mc-row-actions mc-row-actions-end"><a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:lote_importacao_detalhe' lote.pk %}">Ver</a>{% if lote.pode_interromper and lote.status != 'INTERROMPENDO' %}<form method="post" action="{% url 'administracao:interromper_lote_importacao' lote.pk %}" onsubmit="return confirm('Interromper este lote no próximo ponto seguro?');">{% csrf_token %}<input type="hidden" name="retorno" value="dashboard"><button class="btn btn-outline-warning btn-sm" type="submit">Interromper</button></form>{% endif %}{% if lote.pode_excluir and user.is_superuser %}<form method="post" action="{% url 'administracao:excluir_lote_importacao' lote.pk %}" onsubmit="return confirm('Excluir este lote somente da fila? Nenhum dado publicado no banco será apagado.');">{% csrf_token %}<input type="hidden" name="confirmacao" value="EXCLUIR"><button class="btn btn-outline-danger btn-sm" type="submit">Excluir da fila</button></form>{% endif %}</div></td></tr>
+    {% empty %}<tr><td colspan="6" class="mc-table-empty">Nenhum lote registrado ainda.</td></tr>{% endfor %}
+    </tbody></table></div>
+</section>
+{% endblock %}

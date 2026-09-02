@@ -1,0 +1,69 @@
+{% extends 'aplicativo/base.html' %}
+{% block title %}{{ titulo }} — CONFRONTA{% endblock %}
+{% block content %}
+<main class="cf-contract-page">
+    {% include 'billing/_resultado_card.html' %}
+</main>
+{% endblock %}
+{% block public_content %}
+<main class="cf-contract-page">
+    {% include 'billing/_resultado_card.html' %}
+</main>
+{% endblock %}
+{% block scripts %}
+{% if estado == 'sucesso' and status_url and not acesso_confirmado %}
+{{ status_url|json_script:"billing-status-url" }}
+{{ acesso_url|json_script:"billing-access-url" }}
+<script>
+(function () {
+    const statusUrlNode = document.getElementById('billing-status-url');
+    if (!statusUrlNode) return;
+    const statusUrl = JSON.parse(statusUrlNode.textContent);
+    const title = document.getElementById('billing-result-title');
+    const message = document.getElementById('billing-result-message');
+    const status = document.getElementById('billing-confirmation-status');
+    const detail = document.getElementById('billing-confirmation-detail');
+    const action = document.getElementById('billing-primary-action');
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    async function checkStatus() {
+        attempts += 1;
+        try {
+            const response = await fetch(statusUrl, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {'Accept': 'application/json'}
+            });
+            if (!response.ok) throw new Error('status-http-' + response.status);
+            const data = await response.json();
+
+            if (data.acesso_confirmado) {
+                title.textContent = 'Acesso confirmado';
+                message.textContent = 'Seu pagamento foi confirmado pelo CONFRONTA. Sua assinatura está ativa e você já pode acessar o sistema.';
+                status.textContent = 'Acesso liberado';
+                detail.textContent = 'Sua assinatura está ativa.';
+                action.textContent = 'Entrar no CONFRONTA';
+                const accessUrlNode = document.getElementById('billing-access-url');
+                action.href = data.redirect_url || (accessUrlNode ? JSON.parse(accessUrlNode.textContent) : '/');
+                return;
+            }
+
+            if (data.mensagem) detail.textContent = data.mensagem;
+        } catch (error) {
+            // A próxima tentativa pode normalizar a confirmação.
+        }
+
+        if (attempts < maxAttempts) {
+            window.setTimeout(checkStatus, 2000);
+        } else {
+            status.textContent = 'Confirmação em processamento';
+            detail.textContent = 'A confirmação está demorando um pouco mais. Você pode acompanhar em Minha assinatura sem refazer o pagamento.';
+        }
+    }
+
+    window.setTimeout(checkStatus, 1200);
+})();
+</script>
+{% endif %}
+{% endblock %}
