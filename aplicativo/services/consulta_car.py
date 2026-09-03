@@ -301,6 +301,39 @@ class ConsultaCarService:
             registro.get('nome') for registro in quilombolas_raw.get('registros', [])
         )
 
+        funai_raw = analises_externas.get('funai') or {}
+        funai = cls._alerta_padrao(
+            funai_raw,
+            titulo='Terra Indígena — FUNAI',
+            identificado='Sobreposição com Terra Indígena identificada',
+            nao_identificado='Nenhuma sobreposição com Terra Indígena identificada nas bases carregadas.',
+            layer_key='ext_funai',
+        )
+        funai['nomes'] = cls._valores_unicos_ordenados(
+            registro.get('terrai_nom') for registro in funai_raw.get('registros', [])
+        )
+        funai['registros'] = [
+            cls._registro_funai_publico(r) for r in funai_raw.get('registros', [])
+        ]
+
+        icmbio_embargo_raw = analises_externas.get('icmbio_embargo') or {}
+        icmbio_embargo = cls._alerta_padrao(
+            icmbio_embargo_raw,
+            titulo='Embargo ICMBio',
+            identificado=(
+                'Área embargada pelo ICMBio identificada por interseção espacial na base carregada. '
+                'O resultado é um alerta de planejamento e não uma conclusão jurídica.'
+            ),
+            nao_identificado='Nenhuma interseção espacial foi localizada na base de embargos ICMBio carregada.',
+            layer_key='ext_icmbio_embargo',
+        )
+        icmbio_embargo['registros'] = [
+            cls._registro_icmbio_publico(r) for r in icmbio_embargo_raw.get('registros', [])
+        ]
+        icmbio_embargo['confirmacao_externa_necessaria'] = bool(
+            icmbio_embargo_raw.get('quantidade')
+        )
+
         apa_raw = analises_externas.get('apa') or {}
         apa = cls._alerta_padrao(
             apa_raw,
@@ -341,9 +374,11 @@ class ConsultaCarService:
 
         itens = {
             'ibama': ibama,
+            'icmbio_embargo': icmbio_embargo,
             'prodes': prodes,
             'assentamentos': assentamentos,
             'quilombolas': quilombolas,
+            'funai': funai,
             'apa': apa,
             'sicor': sicor,
             'outros_cars': outros,
@@ -356,9 +391,11 @@ class ConsultaCarService:
             ('apa', 'Sobreposição com APA'),
             ('assentamentos', 'Sobreposição com Assentamento'),
             ('quilombolas', 'Sobreposição com Área Quilombola'),
+            ('funai', 'Sobreposição com Terra Indígena'),
             ('sicor', 'Crédito rural — SICOR'),
             ('prodes', 'Ocorrência PRODES'),
             ('ibama', 'Embargo IBAMA'),
+            ('icmbio_embargo', 'Embargo ICMBio'),
         )
         tipos_alerta = [
             label for key, label in catalogo_alertas
@@ -429,6 +466,34 @@ class ConsultaCarService:
         return {campo: registro.get(campo) for campo in campos if registro.get(campo) not in (None, '')}
 
     @staticmethod
+    def _registro_funai_publico(registro):
+        campos = (
+            'terrai_cod', 'terrai_nom', 'etnia_nome', 'municipio', 'uf_sigla',
+            'superficie', 'fase_ti', 'modalidade', 'coordenacao_regional',
+            'faixa_fronteira', 'data_atualizacao',
+            'area_geometria_ha', 'area_sobreposta_ha', 'percentual_car',
+            'percentual_fonte',
+        )
+        return {
+            campo: registro.get(campo)
+            for campo in campos
+            if registro.get(campo) not in (None, '')
+        }
+
+    @staticmethod
+    def _registro_icmbio_publico(registro):
+        campos = (
+            'numero_embargo', 'data_embargo', 'situacao', 'area_ha', 'data_base',
+            'area_geometria_ha', 'area_sobreposta_ha', 'percentual_car',
+            'percentual_fonte',
+        )
+        return {
+            campo: registro.get(campo)
+            for campo in campos
+            if registro.get(campo) not in (None, '')
+        }
+
+    @staticmethod
     def _registro_sicor_publico(registro):
         campos = (
             'ref_bacen', 'nu_ordem', 'indice_gleba', 'ano_sicor', 'ano_operacao',
@@ -436,6 +501,7 @@ class ConsultaCarService:
             'cd_empreendimento', 'cd_programa', 'vl_parc_credito', 'vl_area_financ',
             'vl_area_informada', 'vl_juros', 'origem_gleba_sicor',
             'area_geometria_ha', 'area_sobreposta_ha', 'percentual_car',
+            'percentual_fonte',
         )
         return {campo: registro.get(campo) for campo in campos if registro.get(campo) not in (None, '')}
 
@@ -494,14 +560,47 @@ class ConsultaCarService:
         adicionar('ibama', 'Embargo IBAMA', ibama, ibama_features)
         adicionar('assentamentos', 'Assentamentos INCRA', analises_externas.get('assentamentos'))
         adicionar('quilombolas', 'Territórios Quilombolas', analises_externas.get('quilombolas'))
+
+        funai = analises_externas.get('funai') or {}
+        funai_features = []
+        for feature in funai.get('features', []):
+            raw_props = feature.get('properties') or {}
+            props = cls._registro_funai_publico(raw_props)
+            if raw_props.get('_confronta_full_geometry'):
+                props['_confronta_full_geometry'] = raw_props['_confronta_full_geometry']
+            funai_features.append({
+                'type': 'Feature',
+                'properties': props,
+                'geometry': feature.get('geometry'),
+            })
+        adicionar('funai', 'Terras Indígenas — FUNAI', funai, funai_features)
+
+        icmbio_embargo = analises_externas.get('icmbio_embargo') or {}
+        icmbio_features = []
+        for feature in icmbio_embargo.get('features', []):
+            raw_props = feature.get('properties') or {}
+            props = cls._registro_icmbio_publico(raw_props)
+            if raw_props.get('_confronta_full_geometry'):
+                props['_confronta_full_geometry'] = raw_props['_confronta_full_geometry']
+            icmbio_features.append({
+                'type': 'Feature',
+                'properties': props,
+                'geometry': feature.get('geometry'),
+            })
+        adicionar('icmbio_embargo', 'Embargos ICMBio', icmbio_embargo, icmbio_features)
+
         adicionar('apa', 'APA / Unidade de Conservação', analises_externas.get('apa'))
 
         sicor = analises_externas.get('sicor') or {}
         sicor_features = []
         for feature in sicor.get('features', []):
+            raw_props = feature.get('properties') or {}
+            props = cls._registro_sicor_publico(raw_props)
+            if raw_props.get('_confronta_full_geometry'):
+                props['_confronta_full_geometry'] = raw_props['_confronta_full_geometry']
             sicor_features.append({
                 'type': 'Feature',
-                'properties': cls._registro_sicor_publico(feature.get('properties') or {}),
+                'properties': props,
                 'geometry': feature.get('geometry'),
             })
         adicionar('sicor', 'SICOR / Crédito Rural', sicor, sicor_features)

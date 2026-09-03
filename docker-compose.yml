@@ -24,6 +24,8 @@ services:
     env_file:
       - .env
     environment:
+      DJANGO_RUN_MIGRATIONS: "true"
+      DJANGO_BOOTSTRAP_SUPERADMIN: "true"
       BATCH_STORAGE_DIR: /app/manage_batches
       BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
       BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy

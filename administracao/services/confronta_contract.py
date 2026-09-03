@@ -29,8 +29,37 @@ def ensure_confronta_analysis_contract():
         has_snci = _exists(cursor, 'dados_incra.snci_imovel')
 
         if has_car and has_ibama:
+            situacao_expr = (
+                "COALESCE(NULLIF(h.situacao::text, ''), 'A_VERIFICAR')"
+                if _column_exists(cursor, 'dados_ibama', 'ibama_embargo', 'situacao')
+                else (
+                    "COALESCE(NULLIF(h.status_normalizado::text, ''), 'A_VERIFICAR')"
+                    if _column_exists(cursor, 'dados_ibama', 'ibama_embargo', 'status_normalizado')
+                    else "'A_VERIFICAR'::text"
+                )
+            )
+            area_embargo_expr = (
+                "h.area_embargo_informada_ha::numeric"
+                if _column_exists(cursor, 'dados_ibama', 'ibama_embargo', 'area_embargo_informada_ha')
+                else (
+                    "h.area_embargada_ha::numeric"
+                    if _column_exists(cursor, 'dados_ibama', 'ibama_embargo', 'area_embargada_ha')
+                    else "NULL::numeric"
+                )
+            )
+            codigo_municipio_expr = (
+                "h.codigo_municipio::text"
+                if _column_exists(cursor, 'dados_ibama', 'ibama_embargo', 'codigo_municipio')
+                else "NULL::text"
+            )
+            ultima_sincronizacao_expr = (
+                "h.data_importacao::timestamptz"
+                if _column_exists(cursor, 'dados_ibama', 'ibama_embargo', 'data_importacao')
+                else "NULL::timestamptz"
+            )
+
             cursor.execute(
-                """
+                f"""
                 CREATE OR REPLACE FUNCTION confronta_api.alertas_ibama_por_car(p_cod_imovel text)
                 RETURNS TABLE (
                     seq_tad integer,
@@ -77,18 +106,18 @@ def ensure_confronta_analysis_contract():
                     )
                     SELECT h.seq_tad,
                            h.numero_embargo,
-                           COALESCE(h.status_normalizado, 'A_VERIFICAR'),
+                           {situacao_expr},
                            h.data_embargo,
-                           h.area_embargada_ha,
+                           {area_embargo_expr},
                            round((h.area_inter_m2 / 10000.0)::numeric, 4),
                            round(((h.area_inter_m2 / h.area_m2) * 100.0)::numeric, 4),
                            h.processo,
                            h.auto_infracao,
                            h.municipio,
-                           h.codigo_municipio,
+                           {codigo_municipio_expr},
                            h.uf,
                            'IBAMA'::text,
-                           h.data_importacao,
+                           {ultima_sincronizacao_expr},
                            h.geometry,
                            h.inter
                     FROM positive_hits h

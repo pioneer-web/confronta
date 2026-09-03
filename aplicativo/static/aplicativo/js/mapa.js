@@ -67,6 +67,8 @@
         ext_prodes_queimada: { color: '#f59e0b', weight: 2.55, fillOpacity: 0.30, opacity: 0.99 },
         ext_assentamentos: { color: '#f59e0b', weight: 2.35, fillOpacity: 0.26, opacity: 0.98 },
         ext_quilombolas: { color: '#9333ea', weight: 2.35, fillOpacity: 0.26, opacity: 0.98 },
+        ext_funai: { color: '#7c3aed', weight: 2.45, fillOpacity: 0.27, opacity: 0.99 },
+        ext_icmbio_embargo: { color: '#be123c', weight: 2.55, fillOpacity: 0.28, opacity: 0.99 },
         ext_apa: { color: '#16a34a', weight: 2.35, fillOpacity: 0.24, opacity: 0.98 },
         ext_sicor: { color: '#3b82f6', weight: 2.65, fillOpacity: 0.28, opacity: 0.99 },
         ext_outros_car: { color: '#0891b2', weight: 2.55, fillOpacity: 0.22, opacity: 0.99 }

@@ -17,5 +17,4 @@ import_inbox/*
 manage_batches/*
 !manage_batches/.gitkeep
 import_inbox/.manage_batches/
-echo ".envback" >> .gitignore
-echo ".env" >> .gitignore
+.envback

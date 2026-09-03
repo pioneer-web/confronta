@@ -14,10 +14,17 @@ def env_int(name, default=0):
 def env_list(name, default=''):
     return [x.strip() for x in os.getenv(name, default).split(',') if x.strip()]
 
+DJANGO_ENV = os.getenv('DJANGO_ENV', 'development').strip().lower()
+if DJANGO_ENV not in {'development', 'production', 'test'}:
+    raise ImproperlyConfigured('DJANGO_ENV deve ser development, production ou test.')
+
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'unsafe-local-key-change-me')
-DEBUG = env_bool('DJANGO_DEBUG', True)
+DEBUG = env_bool('DJANGO_DEBUG', DJANGO_ENV != 'production')
 ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000')
+
+if DJANGO_ENV == 'production' and DEBUG:
+    raise ImproperlyConfigured('DJANGO_DEBUG deve estar desabilitado quando DJANGO_ENV=production.')
 
 INSTALLED_APPS = [
     'django.contrib.auth','django.contrib.contenttypes','django.contrib.sessions',
@@ -73,8 +80,19 @@ SECURE_COOKIES=env_bool('DJANGO_SECURE_COOKIES',False); SESSION_COOKIE_SECURE=SE
 TRUST_PROXY_HEADERS=env_bool('DJANGO_TRUST_PROXY_HEADERS',False); SECURE_SSL_REDIRECT=env_bool('DJANGO_SECURE_SSL_REDIRECT',False); SECURE_HSTS_SECONDS=env_int('DJANGO_SECURE_HSTS_SECONDS',0)
 if TRUST_PROXY_HEADERS: SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO','https')
 if not DEBUG:
-    if SECRET_KEY == 'unsafe-local-key-change-me' or len(SECRET_KEY) < 50: raise ImproperlyConfigured('DJANGO_SECRET_KEY deve ter pelo menos 50 caracteres em produção.')
-    if not SECURE_COOKIES: raise ImproperlyConfigured('DJANGO_SECURE_COOKIES deve estar habilitado em produção.')
+    if SECRET_KEY == 'unsafe-local-key-change-me' or len(SECRET_KEY) < 50:
+        raise ImproperlyConfigured('DJANGO_SECRET_KEY deve ter pelo menos 50 caracteres em produção.')
+    if not SECURE_COOKIES:
+        raise ImproperlyConfigured('DJANGO_SECURE_COOKIES deve estar habilitado em produção.')
+
+if DJANGO_ENV == 'production':
+    if not ALLOWED_HOSTS or any(host in {'localhost', '127.0.0.1', '*'} for host in ALLOWED_HOSTS):
+        raise ImproperlyConfigured('DJANGO_ALLOWED_HOSTS deve conter apenas hosts públicos explícitos em produção.')
+    if not CSRF_TRUSTED_ORIGINS or any(
+        origin.startswith('http://localhost') or origin.startswith('http://127.0.0.1')
+        for origin in CSRF_TRUSTED_ORIGINS
+    ):
+        raise ImproperlyConfigured('DJANGO_CSRF_TRUSTED_ORIGINS deve conter origens HTTPS públicas em produção.')
 LOGGING={'version':1,'disable_existing_loggers':False,'handlers':{'console':{'class':'logging.StreamHandler'}},'root':{'handlers':['console'],'level':'INFO'},'loggers':{'administracao':{'handlers':['console'],'level':'INFO','propagate':False}}}
 
 # Sincronizações automáticas de fontes públicas. O SICAR permanece manual.

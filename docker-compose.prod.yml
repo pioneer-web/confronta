@@ -31,6 +31,10 @@ services:
       db:
         condition: service_healthy
     environment:
+      DJANGO_ENV: production
+      DJANGO_DEBUG: "false"
+      DJANGO_RUN_MIGRATIONS: "true"
+      DJANGO_BOOTSTRAP_SUPERADMIN: "true"
       DJANGO_COLLECTSTATIC: "true"
       BATCH_STORAGE_DIR: /app/manage_batches
       BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
@@ -68,6 +72,8 @@ services:
     env_file:
       - .env
     environment:
+      DJANGO_ENV: production
+      DJANGO_DEBUG: "false"
       BATCH_STORAGE_DIR: /app/manage_batches
       BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
       BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
@@ -93,6 +99,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      DJANGO_ENV: production
+      DJANGO_DEBUG: "false"
     depends_on:
       db:
         condition: service_healthy
@@ -110,6 +119,8 @@ services:
     env_file:
       - .env
     environment:
+      DJANGO_ENV: production
+      DJANGO_DEBUG: "false"
       BATCH_STORAGE_DIR: /app/manage_batches
       BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
       BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy

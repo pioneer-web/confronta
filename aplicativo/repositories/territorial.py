@@ -156,10 +156,34 @@ class RepositorioTerritorial:
                 'data_importacao',
             ),
         },
+        'icmbio_embargo': {
+            'fonte': FonteDados.ICMBIO,
+            'schema': 'dados_icmbio',
+            'tabela': 'icmbio_embargo',
+            'label': 'Embargo ICMBio',
+            'include_full_geometry': True,
+            'campos': (
+                'embargo_id', 'numero_embargo', 'data_embargo', 'situacao',
+                'area_ha', 'data_base',
+            ),
+        },
+        'funai': {
+            'fonte': FonteDados.FUNAI,
+            'schema': 'dados_funai',
+            'tabela': 'funai_terras_indigenas',
+            'label': 'Terra Indígena — FUNAI',
+            'include_full_geometry': True,
+            'campos': (
+                'terrai_cod', 'terrai_nom', 'etnia_nome', 'municipio', 'uf_sigla',
+                'superficie', 'fase_ti', 'modalidade', 'coordenacao_regional',
+                'faixa_fronteira', 'data_atualizacao',
+            ),
+        },
         'sicor_wkt': {
             'fonte': FonteDados.SICOR,
             'schema': 'dados_sicor',
             'tabela': 'sicor_glebas_wkt',
+            'include_full_geometry': True,
             'label': 'SICOR / Glebas financiadas — WKT',
             'geometry_column': 'geom',
             'campos': (
@@ -170,6 +194,7 @@ class RepositorioTerritorial:
             'fonte': FonteDados.SICOR,
             'schema': 'dados_sicor',
             'tabela': 'sicor_glebas_contratadas',
+            'include_full_geometry': True,
             'label': 'SICOR / Glebas contratadas',
             'geometry_column': 'geom',
             'campos': (
@@ -1022,17 +1047,31 @@ class RepositorioTerritorial:
             filtro=filtro,
         )
 
+        full_geometry_sql = (
+            sql.SQL(
+                "ST_AsGeoJSON(ST_Force2D(ST_Transform("
+                "ST_CollectionExtract(ST_MakeValid({geometry}), 3), 4326)), 6)"
+            ).format(geometry=geometry_sql)
+            if cfg.get('include_full_geometry')
+            else sql.SQL("NULL::text")
+        )
+
         query = cte + sql.SQL(
             "SELECT {campos_prefixo}"
             "area_fonte_m2 / 10000.0 AS area_geometria_ha, "
             "area_sobreposta_m2 / 10000.0 AS area_sobreposta_ha, "
             "CASE WHEN area_car_m2 > 0 THEN (area_sobreposta_m2 / area_car_m2) * 100.0 ELSE NULL END AS percentual_car, "
-            "ST_AsGeoJSON(ST_Force2D(ST_Transform(inter_geom, 4326)), 6) AS geojson "
+            "CASE WHEN area_fonte_m2 > 0 THEN (area_sobreposta_m2 / area_fonte_m2) * 100.0 ELSE NULL END AS percentual_fonte, "
+            "ST_AsGeoJSON(ST_Force2D(ST_Transform(inter_geom, 4326)), 6) AS geojson, "
+            "{full_geometry} AS full_geojson "
             "FROM metricas "
             "WHERE area_sobreposta_m2 > %s "
             "ORDER BY area_sobreposta_m2 DESC "
             "LIMIT %s"
-        ).format(campos_prefixo=campos_prefixo)
+        ).format(
+            campos_prefixo=campos_prefixo,
+            full_geometry=full_geometry_sql,
+        )
 
         with connection.cursor() as cursor:
             cursor.execute(query, [car, self.TOLERANCIA_INTERSECAO_M2, limite + 1])
@@ -1051,11 +1090,17 @@ class RepositorioTerritorial:
             props['area_geometria_ha'] = self._numero(row[offset])
             props['area_sobreposta_ha'] = self._numero(row[offset + 1])
             props['percentual_car'] = self._numero(row[offset + 2])
-            geometry_raw = row[offset + 3]
+            props['percentual_fonte'] = self._numero(row[offset + 3])
+            geometry_raw = row[offset + 4]
+            full_geometry_raw = row[offset + 5]
             geometry = json.loads(geometry_raw) if geometry_raw else None
+            full_geometry = json.loads(full_geometry_raw) if full_geometry_raw else None
             registros.append(props.copy())
             if geometry:
-                features.append({'type': 'Feature', 'properties': props, 'geometry': geometry})
+                feature_props = props.copy()
+                if full_geometry:
+                    feature_props['_confronta_full_geometry'] = full_geometry
+                features.append({'type': 'Feature', 'properties': feature_props, 'geometry': geometry})
 
         area_unica = None
         if registros:
