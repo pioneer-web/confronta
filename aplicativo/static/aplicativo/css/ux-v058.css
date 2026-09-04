@@ -1,0 +1,28 @@
+/* CONFRONTA v0.5.8 — comunicados, chat e medição acessível */
+.client-comms{position:fixed;right:18px;bottom:34px;z-index:2500;pointer-events:none}
+.client-notice-fab{display:none!important}
+.client-chat-fab{position:fixed;right:18px;bottom:34px;z-index:2501;display:grid;place-items:center;width:50px;height:50px;border:0;border-radius:50%;color:#fff;background:#0b7567;box-shadow:0 8px 28px rgba(3,31,43,.3);cursor:pointer;pointer-events:auto}
+.client-chat-fab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.client-chat-badge,.client-comms-badge{position:absolute;top:-4px;right:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#e34f4f;color:#fff;font-size:10px;font-weight:800;line-height:19px;text-align:center;border:2px solid #fff}
+.client-chat-panel{position:fixed;right:18px;bottom:94px;z-index:2502;width:min(360px,calc(100vw - 36px));border:1px solid #d2e0dd;border-radius:16px;background:#fff;box-shadow:0 18px 55px rgba(3,31,43,.28);overflow:hidden;pointer-events:auto}
+.client-notice-panel{position:fixed;left:218px;top:112px;z-index:2502;width:min(370px,calc(100vw - 250px));max-height:460px;border:1px solid #d2e0dd;border-radius:14px;background:#fff;box-shadow:0 18px 55px rgba(3,31,43,.24);overflow:hidden;pointer-events:auto}
+.client-chat-head,.client-notice-panel>header{display:flex;gap:10px;align-items:center;padding:13px 14px;background:#0b2d3c;color:#fff}
+.client-chat-head>div:nth-child(2),.client-notice-panel>header>div{display:grid;flex:1}
+.client-chat-head strong,.client-notice-panel>header strong{font-size:13px}.client-chat-head small,.client-notice-panel>header small{font-size:9px;opacity:.72}
+.client-chat-head>button,.client-notice-panel>header>button{width:28px;height:28px;border:0;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;font-size:18px;cursor:pointer}
+.client-chat-avatar{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#0f8f83;color:#fff;font-size:13px;font-weight:900}
+.client-chat-messages{height:310px;padding:13px;overflow:auto;background:#f6faf9}
+.client-chat-empty,.client-notice-empty{padding:24px 12px;text-align:center;color:#829095;font-size:11px}
+.client-chat-message{max-width:82%;margin:0 0 9px;padding:9px 10px;border-radius:12px;background:#fff;border:1px solid #dce7e5}
+.client-chat-message.is-client{margin-left:auto;background:#e9f7f4;border-color:#c4e6df}.client-chat-message.is-support{margin-right:auto}
+.client-chat-message p{margin:0;color:#233b44;font-size:11px;line-height:1.45;white-space:pre-wrap}.client-chat-message small{display:block;margin-top:5px;color:#819095;font-size:8px}
+.client-chat-form{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:8px;padding:10px;border-top:1px solid #e0e8e6;background:#fff}
+.client-chat-form textarea{resize:none;min-height:40px;max-height:90px;padding:9px 10px;border:1px solid #cfddda;border-radius:10px;outline:none;font:inherit;font-size:11px;color:#263e47}
+.client-chat-form button{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:10px;background:#0f8f83;color:#fff;cursor:pointer}
+.client-notice-list{max-height:390px;overflow:auto;padding:8px;background:#f7faf9}.client-notice-item{display:grid;grid-template-columns:8px 1fr;gap:9px;padding:10px;border-bottom:1px solid #e2e9e7}.client-notice-dot{width:7px;height:7px;margin-top:5px;border-radius:50%;background:#b9c6c3}.client-notice-item.is-unread .client-notice-dot{background:#f0a93b;box-shadow:0 0 0 3px rgba(240,169,59,.15)}.client-notice-item p{margin:0;color:#30464e;font-size:11px;line-height:1.45}.client-notice-item small{display:block;margin-top:5px;color:#879397;font-size:9px}
+.client-rail-link .rail-inline-badge{margin-left:auto;display:grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#e34f4f;color:#fff;font-size:9px;font-weight:800}
+.distance-measure-manager{position:fixed;right:82px;bottom:34px;z-index:2400;width:260px;border:1px solid #cfe0dc;border-radius:13px;background:#fff;box-shadow:0 12px 36px rgba(3,31,43,.24);overflow:hidden}
+.distance-measure-manager header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#0b2d3c;color:#fff}.distance-measure-manager header div{display:grid}.distance-measure-manager header small{font-size:8px;letter-spacing:.08em;opacity:.7}.distance-measure-manager header strong{font-size:12px}.distance-measure-manager header button{width:26px;height:26px;border:0;border-radius:7px;background:rgba(255,255,255,.1);color:#fff;font-size:17px;cursor:pointer}
+.distance-measure-manager-value{padding:12px 12px 2px;color:#0b7567;font-size:22px;font-weight:850}.distance-measure-manager p{margin:0;padding:3px 12px 10px;color:#6d7e83;font-size:10px;line-height:1.4}.distance-measure-manager-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 12px}.distance-measure-manager-actions button{height:34px;border:1px solid #abd7cf;border-radius:8px;background:#eef9f6;color:#0b7567;font-size:10px;font-weight:800;cursor:pointer}.distance-measure-manager-actions button.is-danger{border-color:#ebc8c8;background:#fff7f7;color:#a43d3d}
+.leaflet-interactive[role="button"]:focus{outline:none;filter:drop-shadow(0 0 4px rgba(0,212,126,.9))}
+@media(max-width:680px){.client-chat-fab{right:10px;bottom:24px}.client-chat-panel{right:10px;bottom:82px;width:calc(100vw - 20px)}.client-notice-panel{left:10px;right:10px;top:86px;width:auto}.distance-measure-manager{left:10px;right:10px;bottom:82px;width:auto}}

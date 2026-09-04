@@ -1,0 +1,35 @@
+{% extends 'administracao/base.html' %}
+{% load static %}
+{% block title %}Atendimento — CONFRONTA{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'administracao/css/atendimento.css' %}?v=057">{% endblock %}
+{% block content %}
+<div class="page-head support-detail-head">
+<div><div class="eyebrow">ATENDIMENTO</div><h1>{{ atendimento.cliente.get_full_name|default:atendimento.cliente.email }}</h1><p>{{ atendimento.cliente.email }} · <span id="manage-chat-status">{{ atendimento.get_status_display }}</span></p></div>
+<a class="button" href="{% url 'administracao:atendimentos' %}">← Voltar</a>
+</div>
+<div class="support-detail-grid">
+<section class="card support-chat-card" id="manage-chat" data-state-url="{% url 'administracao:atendimento_estado' atendimento.pk %}">
+<div class="support-chat-messages" id="manage-chat-messages">
+{% for mensagem in mensagens_chat %}
+<article class="support-chat-bubble {% if mensagem.autor_id == atendimento.cliente_id %}is-client{% else %}is-team{% endif %}"><p>{{ mensagem.texto }}</p><small>{{ mensagem.autor.get_full_name|default:mensagem.autor.email }} · {{ mensagem.criado_em|date:'d/m/Y H:i' }}</small></article>
+{% endfor %}
+</div>
+<form method="post" class="support-reply-form">{% csrf_token %}<input type="hidden" name="acao" value="mensagem"><textarea name="texto" maxlength="4000" rows="3" placeholder="Digite a resposta para o cliente..." required></textarea><button class="button primary" type="submit">Enviar resposta</button></form>
+</section>
+<aside class="card support-side-card"><h2>Atendimento</h2><dl>
+<div><dt>Status</dt><dd>{{ atendimento.get_status_display }}</dd></div><div><dt>Cliente</dt><dd>{{ atendimento.cliente.get_full_name|default:atendimento.cliente.email }}</dd></div><div><dt>Atendente</dt><dd>{{ atendimento.atendente.get_full_name|default:atendimento.atendente.email|default:'Não atribuído' }}</dd></div><div><dt>Iniciado</dt><dd>{{ atendimento.criado_em|date:'d/m/Y H:i' }}</dd></div>
+</dl>
+<form method="post">{% csrf_token %}{% if atendimento.status == 'ENCERRADO' %}<input type="hidden" name="acao" value="reabrir"><button class="button" type="submit">Reabrir atendimento</button>{% else %}<input type="hidden" name="acao" value="encerrar"><button class="button support-close-ticket" type="submit">Encerrar atendimento</button>{% endif %}</form>
+</aside>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+const root=document.getElementById('manage-chat'),list=document.getElementById('manage-chat-messages'),status=document.getElementById('manage-chat-status');if(!root||!list)return;let signature='';
+function render(items){const sig=(items||[]).map(x=>x.id+':'+x.criado_em).join('|');if(sig===signature)return;signature=sig;list.replaceChildren();(items||[]).forEach(item=>{const b=document.createElement('article');b.className='support-chat-bubble '+(item.cliente?'is-client':'is-team');const p=document.createElement('p');p.textContent=item.texto;const s=document.createElement('small');s.textContent=item.autor+' · '+item.criado_em;b.append(p,s);list.appendChild(b)});list.scrollTop=list.scrollHeight}
+async function poll(){try{const r=await fetch(root.dataset.stateUrl,{headers:{Accept:'application/json'}});if(r.ok){const d=await r.json();render(d.mensagens);if(status)status.textContent=d.status_label||''}}catch(e){}window.setTimeout(poll,5000)}
+list.scrollTop=list.scrollHeight;poll();
+})();
+</script>
+{% endblock %}

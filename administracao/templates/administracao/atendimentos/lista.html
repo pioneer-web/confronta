@@ -1,0 +1,16 @@
+{% extends 'administracao/base.html' %}
+{% load static %}
+{% block title %}Atendimentos — CONFRONTA{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'administracao/css/atendimento.css' %}?v=057">{% endblock %}
+{% block content %}
+<div class="page-head"><div><div class="eyebrow">ATENDIMENTO</div><h1>Chat com clientes</h1><p>Acompanhe dúvidas enviadas diretamente pela Área do Cliente.</p></div></div>
+<section class="card"><div class="support-admin-list">
+{% for atendimento in atendimentos %}
+<a class="support-admin-row" href="{% url 'administracao:atendimento_detalhe' atendimento.pk %}">
+<div class="support-admin-avatar">{{ atendimento.cliente.first_name|default:atendimento.cliente.email|slice:":1"|upper }}</div>
+<div class="support-admin-copy"><strong>{{ atendimento.cliente.get_full_name|default:atendimento.cliente.email }}</strong><span>{{ atendimento.ultima_mensagem_obj.texto|default:'Sem mensagem'|truncatechars:90 }}</span><small>{{ atendimento.ultima_interacao_em|date:'d/m/Y H:i' }}</small></div>
+<div class="support-admin-status">{% if atendimento.nao_lidas_equipe %}<b>{{ atendimento.nao_lidas_equipe }}</b>{% endif %}<span class="badge {% if atendimento.status == 'ENCERRADO' %}neutral{% elif atendimento.status == 'EM_ATENDIMENTO' %}warning{% else %}success{% endif %}">{{ atendimento.get_status_display }}</span></div>
+</a>
+{% empty %}<div class="support-admin-empty">Nenhuma conversa iniciada pelos clientes.</div>{% endfor %}
+</div></section>
+{% endblock %}
