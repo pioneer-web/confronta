@@ -33,6 +33,10 @@
     const totalAreaElement = document.getElementById('gleba-area');
     const statusElement = document.getElementById('gleba-status');
     const downloadAllButton = document.getElementById('download-drawn-kml');
+    const downloadAllCsvButton = document.getElementById('download-drawn-csv');
+    const importPanel = document.getElementById('gleba-import-panel');
+    const importDropzone = document.getElementById('gleba-import-dropzone');
+    const drawHelper = document.getElementById('polygon-draw-helper');
     const overlapAlert = document.getElementById('overlap-alert');
     const liveAreaBox = document.getElementById('gleba-live-area-map');
     const liveAreaValue = document.getElementById('gleba-live-area-value');
@@ -123,10 +127,12 @@
                 id: nextId(),
                 nome: nextDefaultName(),
                 cor: selectedColor,
-                origem: 'desenhada'
+                origem: 'desenhada',
+                visivel: true
             };
         }
         layer._confronta.cor = normalizeColor(layer._confronta.cor);
+        if (typeof layer._confronta.visivel !== 'boolean') layer._confronta.visivel = true;
         return layer._confronta;
     }
 
@@ -137,7 +143,8 @@
             confronta_id: String(meta.id),
             confronta_nome: meta.nome,
             confronta_cor: meta.cor,
-            confronta_origem: meta.origem
+            confronta_origem: meta.origem,
+            confronta_visivel: meta.visivel !== false
         });
         return feature;
     }
@@ -309,7 +316,7 @@
         const titleStrong = document.createElement('strong');
         titleStrong.textContent = meta.nome;
         const titleMeta = document.createElement('span');
-        titleMeta.textContent = meta.origem === 'importada' ? 'Gleba importada' : 'Gleba desenhada';
+        titleMeta.textContent = meta.origem === 'importada' ? 'Polígono importado' : 'Polígono desenhado';
         title.append(titleStrong, titleMeta);
         head.append(dot, title);
 
@@ -431,8 +438,9 @@
         const layers = drawnItems.getLayers();
         const total = layers.reduce((sum, layer) => sum + areaHa(featureForLayer(layer)), 0);
         if (totalAreaElement) totalAreaElement.textContent = `${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`;
-        if (statusElement) statusElement.textContent = layers.length ? `${layers.length} gleba${layers.length > 1 ? 's' : ''} salva${layers.length > 1 ? 's' : ''} nesta sessão.` : 'Nenhuma gleba salva.';
+        if (statusElement) statusElement.textContent = layers.length ? `${layers.length} polígono${layers.length > 1 ? 's' : ''} salvo${layers.length > 1 ? 's' : ''} nesta sessão.` : 'Nenhum polígono salvo.';
         if (downloadAllButton) downloadAllButton.disabled = layers.length === 0;
+        if (downloadAllCsvButton) downloadAllCsvButton.disabled = layers.length === 0;
         renderList();
         refreshGlebaPopups();
         persistSession();
@@ -455,7 +463,8 @@
         });
         if (step === 'create' && stepCreate) {
             stepCreate.hidden = false;
-            if (workflowTitle) workflowTitle.textContent = 'Criar gleba';
+            if (workflowTitle) workflowTitle.textContent = 'Criar polígono';
+            if (typeof setCreateMode === 'function') setCreateMode('draw');
         }
         if (step === 'drawing' && stepDrawing) {
             stepDrawing.hidden = false;
@@ -463,7 +472,7 @@
         }
         if (step === 'name' && stepName) {
             stepName.hidden = false;
-            if (workflowTitle) workflowTitle.textContent = 'Identifique a gleba';
+            if (workflowTitle) workflowTitle.textContent = 'Identifique o polígono';
             if (pendingName) window.setTimeout(() => pendingName.focus(), 40);
         }
     }
@@ -570,7 +579,7 @@
         if (!pendingLayer) return;
         const feature = pendingLayer.toGeoJSON();
         if (!geometryLooksValid(feature)) {
-            window.alert('A geometria da gleba não é válida.');
+            window.alert('A geometria do polígono não é válida.');
             return;
         }
         const name = sanitizeName(pendingName && pendingName.value, nextDefaultName());
@@ -578,7 +587,8 @@
             id: nextId(),
             nome: name,
             cor: selectedColor,
-            origem: 'desenhada'
+            origem: 'desenhada',
+            visivel: true
         };
         if (typeof pendingLayer.setStyle === 'function') pendingLayer.setStyle(glebaStyle(selectedColor, false));
         map.removeLayer(pendingLayer);
@@ -659,62 +669,94 @@
         showOverlapAlert(warningLabels(feature, layer), 'Atenção — edição');
     }
 
+    function polygonRings(geometry) {
+        if (!geometry || !geometry.coordinates) return [];
+        if (geometry.type === 'Polygon') return geometry.coordinates;
+        if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat();
+        return [];
+    }
+
+    function polygonPreviewSvg(feature, color, visible) {
+        const rings = polygonRings(feature && feature.geometry);
+        const coords = rings.flat().filter((coord) => Array.isArray(coord) && coord.length >= 2);
+        if (!coords.length) return '';
+        const xs = coords.map((coord) => Number(coord[0])).filter(Number.isFinite);
+        const ys = coords.map((coord) => Number(coord[1])).filter(Number.isFinite);
+        if (!xs.length || !ys.length) return '';
+
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const dx = Math.max(maxX - minX, 1e-9);
+        const dy = Math.max(maxY - minY, 1e-9);
+        const width = 92;
+        const height = 62;
+        const pad = 7;
+        const scale = Math.min((width - pad * 2) / dx, (height - pad * 2) / dy);
+        const ox = (width - dx * scale) / 2;
+        const oy = (height - dy * scale) / 2;
+
+        const path = rings.map((ring) => ring.map((coord, index) => {
+            const x = ox + (Number(coord[0]) - minX) * scale;
+            const y = height - (oy + (Number(coord[1]) - minY) * scale);
+            return `${index ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(2)}`;
+        }).join(' ') + ' Z').join(' ');
+
+        const safeColor = normalizeColor(color);
+        const stroke = safeColor === '#FFFFFF' ? '#65767c' : safeColor;
+        const fill = safeColor === '#FFFFFF' ? '#eef3f2' : safeColor;
+        return `<svg viewBox="0 0 ${width} ${height}" aria-hidden="true"><path d="${path}" fill="${fill}" fill-opacity="${visible ? '.14' : '.05'}" stroke="${stroke}" stroke-opacity="${visible ? '1' : '.38'}" stroke-width="2" vector-effect="non-scaling-stroke"></path></svg>`;
+    }
+
+    function applyLayerVisibility(layer) {
+        if (!layer) return;
+        const meta = metadataFor(layer);
+        const visible = meta.visivel !== false;
+        if (typeof layer.setStyle === 'function') {
+            const style = glebaStyle(meta.cor, false);
+            if (!visible) {
+                style.opacity = 0;
+                style.fillOpacity = 0;
+            }
+            layer.setStyle(style);
+        }
+        const element = typeof layer.getElement === 'function' ? layer.getElement() : null;
+        if (element) element.style.pointerEvents = visible ? '' : 'none';
+        if (!visible && layer.editing && layer.editing.enabled()) {
+            try { layer.editing.disable(); } catch (error) { /* noop */ }
+        }
+    }
+
+    function toggleLayerVisibility(layer) {
+        const meta = metadataFor(layer);
+        meta.visivel = meta.visivel === false;
+        applyLayerVisibility(layer);
+        persistSession();
+        snapshot();
+        renderList();
+    }
+
     function renderList() {
         if (!listElement) return;
         listElement.replaceChildren();
+
         drawnItems.getLayers().forEach((layer, index) => {
             const meta = metadataFor(layer);
             const feature = featureForLayer(layer);
             const alerts = warningLabels(feature, layer);
+            const visible = meta.visivel !== false;
 
             const item = document.createElement('article');
-            item.className = `gleba-item${alerts.length ? ' has-overlap' : ''}`;
+            item.className = `polygon-item${alerts.length ? ' has-overlap' : ''}${visible ? '' : ' is-hidden'}`;
 
-            const top = document.createElement('div');
-            top.className = 'gleba-item-top';
-            const dot = document.createElement('span');
-            dot.className = 'gleba-color-dot';
-            dot.style.backgroundColor = meta.cor;
-            if (meta.cor === '#FFFFFF') dot.classList.add('dot-white');
-            const name = document.createElement('input');
-            name.type = 'text';
-            name.maxLength = 80;
-            name.value = meta.nome;
-            name.className = 'gleba-name-input';
-            name.setAttribute('aria-label', `Nome da gleba ${index + 1}`);
-            name.addEventListener('change', () => {
-                meta.nome = sanitizeName(name.value, `Gleba ${index + 1}`);
-                name.value = meta.nome;
-                refresh();
-            });
-            top.append(dot, name);
-
-            const detail = document.createElement('div');
-            detail.className = 'gleba-item-details';
-
-            const detailInfo = document.createElement('div');
-            detailInfo.className = 'gleba-item-detail-info';
-
-            const area = document.createElement('strong');
-            area.textContent = `${areaHa(feature).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`;
-            const origin = document.createElement('span');
-            origin.textContent = meta.origem === 'importada' ? 'Importada' : 'Desenhada';
-            detailInfo.append(area, origin);
-
-            // MÓDULO 2 — ícone localizador da gleba.
-            // O duplo clique reenquadra somente a geometria desta gleba.
-            const locate = document.createElement('button');
-            locate.type = 'button';
-            locate.className = 'gleba-map-locator';
-            locate.title = `Duplo clique para localizar ${meta.nome} no mapa`;
-            locate.setAttribute('aria-label', `Localizar ${meta.nome} no mapa`);
-            locate.innerHTML = `
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z"></path>
-                    <path d="M9 3v15M15 6v15"></path>
-                </svg>`;
-
-            const fitGleba = () => {
+            const preview = document.createElement('button');
+            preview.type = 'button';
+            preview.className = 'polygon-item-preview';
+            preview.title = `Localizar ${meta.nome} no mapa`;
+            preview.setAttribute('aria-label', preview.title);
+            preview.innerHTML = polygonPreviewSvg(feature, meta.cor, visible);
+            preview.addEventListener('click', () => {
                 const bounds = layer.getBounds && layer.getBounds();
                 if (!bounds || !bounds.isValid()) return;
                 map.fitBounds(bounds, {
@@ -722,58 +764,90 @@
                     maxZoom: context.maxNativeZoom || context.maxZoom || 17,
                     animate: false
                 });
-            };
-
-            locate.addEventListener('dblclick', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                fitGleba();
             });
 
-            locate.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    fitGleba();
-                }
+            const main = document.createElement('div');
+            main.className = 'polygon-item-main';
+
+            const name = document.createElement('input');
+            name.type = 'text';
+            name.maxLength = 80;
+            name.value = meta.nome;
+            name.className = 'polygon-name-input';
+            name.setAttribute('aria-label', `Nome do polígono ${index + 1}`);
+            name.addEventListener('change', () => {
+                meta.nome = sanitizeName(name.value, `Polígono ${index + 1}`);
+                name.value = meta.nome;
+                refresh();
             });
 
-            detail.append(detailInfo, locate);
+            const metaRow = document.createElement('div');
+            metaRow.className = 'polygon-item-meta';
+            const origin = document.createElement('span');
+            origin.textContent = meta.origem === 'importada' ? 'Importado' : 'Desenhado';
+            const area = document.createElement('strong');
+            area.textContent = formatAreaHa(areaHa(feature));
+            metaRow.append(origin, area);
+            main.append(name, metaRow);
 
-            const controls = document.createElement('div');
-            controls.className = 'gleba-item-controls';
+            const actions = document.createElement('div');
+            actions.className = 'polygon-item-actions';
 
-            const edit = document.createElement('button');
-            edit.type = 'button';
-            edit.className = 'gleba-mini-button';
-            edit.textContent = 'Editar';
-            edit.addEventListener('click', () => enableLayerEdit(layer, edit));
+            const eye = document.createElement('button');
+            eye.type = 'button';
+            eye.className = `polygon-action-icon polygon-eye${visible ? ' is-active' : ''}`;
+            eye.title = visible ? 'Ocultar polígono no mapa' : 'Mostrar polígono no mapa';
+            eye.setAttribute('aria-label', eye.title);
+            eye.setAttribute('aria-pressed', visible ? 'true' : 'false');
+            eye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="polygon-eye-off-mark" d="M4 4l16 16"/></svg>';
+            eye.addEventListener('click', () => toggleLayerVisibility(layer));
 
             const kml = document.createElement('button');
             kml.type = 'button';
-            kml.className = 'gleba-mini-button';
+            kml.className = 'polygon-export-button';
             kml.textContent = 'KML';
             kml.addEventListener('click', () => downloadLayer(layer));
 
+            const csv = document.createElement('button');
+            csv.type = 'button';
+            csv.className = 'polygon-export-button';
+            csv.textContent = 'CSV';
+            csv.addEventListener('click', () => downloadLayerCsv(layer));
+
+            actions.append(eye, kml, csv);
+
+            const secondary = document.createElement('div');
+            secondary.className = 'polygon-item-secondary-actions';
+
+            const edit = document.createElement('button');
+            edit.type = 'button';
+            edit.className = 'polygon-text-action';
+            edit.textContent = 'Editar';
+            edit.disabled = !visible;
+            edit.addEventListener('click', () => enableLayerEdit(layer, edit));
+
             const del = document.createElement('button');
             del.type = 'button';
-            del.className = 'gleba-mini-button gleba-delete-button';
+            del.className = 'polygon-text-action is-danger';
             del.textContent = 'Excluir';
             del.addEventListener('click', () => {
-                if (!window.confirm(`Excluir a gleba "${meta.nome}" desta sessão?`)) return;
+                if (!window.confirm(`Excluir o polígono "${meta.nome}" desta sessão?`)) return;
                 drawnItems.removeLayer(layer);
                 refresh();
                 showOverlapAlert([]);
             });
-            controls.append(edit, kml, del);
+            secondary.append(edit, del);
 
-            item.append(top, detail, controls);
+            item.append(preview, main, actions, secondary);
+
             if (alerts.length) {
                 const warning = document.createElement('div');
-                warning.className = 'gleba-overlap-warning';
+                warning.className = 'gleba-overlap-warning polygon-warning';
                 warning.textContent = `Alertas: ${alerts.join(', ')}`;
                 item.appendChild(warning);
             }
             listElement.appendChild(item);
+            applyLayerVisibility(layer);
         });
     }
 
@@ -787,6 +861,7 @@
                 nome: feature.properties && feature.properties.confronta_nome,
                 cor: feature.properties && feature.properties.confronta_cor,
                 origem: feature.properties && feature.properties.confronta_origem,
+                visivel: !(feature.properties && feature.properties.confronta_visivel === false),
                 id: feature.properties && feature.properties.confronta_id
             }, false));
         } catch (error) {
@@ -807,10 +882,12 @@
                 id: part === 0 ? String(opts.id || nextId()) : nextId(),
                 nome: part === 0 ? baseName : `${baseName} ${part + 1}`,
                 cor: color,
-                origem: opts.origem || 'importada'
+                origem: opts.origem || 'importada',
+                visivel: opts.visivel !== false
             };
             if (typeof layer.setStyle === 'function') layer.setStyle(glebaStyle(color, false));
             drawnItems.addLayer(layer);
+            applyLayerVisibility(layer);
             added.push(layer);
             part += 1;
         });
@@ -879,7 +956,7 @@
             downloadText(`${safeFilename(meta.nome)}_${safeFilename(carCode)}.kml`, kmlDocument([layer], `${meta.nome} - ${carCode}`));
         } catch (error) {
             console.error(error);
-            window.alert('Não foi possível baixar esta gleba.');
+            window.alert('Não foi possível baixar este polígono.');
         }
     }
     function downloadAll() {
@@ -891,6 +968,82 @@
             console.error(error);
             window.alert('Não foi possível gerar o KML das glebas.');
         }
+    }
+
+    function csvEscape(value) {
+        const text = String(value ?? '');
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    function csvNumber(value, digits) {
+        const number = Number(value);
+        if (!Number.isFinite(number)) return '';
+        return number.toFixed(digits).replace('.', ',');
+    }
+
+    function rowsForCsv(layer) {
+        const feature = featureForLayer(layer);
+        const meta = metadataFor(layer);
+        const rows = [];
+        const geometry = feature.geometry || {};
+        const polygons = geometry.type === 'Polygon'
+            ? [geometry.coordinates]
+            : (geometry.type === 'MultiPolygon' ? geometry.coordinates : []);
+
+        polygons.forEach((polygon, polygonIndex) => {
+            polygon.forEach((ring, ringIndex) => {
+                (ring || []).forEach((coordinate, vertexIndex) => {
+                    rows.push([
+                        meta.nome, carCode,
+                        meta.origem === 'importada' ? 'Importado' : 'Desenhado',
+                        areaHa(feature),
+                        polygonIndex + 1, ringIndex + 1, vertexIndex + 1,
+                        Number(coordinate[0]), Number(coordinate[1])
+                    ]);
+                });
+            });
+        });
+        return rows;
+    }
+
+    function csvDocument(layers) {
+        const header = ['nome', 'car', 'origem', 'area_ha', 'poligono', 'anel', 'vertice', 'longitude', 'latitude'];
+        const rows = [];
+        (layers || []).forEach((layer) => rowsForCsv(layer).forEach((row) => rows.push(row)));
+        return [
+            header.map(csvEscape).join(';'),
+            ...rows.map((row) => row.map((value, index) => {
+                if (index === 3) return csvEscape(csvNumber(value, 4));
+                if (index === 7 || index === 8) return csvEscape(csvNumber(value, 8));
+                return csvEscape(value);
+            }).join(';'))
+        ].join('\r\n');
+    }
+
+    function downloadCsvText(filename, content) {
+        const blob = new Blob(['\uFEFF', content], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.style.display = 'none';
+        document.body.appendChild(anchor);
+        anchor.click();
+        window.setTimeout(() => {
+            URL.revokeObjectURL(url);
+            if (anchor.parentNode) anchor.parentNode.removeChild(anchor);
+        }, 5000);
+    }
+
+    function downloadLayerCsv(layer) {
+        const meta = metadataFor(layer);
+        downloadCsvText(`${safeFilename(meta.nome)}_${safeFilename(carCode)}.csv`, csvDocument([layer]));
+    }
+
+    function downloadAllCsv() {
+        const layers = drawnItems.getLayers();
+        if (!layers.length) return;
+        downloadCsvText(`poligonos_${safeFilename(carCode)}.csv`, csvDocument(layers));
     }
 
     // ---------- Importação ----------
@@ -957,7 +1110,7 @@
         if (file.size > MAX_IMPORT_BYTES) throw new Error('O arquivo excede 5 MB.');
         const text = await file.text();
         const extension = (file.name.split('.').pop() || '').toLowerCase();
-        const fallbackName = sanitizeName(file.name.replace(/\.[^.]+$/, ''), 'Gleba importada');
+        const fallbackName = sanitizeName(file.name.replace(/\.[^.]+$/, ''), 'Polígono importado');
         const items = extension === 'kml' ? parseKml(text, fallbackName) : parseGeoJson(text, fallbackName);
         if (items.length > MAX_IMPORT_POLYGONS) throw new Error(`O arquivo possui mais de ${MAX_IMPORT_POLYGONS} polígonos.`);
         const added = [];
@@ -969,7 +1122,7 @@
         added.forEach((layer) => warningLabels(featureForLayer(layer), layer).forEach((label) => warningSet.add(label)));
         refresh();
         closeWorkflow();
-        showOverlapAlert(Array.from(warningSet), 'Gleba importada — atenção');
+        showOverlapAlert(Array.from(warningSet), 'Polígono importado — atenção');
     }
 
     // ---------- Eventos de interface ----------
@@ -982,20 +1135,66 @@
         button.addEventListener('click', () => setSelectedColor(button.dataset.color));
     });
 
-    if (methodDraw) methodDraw.addEventListener('click', startDrawing);
-    if (methodImport && importInput) methodImport.addEventListener('click', () => importInput.click());
-    if (importInput) importInput.addEventListener('change', async () => {
-        const file = importInput.files && importInput.files[0];
+    function setCreateMode(mode) {
+        const importing = mode === 'import';
+        if (methodDraw) {
+            methodDraw.classList.toggle('is-active', !importing);
+            methodDraw.setAttribute('aria-selected', importing ? 'false' : 'true');
+        }
+        if (methodImport) {
+            methodImport.classList.toggle('is-active', importing);
+            methodImport.setAttribute('aria-selected', importing ? 'true' : 'false');
+        }
+        if (importPanel) importPanel.hidden = !importing;
+        if (drawHelper) drawHelper.hidden = importing;
+        setImportStatus('', false);
+    }
+
+    async function handleImportFile(file) {
+        if (!file) return;
         setImportStatus('Importando e validando a geometria...', false);
         try {
             await importFile(file);
         } catch (error) {
             console.error(error);
-            setImportStatus(error.message || 'Não foi possível importar a gleba.', true);
+            setImportStatus(error.message || 'Não foi possível importar o polígono.', true);
         } finally {
-            importInput.value = '';
+            if (importInput) importInput.value = '';
         }
+    }
+
+    if (methodDraw) methodDraw.addEventListener('click', () => {
+        setCreateMode('draw');
+        startDrawing();
     });
+    if (drawHelper) drawHelper.addEventListener('click', startDrawing);
+    if (methodImport) methodImport.addEventListener('click', () => setCreateMode('import'));
+
+    if (importInput) importInput.addEventListener('change', () => {
+        const file = importInput.files && importInput.files[0];
+        handleImportFile(file);
+    });
+
+    if (importDropzone) {
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            importDropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                importDropzone.classList.add('is-dragging');
+            });
+        });
+        ['dragleave', 'drop'].forEach((eventName) => {
+            importDropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                importDropzone.classList.remove('is-dragging');
+            });
+        });
+        importDropzone.addEventListener('drop', (event) => {
+            const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+            handleImportFile(file);
+        });
+    }
 
     if (pendingSave) pendingSave.addEventListener('click', savePendingLayer);
     if (pendingDiscard) pendingDiscard.addEventListener('click', () => {
@@ -1040,6 +1239,7 @@
     });
     if (drawCancel) drawCancel.addEventListener('click', closeWorkflow);
     if (downloadAllButton) downloadAllButton.addEventListener('click', downloadAll);
+    if (downloadAllCsvButton) downloadAllCsvButton.addEventListener('click', downloadAllCsv);
 
     map.on('draw:drawvertex', (event) => {
         updateDrawingControls();
@@ -1062,7 +1262,7 @@
         stopDrawingHud();
         const feature = event.layer.toGeoJSON();
         if (!geometryLooksValid(feature)) {
-            window.alert('A gleba desenhada é inválida. Tente novamente.');
+            window.alert('O polígono desenhado é inválido. Tente novamente.');
             showWorkflowStep('create');
             return;
         }
@@ -1072,7 +1272,7 @@
         if (pendingArea) pendingArea.textContent = formatAreaHa(areaHa(feature));
         hideLiveArea();
         if (pendingName) pendingName.value = '';
-        showOverlapAlert(warningLabels(feature, null), 'Atenção — nova gleba');
+        showOverlapAlert(warningLabels(feature, null), 'Atenção — novo polígono');
         showWorkflowStep('name');
     });
 

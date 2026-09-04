@@ -3,6 +3,14 @@ from django.db import models
 
 
 class AvisoCliente(models.Model):
+    destinatario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='avisos_clientes_recebidos',
+        help_text='Em branco, o aviso é exibido para todos os clientes.',
+    )
     mensagem = models.TextField()
     ativo = models.BooleanField(default=True, db_index=True)
     criado_em = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -23,13 +31,15 @@ class AvisoCliente(models.Model):
         resumo = ' '.join((self.mensagem or '').split())
         return resumo[:80] or f'Aviso #{self.pk}'
 
+    @property
+    def publico_alvo(self):
+        if self.destinatario_id:
+            return self.destinatario.get_full_name() or self.destinatario.email
+        return 'Todos os clientes'
+
 
 class LeituraAvisoCliente(models.Model):
-    aviso = models.ForeignKey(
-        AvisoCliente,
-        on_delete=models.CASCADE,
-        related_name='leituras',
-    )
+    aviso = models.ForeignKey(AvisoCliente, on_delete=models.CASCADE, related_name='leituras')
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -44,9 +54,7 @@ class LeituraAvisoCliente(models.Model):
                 name='uniq_leitura_aviso_cliente_usuario',
             ),
         ]
-        indexes = [
-            models.Index(fields=['usuario', 'aviso'], name='idx_aviso_leitura_user'),
-        ]
+        indexes = [models.Index(fields=['usuario', 'aviso'], name='idx_aviso_leitura_user')]
         ordering = ['-lido_em']
         verbose_name = 'leitura de aviso aos clientes'
         verbose_name_plural = 'leituras de avisos aos clientes'

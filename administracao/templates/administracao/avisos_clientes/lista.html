@@ -5,7 +5,7 @@
     <div>
         <div class="eyebrow">COMUNICAÇÃO</div>
         <h1>Avisos aos clientes</h1>
-        <p>Publique mensagens que aparecerão no sino da Área do Cliente.</p>
+        <p>Publique comunicados para todos os clientes ou para um cliente específico.</p>
     </div>
 </div>
 
@@ -17,7 +17,13 @@
             {% csrf_token %}
             {{ form.non_field_errors }}
             <label>
-                Mensagem do alerta
+                Destinatário
+                {{ form.destinatario }}
+                {% if form.destinatario.help_text %}<small class="form-hint">{{ form.destinatario.help_text }}</small>{% endif %}
+                {% if form.destinatario.errors %}{{ form.destinatario.errors }}{% endif %}
+            </label>
+            <label>
+                Mensagem do comunicado
                 {{ form.mensagem }}
                 {% if form.mensagem.errors %}{{ form.mensagem.errors }}{% endif %}
             </label>
@@ -30,7 +36,7 @@
     <aside class="card notice-help-card">
         <span class="notice-help-icon">!</span>
         <h2>Como funciona</h2>
-        <p>O aviso é exibido para os usuários da Área do Cliente. O sino fica âmbar enquanto houver mensagens não lidas.</p>
+        <p>Escolha “Todos os clientes” para um comunicado global ou selecione um cliente para uma mensagem individual.</p>
         <p>O contador é individual: se um cliente leu a mensagem, ela deixa de contar apenas para aquele usuário.</p>
     </aside>
 </div>
@@ -55,6 +61,7 @@
                     {% endif %}
                     <span>{{ aviso.criado_em|date:'d/m/Y H:i' }}</span>
                     <span>Leituras: {{ aviso.total_leituras }}</span>
+                    <span><strong>Público:</strong> {{ aviso.publico_alvo }}</span>
                 </div>
                 <p>{{ aviso.mensagem|linebreaksbr }}</p>
                 <small>Publicado por {{ aviso.criado_por.get_full_name|default:aviso.criado_por.email|default:'Usuário removido' }}</small>

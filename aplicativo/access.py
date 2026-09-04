@@ -35,6 +35,10 @@ class AcessoAplicativo:
     def eh_administrador(self):
         return self.origem in {'SUPERADMINISTRADOR', 'ADMIN_TOTAL', 'ADMIN_JUNIOR'}
 
+    @property
+    def eh_cliente(self):
+        return self.origem == 'CLIENTE'
+
     def get_plano_display(self):
         return dict(PerfilCliente.Plano.choices).get(self.plano, self.plano)
 

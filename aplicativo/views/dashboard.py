@@ -1,8 +1,10 @@
 from django.contrib import messages
+from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
 from aplicativo.forms import ConsultaCarForm, ConsultaCoordenadaForm, ConsultaGeometriaForm
+from aplicativo.models import AvisoCliente, LeituraAvisoCliente
 from aplicativo.permissions import cliente_required
 from aplicativo.services import ConsultaCarErro, ConsultaCarService
 from aplicativo.services.consulta_geometria import (
@@ -18,14 +20,33 @@ from aplicativo.security import (
 
 def _contexto_base(request, *, form=None, consulta=None, erro_consulta=None):
     acesso = request.acesso_aplicativo
+
+    avisos_cliente = list(
+        AvisoCliente.objects
+        .filter(ativo=True)
+        .filter(Q(destinatario__isnull=True) | Q(destinatario=request.user))
+        .select_related('destinatario')
+        .order_by('-criado_em', '-id')[:30]
+    )
+    avisos_ids = [aviso.pk for aviso in avisos_cliente]
+    avisos_lidos = set(
+        LeituraAvisoCliente.objects
+        .filter(usuario=request.user, aviso_id__in=avisos_ids)
+        .values_list('aviso_id', flat=True)
+    )
+
     return {
         'form': form or ConsultaCarForm(),
         'consulta': consulta,
         'erro_consulta': erro_consulta,
         'acesso_aplicativo': acesso,
+        'eh_cliente': acesso.eh_cliente,
         'possui_plano': acesso.possui_plano,
         'pode_desenhar_glebas': acesso.pode_desenhar_glebas,
         'consulta_origem': request.session.get(SESSION_CONSULTA_ORIGEM, 'car'),
+        'avisos_cliente': avisos_cliente,
+        'avisos_lidos': avisos_lidos,
+        'avisos_nao_lidos': sum(1 for aviso in avisos_cliente if aviso.pk not in avisos_lidos),
     }
 
 

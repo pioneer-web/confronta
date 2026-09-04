@@ -3,10 +3,13 @@
 {% block title %}CONFRONTA — Área do Cliente{% endblock %}
 {% block client_content_class %}client-content-app{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'aplicativo/css/ux-v058.css' %}?v=058">
+<link rel="stylesheet" href="{% static 'aplicativo/css/ux-v057.css' %}?v=057">
 {% if possui_plano %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-rotate-map@0.3.2/leaflet.css">
 {% if pode_desenhar_glebas %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" crossorigin="">
+<link rel="stylesheet" href="{% static 'aplicativo/css/poligonos.css' %}?v=056-polygonos">
 {% endif %}
 {% endif %}
 {% endblock %}
@@ -21,6 +24,13 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
     <span class="client-rail-label">Alertas</span>
 </button>
+{% if eh_cliente %}
+<button type="button" class="client-rail-link car-rail-tool" id="rail-comunicados" aria-label="Comunicados" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h4l8 4V7l-8 4H4Z"/><path d="M8 13v5"/><path d="M18.5 9.5c1.2 1.5 1.2 3.5 0 5"/></svg>
+    <span class="client-rail-label">Comunicados</span>
+    {% if avisos_nao_lidos %}<span class="rail-inline-badge" id="rail-comunicados-badge">{{ avisos_nao_lidos }}</span>{% else %}<span class="rail-inline-badge" id="rail-comunicados-badge" hidden>0</span>{% endif %}
+</button>
+{% endif %}
 <button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-fit-car"{% else %}data-requires-car="1"{% endif %} aria-label="Mapa">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2Z"/><path d="M8 4v13M16 7v13"/></svg>
     <span class="client-rail-label">Mapa</span>
@@ -30,9 +40,12 @@
     <span class="client-rail-label">Camadas</span>
 </button>
 {% if pode_desenhar_glebas %}
-<button type="button" class="client-rail-link car-rail-tool" {% if consulta %}id="rail-glebas"{% else %}data-requires-car="1"{% endif %} aria-label="Desenhar gleba">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5 9 4l5 1.6 5 4.9-1.8 6.4-5.7 3.1-5.5-2-2-5.5Z"/><path d="M9 4l.5 5.2m4.5-3.6-.7 5.7m5-1-5.7.2m-.8 9.3.8-9.5M4.5 12.5l5 .7"/></svg>
-    <span class="client-rail-label">Desenhar Gleba</span>
+<button type="button" class="client-rail-link car-rail-tool polygon-rail-tool" {% if consulta %}id="rail-glebas"{% else %}data-requires-car="1"{% endif %} aria-label="Polígono">
+    <svg class="polygon-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.2 20.2 3.5 11 7.8 3.8h8.4l4.3 7.2-2.8 9.2Z"/>
+        <path d="m7.2 15.7 4.1-3.2 5.8 2.1M11.3 12.5 10.2 6M17.1 14.6l1-6"/>
+    </svg>
+    <span class="client-rail-label">Polígono</span>
 </button>
 <button type="button" class="client-rail-link car-rail-tool" id="rail-measure-distance" aria-label="Medir distância">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 18 4"/><path d="M7 18H4v-3M15 4h3v3"/><path d="m8 14 2 2M11 11l2 2M14 8l2 2"/></svg>
@@ -115,7 +128,7 @@
             </button>
             <button type="button" class="new-query-option is-draw" data-query-mode="desenho" {% if not pode_desenhar_glebas %}disabled title="Disponível no plano Total"{% endif %}>
                 <span class="new-query-polygon" aria-hidden="true">⬡</span>
-                <span><strong>Desenhar Gleba</strong><small>Desenhe a área diretamente no mapa.</small></span><b>›</b>
+                <span><strong>Polígono</strong><small>Desenhe a área diretamente no mapa.</small></span><b>›</b>
             </button>
         </div>
 
@@ -156,7 +169,7 @@
 
         <div class="new-query-form-view" data-query-view="desenho" hidden>
             <button type="button" class="new-query-back" data-query-back>← Voltar</button>
-            <h3>Desenhar Gleba</h3>
+            <h3>Desenhar polígono</h3>
             <p>O painel será fechado e o modo de desenho será ativado sobre o mapa. Conclua o polígono para localizar os CARs com interseção real.</p>
             <button type="button" class="new-query-primary" id="start-query-draw">Começar a desenhar</button>
         </div>
@@ -229,7 +242,7 @@
             </div>
         </aside>
         <div id="gleba-live-area-map" class="map-live-area" hidden aria-live="polite">
-            <span>Área da gleba</span>
+            <span>Área do polígono</span>
             <strong id="gleba-live-area-value">0,00 ha</strong>
         </div>
 
@@ -238,7 +251,7 @@
             <div class="gleba-drawing-hud-info">
                 <button type="button" id="gleba-hud-color" class="gleba-drawing-hud-color" aria-label="Alterar cor da gleba" title="Alterar cor"></button>
                 <div class="gleba-drawing-hud-copy">
-                    <strong>Desenhando gleba</strong>
+                    <strong>Desenhando polígono</strong>
                     <span id="gleba-hud-area">Marque pelo menos 3 pontos</span>
                 </div>
             </div>
@@ -298,7 +311,7 @@
 
             <div class="territorial-tabs" role="tablist" aria-label="Ferramentas do imóvel">
                 <button type="button" class="territorial-tab is-active" data-side-tab="layers" role="tab" aria-selected="true">Camadas</button>
-                {% if pode_desenhar_glebas %}<button type="button" class="territorial-tab" data-side-tab="glebas" role="tab" aria-selected="false">Glebas</button>{% endif %}
+                {% if pode_desenhar_glebas %}<button type="button" class="territorial-tab" data-side-tab="glebas" role="tab" aria-selected="false">Polígonos</button>{% endif %}
             </div>
 
             <section class="territorial-tab-panel is-active" data-side-panel="layers">
@@ -358,36 +371,83 @@
 
             {% if pode_desenhar_glebas %}
             <section class="territorial-tab-panel" data-side-panel="glebas">
-                <div id="gleba-list-view">
-                    <div class="panel-section-title gleba-heading-row">
-                        <div>
-                            <h3>Glebas</h3>
-                            <span>Desenhos temporários desta sessão.</span>
+                <div id="gleba-list-view" class="polygon-session-view">
+                    <div class="polygon-tool-intro">
+                        <div class="polygon-tool-intro-icon" aria-hidden="true">
+                            <svg class="polygon-tool-icon" viewBox="0 0 24 24">
+                                <path d="M6.2 20.2 3.5 11 7.8 3.8h8.4l4.3 7.2-2.8 9.2Z"/>
+                                <path d="m7.2 15.7 4.1-3.2 5.8 2.1M11.3 12.5 10.2 6M17.1 14.6l1-6"/>
+                            </svg>
                         </div>
-                        <button type="button" class="button button-primary button-compact" id="start-new-gleba">＋ Nova gleba</button>
+                        <div class="polygon-tool-intro-copy">
+                            <span class="eyebrow">POLÍGONOS</span>
+                            <h3>Polígonos da sessão</h3>
+                            <p>Desenhe no mapa ou importe um arquivo e gerencie cada área individualmente.</p>
+                        </div>
+                        <button type="button" class="button button-primary button-compact polygon-new-button" id="start-new-gleba">+ Novo polígono</button>
                     </div>
-                    <div class="gleba-session-summary">
-                        <span id="gleba-status">Nenhuma gleba salva.</span>
+                    <div class="gleba-session-summary polygon-session-summary">
+                        <span id="gleba-status">Nenhum polígono salvo.</span>
                         <strong id="gleba-area">0,00 ha</strong>
                     </div>
-                    <div id="gleba-list" class="gleba-list" aria-live="polite"></div>
-                    <button type="button" class="button button-secondary button-block" id="download-drawn-kml" disabled>Baixar todas as glebas (KML)</button>
+                    <div id="gleba-list" class="gleba-list polygon-list" aria-live="polite"></div>
+                    <div class="polygon-bulk-actions">
+                        <button type="button" class="button button-secondary" id="download-drawn-kml" disabled>Exportar todos em KML</button>
+                        <button type="button" class="button button-secondary" id="download-drawn-csv" disabled>Exportar todos em CSV</button>
+                    </div>
                 </div>
 
                 <div id="gleba-workflow" class="gleba-workflow" hidden>
-                    <div class="gleba-workflow-head">
+                    <div class="gleba-workflow-head polygon-workflow-head">
                         <button type="button" class="gleba-back-button" id="gleba-workflow-back" aria-label="Voltar">←</button>
-                        <div>
-                            <span class="eyebrow">Nova gleba</span>
-                            <h3 id="gleba-workflow-title">Criar gleba</h3>
+                        <div class="polygon-workflow-title">
+                            <span class="eyebrow">NOVO POLÍGONO</span>
+                            <h3 id="gleba-workflow-title">Criar polígono</h3>
+                            <p>Desenhe diretamente no mapa ou importe uma geometria.</p>
                         </div>
                         <button type="button" class="gleba-cancel-button" id="gleba-workflow-cancel">Cancelar</button>
                     </div>
+                    <div class="polygon-stepper" aria-label="Etapas da criação do polígono">
+                        <div class="polygon-stepper-item is-done"><span>✓</span><small>Iniciar</small></div>
+                        <i></i>
+                        <div class="polygon-stepper-item is-active"><span>2</span><small>Desenhar ou importar</small></div>
+                        <i></i>
+                        <div class="polygon-stepper-item"><span>3</span><small>Salvar</small></div>
+                    </div>
 
-                    <section class="gleba-step gleba-create-grid" id="gleba-step-create">
-                        <div>
-                            <p>Escolha uma cor com boa leitura sobre o mapa.</p>
-                            <div class="gleba-color-grid" id="gleba-color-picker" role="radiogroup" aria-label="Cor da nova gleba">
+                    <section class="gleba-step gleba-create-grid polygon-create-step" id="gleba-step-create">
+                        <div class="polygon-mode-tabs" role="tablist" aria-label="Forma de criar o polígono">
+                            <button type="button" class="polygon-mode-tab is-active" id="gleba-method-draw" role="tab" aria-selected="true">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                <span>Desenhe o polígono</span>
+                            </button>
+                            <button type="button" class="polygon-mode-tab" id="gleba-method-import" role="tab" aria-selected="false">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M5 20h14"/></svg>
+                                <span>Importe um arquivo</span>
+                            </button>
+                        </div>
+                        <button type="button" class="polygon-draw-helper" id="polygon-draw-helper">
+                            <div class="polygon-helper-icon" aria-hidden="true">
+                                <svg class="polygon-tool-icon" viewBox="0 0 24 24">
+                                    <path d="M6.2 20.2 3.5 11 7.8 3.8h8.4l4.3 7.2-2.8 9.2Z"/>
+                                    <path d="m7.2 15.7 4.1-3.2 5.8 2.1M11.3 12.5 10.2 6M17.1 14.6l1-6"/>
+                                </svg>
+                            </div>
+                            <div><strong>Desenhar diretamente no mapa</strong><span>Marque os vértices e acompanhe a área em tempo real.</span></div>
+                            <span class="polygon-helper-action">Começar ›</span>
+                        </button>
+                        <div class="polygon-import-panel" id="gleba-import-panel" hidden>
+                            <label class="polygon-import-dropzone" id="gleba-import-dropzone" for="import-gleba-file">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v11H4Z"/><path d="M8 8.5 9.5 5h5L16 8.5"/><path d="M9 13h6M12 10v6"/></svg>
+                                <strong>Clique ou arraste um arquivo</strong>
+                                <span>KML, GeoJSON ou JSON · até 5 MB</span>
+                            </label>
+                            <input class="sr-only" id="import-gleba-file" type="file" accept=".kml,.geojson,.json,application/vnd.google-earth.kml+xml,application/geo+json,application/json">
+                            <div id="gleba-import-status" class="gleba-import-status" aria-live="polite"></div>
+                        </div>
+                        <div class="polygon-color-row">
+                            <div><strong>Cor do polígono</strong><span>Escolha uma cor com boa leitura sobre a imagem de satélite.</span></div>
+                            <div class="gleba-color-grid polygon-color-grid" id="gleba-color-picker" role="radiogroup" aria-label="Cor do novo polígono">
                                 <button type="button" class="gleba-color-swatch is-selected" data-color="#2563EB" title="Azul" aria-label="Azul"></button>
                                 <button type="button" class="gleba-color-swatch" data-color="#0891B2" title="Ciano" aria-label="Ciano"></button>
                                 <button type="button" class="gleba-color-swatch" data-color="#EAB308" title="Amarelo" aria-label="Amarelo"></button>
@@ -397,18 +457,6 @@
                                 <button type="button" class="gleba-color-swatch swatch-white" data-color="#FFFFFF" title="Branco" aria-label="Branco"></button>
                             </div>
                         </div>
-                        <div class="gleba-create-actions">
-                            <button type="button" class="gleba-method-card" id="gleba-method-draw">
-                                <strong>Desenhar no mapa</strong>
-                                <span>Marque os vértices e acompanhe a área em tempo real.</span>
-                            </button>
-                            <button type="button" class="gleba-method-card" id="gleba-method-import">
-                                <strong>Importar arquivo</strong>
-                                <span>KML, GeoJSON ou JSON.</span>
-                            </button>
-                        </div>
-                        <input class="sr-only" id="import-gleba-file" type="file" accept=".kml,.geojson,.json,application/vnd.google-earth.kml+xml,application/geo+json,application/json">
-                        <div id="gleba-import-status" class="gleba-import-status" aria-live="polite"></div>
                     </section>
 
                     <section class="gleba-step" id="gleba-step-drawing" hidden>
@@ -419,15 +467,15 @@
                     </section>
 
                     <section class="gleba-step" id="gleba-step-name" hidden>
-                        <label for="gleba-pending-name">Nome da gleba</label>
-                        <input id="gleba-pending-name" type="text" maxlength="80" placeholder="Ex.: Gleba Norte">
+                        <label for="gleba-pending-name">Nome do polígono</label>
+                        <input id="gleba-pending-name" type="text" maxlength="80" placeholder="Ex.: Polígono Norte">
                         <div class="gleba-pending-metric">
                             <span>Área aproximada</span>
                             <strong id="gleba-pending-area">0,00 ha</strong>
                         </div>
                         <div class="gleba-save-actions">
                             <button type="button" class="button button-secondary" id="gleba-pending-discard">Voltar</button>
-                            <button type="button" class="button button-primary" id="gleba-pending-save">Salvar gleba</button>
+                            <button type="button" class="button button-primary" id="gleba-pending-save">Salvar polígono</button>
                         </div>
                     </section>
                 </div>
@@ -561,8 +609,8 @@
 
             {% if pode_desenhar_glebas %}
             <section class="report-section">
-                <h3>Glebas atuais</h3>
-                <div id="report-glebas-list" class="report-list"><p class="muted">Nenhuma gleba salva nesta sessão.</p></div>
+                <h3>Polígonos atuais</h3>
+                <div id="report-glebas-list" class="report-list"><p class="muted">Nenhum polígono salvo nesta sessão.</p></div>
             </section>
             {% endif %}
         </div>
@@ -570,6 +618,20 @@
 </section>
 
 {{ consulta|json_script:"consulta-territorial-data" }}
+{% endif %}
+{% if eh_cliente and possui_plano %}
+<div class="client-comms" id="client-comms">
+<button type="button" class="client-notice-fab" id="client-notice-fab" aria-label="Comunicados" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h4l8 4V7l-8 4H4Z"/><path d="M8 13v5"/><path d="M18.5 9.5c1.2 1.5 1.2 3.5 0 5"/></svg>{% if avisos_nao_lidos %}<span class="client-comms-badge" id="client-notice-badge">{{ avisos_nao_lidos }}</span>{% else %}<span class="client-comms-badge" id="client-notice-badge" hidden>0</span>{% endif %}</button>
+<section class="client-notice-panel" id="client-notice-panel" hidden aria-label="Comunicados do CONFRONTA"><header><div><small>CONFRONTA</small><strong>Comunicados</strong></div><button type="button" data-close-notices aria-label="Fechar">×</button></header><div class="client-notice-list">
+{% for aviso in avisos_cliente %}<article class="client-notice-item {% if aviso.pk not in avisos_lidos %}is-unread{% endif %}" data-notice-id="{{ aviso.pk }}" data-read-url="{% url 'aplicativo:marcar_aviso_lido' aviso.pk %}"><div class="client-notice-dot"></div><div><p>{{ aviso.mensagem|linebreaksbr }}</p><small>{{ aviso.criado_em|date:'d/m/Y H:i' }}</small></div></article>{% empty %}<div class="client-notice-empty">Nenhum comunicado no momento.</div>{% endfor %}
+</div></section>
+<button type="button" class="client-chat-fab" id="client-chat-fab" aria-label="Falar com o suporte" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 3Z"/><path d="M8 10h8M8 13h5"/></svg><span class="client-chat-badge" id="client-chat-badge" hidden>0</span></button>
+<section class="client-chat-panel" id="client-chat-panel" hidden data-state-url="{% url 'aplicativo:chat_estado' %}" data-send-url="{% url 'aplicativo:chat_enviar' %}" data-read-url="{% url 'aplicativo:chat_marcar_lido' %}">
+<header class="client-chat-head"><div class="client-chat-avatar" aria-hidden="true">C</div><div><strong>Suporte CONFRONTA</strong><small id="client-chat-status">Envie sua dúvida. Nossa equipe responderá por aqui.</small></div><button type="button" data-close-chat aria-label="Fechar">×</button></header>
+<div class="client-chat-messages" id="client-chat-messages"><div class="client-chat-empty">Como podemos ajudar?</div></div>
+<form class="client-chat-form" id="client-chat-form">{% csrf_token %}<textarea id="client-chat-text" maxlength="2000" rows="2" placeholder="Digite sua mensagem..." required></textarea><button type="submit" aria-label="Enviar mensagem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 18-8-8 18-2-8Z"/><path d="m11 13 4-4"/></svg></button></form>
+</section>
+</div>
 {% endif %}
 {% if possui_plano %}
 <div id="app-config"
@@ -588,8 +650,9 @@
 {% endif %}
 <script src="{% static 'aplicativo/js/mapa.js' %}?v=055-home-intelligence"></script>
 <script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
-{% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=055-home-intelligence"></script>{% endif %}
-<script src="{% static 'aplicativo/js/interface.js' %}?v=055-home-intelligence"></script>
-{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=055-home-intelligence"></script>{% endif %}
+{% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}
+<script src="{% static 'aplicativo/js/interface.js' %}?v=056-polygonos"></script>
+{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=056-polygonos"></script>{% endif %}
 {% endif %}
+<script src="{% static 'aplicativo/js/suporte-chat.js' %}?v=058"></script>
 {% endblock %}

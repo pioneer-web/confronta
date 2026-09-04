@@ -77,6 +77,14 @@
                         </a>
                     </li>
 
+                    <li class="manage-nav-section">Atendimento</li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'atendimentos' or request.resolver_match.url_name == 'atendimento_detalhe' %}active{% endif %}" href="{% url 'administracao:atendimentos' %}">
+                            <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3Z"/><path d="M8 10h8M8 13h5"/></svg></span>
+                            <span class="nav-link-title">Chat com clientes</span>
+                        </a>
+                    </li>
+
                     {% if can_manage_commercial or can_manage_admins %}
                     <li class="manage-nav-section">Usuários e comercial</li>
                     {% endif %}

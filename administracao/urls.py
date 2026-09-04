@@ -1,6 +1,6 @@
 from django.urls import path
 from administracao.views import auth, dashboard, importacoes, bases
-from administracao.views import administradores, clientes, planos, alertas, avisos_clientes, financeiro
+from administracao.views import administradores, clientes, planos, alertas, avisos_clientes, financeiro, atendimentos
 
 app_name = 'administracao'
 
@@ -51,5 +51,8 @@ urlpatterns = [
     path('alertas/', alertas.alertas, name='alertas'),
     path('alertas/tabelas/<int:pk>/excluir/', alertas.excluir_tabela, name='excluir_tabela'),
     path('avisos-clientes/', avisos_clientes.lista_avisos_clientes, name='avisos_clientes'),
+    path('atendimentos/', atendimentos.lista_atendimentos, name='atendimentos'),
+    path('atendimentos/<int:pk>/', atendimentos.atendimento_detalhe, name='atendimento_detalhe'),
+    path('atendimentos/<int:pk>/estado/', atendimentos.atendimento_estado, name='atendimento_estado'),
     path('avisos-clientes/<int:pk>/alternar/', avisos_clientes.alternar_aviso_cliente, name='aviso_cliente_alternar'),
 ]

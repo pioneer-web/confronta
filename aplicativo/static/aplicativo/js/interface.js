@@ -211,7 +211,7 @@
         const svg = document.createElementNS(ns, 'svg');
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('role', 'img');
-        svg.setAttribute('aria-label', 'Mapa vetorial do CAR com as glebas atuais');
+        svg.setAttribute('aria-label', 'Mapa vetorial do CAR com os polígonos atuais');
 
         const background = document.createElementNS(ns, 'rect');
         background.setAttribute('x', '0');
@@ -251,7 +251,7 @@
             text.setAttribute('text-anchor', 'middle');
             text.setAttribute('dominant-baseline', 'middle');
             text.setAttribute('class', 'report-gleba-label');
-            text.textContent = item.nome || 'Gleba';
+            text.textContent = item.nome || 'Polígono';
             labelGroup.appendChild(text);
             svg.appendChild(labelGroup);
         });
@@ -264,7 +264,7 @@
         renderReportMap(currentReportGlebas);
         if (!reportGlebas) return;
         if (!currentReportGlebas.length) {
-            reportGlebas.innerHTML = '<p class="muted">Nenhuma gleba salva nesta sessão.</p>';
+            reportGlebas.innerHTML = '<p class="muted">Nenhum polígono salvo nesta sessão.</p>';
             return;
         }
         reportGlebas.replaceChildren();
@@ -272,7 +272,7 @@
             const row = document.createElement('div');
             const name = document.createElement('span');
             const value = document.createElement('strong');
-            name.textContent = item.nome || 'Gleba';
+            name.textContent = item.nome || 'Polígono';
             const alerts = Array.isArray(item.alertas) && item.alertas.length ? ` · ${item.alertas.join(', ')}` : '';
             value.textContent = `${Number(item.area_ha || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha${alerts}`;
             row.append(name, value);
@@ -404,7 +404,7 @@
             setTerritorialView('map');
             setSideTab('glebas');
             if (toolKicker) toolKicker.textContent = 'PROJETO';
-            if (toolTitle) toolTitle.textContent = 'Glebas';
+            if (toolTitle) toolTitle.textContent = 'Polígonos';
             setRailPressed(railGlebas, true);
             setRailPressed(railReport, false);
             setRailPressed(railAlerts, false);
@@ -510,7 +510,7 @@
     function updateSummaryGlebas(items) {
         if (!summaryGlebasCount) return;
         const quantidade = Array.isArray(items) ? items.length : 0;
-        summaryGlebasCount.textContent = `${quantidade} ${quantidade === 1 ? 'gleba' : 'glebas'}`;
+        summaryGlebasCount.textContent = `${quantidade} ${quantidade === 1 ? 'polígono' : 'polígonos'}`;
     }
     window.addEventListener('confronta:glebas-updated', (event) => {
         updateSummaryGlebas(event.detail && event.detail.items);

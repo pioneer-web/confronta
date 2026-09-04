@@ -599,9 +599,18 @@ from aplicativo.models import AvisoCliente
 class AvisoClienteAdminForm(forms.ModelForm):
     class Meta:
         model = AvisoCliente
-        fields = ('mensagem', 'ativo')
+        fields = ('destinatario', 'mensagem')
         widgets = {'mensagem': forms.Textarea(attrs={'rows': 4})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['destinatario'].label = 'Destinatário'
+        self.fields['destinatario'].required = False
+        self.fields['destinatario'].empty_label = 'Todos os clientes'
+        self.fields['destinatario'].queryset = (
+            User.objects
+            .filter(perfil_cliente__isnull=False, is_active=True)
+            .order_by('first_name', 'last_name', 'email')
+        )
+        self.fields['destinatario'].help_text = 'Deixe em “Todos os clientes” para publicar globalmente.'
         _apply_tabler_form_classes(self)

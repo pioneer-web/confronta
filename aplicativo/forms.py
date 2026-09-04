@@ -61,8 +61,20 @@ class CadastroClienteForm(forms.Form):
             'placeholder': '(00) 00000-0000',
         }),
     )
-    password1 = forms.CharField(label='Senha', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Confirmar senha', widget=forms.PasswordInput)
+    password1 = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={
+            'autocomplete': 'new-password',
+            'minlength': '8',
+        }),
+    )
+    password2 = forms.CharField(
+        label='Confirmar senha',
+        widget=forms.PasswordInput(attrs={
+            'autocomplete': 'new-password',
+            'minlength': '8',
+        }),
+    )
 
     def clean_nome(self):
         nome = ' '.join(self.cleaned_data['nome'].split())

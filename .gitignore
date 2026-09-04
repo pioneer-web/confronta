@@ -18,3 +18,14 @@ manage_batches/*
 !manage_batches/.gitkeep
 import_inbox/.manage_batches/
 .envback
+
+# Artefatos locais de atualização
+*.bak-v*
+*.bak-poligonos-*
+/aplicar_confronta_v*.py
+/aplicar_design_poligonos_v*.py
+/README_V*.md
+/README_POLIGONOS_V*.md
+/payload/
+/INVENTARIO_LOCAL_CONFRONTA.txt
+administracao.txt

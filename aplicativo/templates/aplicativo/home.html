@@ -30,7 +30,7 @@
 
             <div class="cfp-nav-actions">
                 <a class="cfp-nav-login" href="{% url 'aplicativo:login' %}">Entrar</a>
-                <a class="cfp-nav-cta" href="{% url 'aplicativo:cadastro' %}">Começar agora</a>
+                <a class="cfp-nav-cta" href="#planos">Começar agora</a>
                 <button class="cfp-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" data-home-menu-button>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </button>
@@ -50,7 +50,7 @@
                     <p>Visualize o CAR e analise informações ambientais e fundiárias com dados do SICAR, PRODES, IBAMA, INCRA, ICMBio e outras bases integradas.</p>
 
                     <div class="cfp-hero-actions">
-                        <a class="cfp-button cfp-button-primary" href="{% url 'aplicativo:cadastro' %}">
+                        <a class="cfp-button cfp-button-primary" href="#planos">
                             Consultar agora
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                         </a>
@@ -213,7 +213,7 @@
                     </div>
                     <div class="cfp-plan-price"><strong><small>R$</small>{{ plano_confronta.preco_mensal|floatformat:2 }}</strong><span>/mês</span></div>
                     <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
-                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro' %}?ciclo=MONTHLY">Assinar mensal</a>
+                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_mensal' %}">Assinar mensal</a>
                 </article>
 
                 <article class="cfp-plan-card is-featured">
@@ -225,7 +225,7 @@
                     </div>
                     <div class="cfp-plan-price"><strong><small>R$</small>{{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}</strong><span>/mês</span></div>
                     <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
-                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro' %}?ciclo=YEARLY">Assinar anual</a>
+                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_anual' %}">Assinar anual</a>
                 </article>
             </div>
             {% else %}<div class="cfp-empty-plans">O plano está sendo configurado.</div>{% endif %}

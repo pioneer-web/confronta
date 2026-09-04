@@ -86,28 +86,27 @@ def login_view(request):
 
 @sensitive_post_parameters('password1', 'password2')
 @never_cache
-def cadastro_view(request):
-    """Cadastro do cliente + início do Checkout Asaas.
+def cadastro_view(request, modalidade=None):
+    mapa_ciclos = {
+        'mensal': AsaasCheckout.Ciclo.MONTHLY,
+        'anual': AsaasCheckout.Ciclo.YEARLY,
+    }
 
-    A conta nasce sem plano pago. Somente o webhook CHECKOUT_PAID promove o
-    PerfilCliente para o plano comercial CONFRONTA e define a vigência.
-    """
+    if modalidade not in mapa_ciclos:
+        return redirect(f"{reverse('public_root')}#planos")
+
+    ciclo = mapa_ciclos[modalidade]
+
     if request.user.is_authenticated:
         acesso_atual = resolver_acesso_aplicativo(request.user)
+        if acesso_atual is not None and acesso_atual.eh_administrador:
+            logout(request)
+            request.session.pop(SESSION_LOGOUT_LOCAL, None)
+            acesso_atual = None
         if acesso_atual is not None:
-            if acesso_atual.eh_administrador:
-                return redirect(
-                    'aplicativo:login'
-                    if request.session.get(SESSION_LOGOUT_LOCAL)
-                    else 'aplicativo:inicio'
-                )
             return redirect('aplicativo:planos')
 
     plano = PlanoComercial.objects.filter(slug='confronta', ativo=True).first()
-    ciclo = (request.POST.get('ciclo') or request.GET.get('ciclo') or 'MONTHLY').strip().upper()
-    if ciclo not in {AsaasCheckout.Ciclo.MONTHLY, AsaasCheckout.Ciclo.YEARLY}:
-        ciclo = AsaasCheckout.Ciclo.MONTHLY
-
     form = CadastroClienteForm(request.POST or None)
     status = 200
 
@@ -150,7 +149,7 @@ def cadastro_view(request):
                 request.session.pop(SESSION_LOGOUT_LOCAL, None)
                 try:
                     checkout = criar_checkout(request, perfil, ciclo)
-                except (AsaasConfigurationError, AsaasAPIError, RuntimeError, ValueError) as exc:
+                except (AsaasConfigurationError, AsaasAPIError, RuntimeError, ValueError):
                     messages.error(
                         request,
                         'Sua conta foi criada normalmente, mas não foi possível iniciar o pagamento agora. Tente novamente em alguns instantes.',
@@ -162,6 +161,7 @@ def cadastro_view(request):
         'form': form,
         'plano_selecionado': plano,
         'ciclo': ciclo,
+        'modalidade': modalidade,
         'honeypot_field': HONEYPOT_FIELD,
     }, status=status)
 

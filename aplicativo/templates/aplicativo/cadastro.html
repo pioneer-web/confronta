@@ -1,6 +1,7 @@
 {% extends 'aplicativo/base.html' %}
 {% load static %}
 {% block title %}Criar conta — CONFRONTA{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'aplicativo/css/auth-password.css' %}?v=058">{% endblock %}
 {% block public_content %}
 <main class="cf-contract-page">
     <header class="cf-contract-header">
@@ -44,16 +45,36 @@
 
             <form method="post" class="cf-auth-form" novalidate style="margin-top:24px">
                 {% csrf_token %}
-                <input type="hidden" name="ciclo" value="{{ ciclo }}">
-                <div class="security-honeypot" aria-hidden="true"><label>Website<input type="text" name="{{ honeypot_field }}" value="" tabindex="-1" autocomplete="off"></label></div>
+<div class="security-honeypot" aria-hidden="true"><label>Website<input type="text" name="{{ honeypot_field }}" value="" tabindex="-1" autocomplete="off"></label></div>
 
                 {% if form.non_field_errors %}<div class="cf-auth-alert">{{ form.non_field_errors }}</div>{% endif %}
 
                 <div class="cf-field"><label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>{{ form.nome }}{% for error in form.nome.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
                 <div class="cf-field"><label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>{{ form.email }}{% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
                 <div class="cf-field"><label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>{{ form.telefone }}{% for error in form.telefone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
-                <div class="cf-field"><label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>{{ form.password1 }}{% for error in form.password1.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
-                <div class="cf-field"><label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>{{ form.password2 }}{% for error in form.password2.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+                <div class="cf-field">
+                    <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                    <div class="cf-password-wrap">
+                        {{ form.password1 }}
+                        <button type="button" class="cf-password-toggle" data-password-toggle="id_password1" aria-label="Mostrar senha" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true">
+    <g class="eye-on"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></g>
+    <g class="eye-off"><path d="M3 3l18 18"/><path d="M10.6 6.2A10 10 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-2.4 3.1M6.1 6.1C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6a10 10 0 0 0 4-.8"/></g>
+</svg></button>
+                    </div>
+                    <small class="cf-password-help">Mínimo de 8 caracteres.</small>
+                    {% for error in form.password1.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
+                <div class="cf-field">
+                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                    <div class="cf-password-wrap">
+                        {{ form.password2 }}
+                        <button type="button" class="cf-password-toggle" data-password-toggle="id_password2" aria-label="Mostrar senha" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true">
+    <g class="eye-on"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></g>
+    <g class="eye-off"><path d="M3 3l18 18"/><path d="M10.6 6.2A10 10 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-2.4 3.1M6.1 6.1C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6a10 10 0 0 0 4-.8"/></g>
+</svg></button>
+                    </div>
+                    {% for error in form.password2.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+                </div>
 
                 <button class="cf-auth-submit" type="submit">Criar conta e ir para o pagamento</button>
             </form>
@@ -61,12 +82,17 @@
             <div class="cf-contract-plans">
                 <strong>Prefere outra modalidade?</strong>
                 {% if ciclo == 'YEARLY' %}
-                    <a href="{% url 'aplicativo:cadastro' %}?ciclo=MONTHLY"><span>Mensal — R$ 67,90/mês</span><span>Selecionar →</span></a>
+                    <a href="{% url 'aplicativo:cadastro_mensal' %}"><span>Mensal — R$ 67,90/mês</span><span>Selecionar →</span></a>
                 {% else %}
-                    <a href="{% url 'aplicativo:cadastro' %}?ciclo=YEARLY"><span>Anual — R$ 49,90/mês</span><span>Selecionar →</span></a>
+                    <a href="{% url 'aplicativo:cadastro_anual' %}"><span>Anual — R$ 49,90/mês</span><span>Selecionar →</span></a>
                 {% endif %}
+            </div>
+            <div class="cf-contract-existing-login">
+                <span>Já é cadastrado?</span>
+                <a href="{% url 'aplicativo:login' %}">Faça login</a>
             </div>
         </div>
     </section>
 </main>
 {% endblock %}
+{% block scripts %}<script src="{% static 'aplicativo/js/auth-password.js' %}?v=058"></script>{% endblock %}
