@@ -266,13 +266,62 @@ def finalizar_lote_sequencial(request, pk):
     })
 
 @admin_required
-def novo_lote_importacao(request):
+def novo_lote_importacao(request, fonte_slug=None, uf=None):
+    route_source = str(fonte_slug or '').strip().lower()
+
+    if route_source and route_source not in BATCH_FONTE_SLUGS:
+        return redirect('administracao:novo_lote_importacao')
+
+    route_uf = normalize_uf(uf) if route_source == 'sicar' else ''
+
+    # Compatibilidade: links antigos com ?fonte= / ?uf= são imediatamente
+    # canonicalizados para uma rota limpa e nunca permanecem na barra do navegador.
+    if request.method == 'GET' and request.GET:
+        legacy_source = str(request.GET.get('fonte') or '').strip().lower()
+        legacy_uf = normalize_uf(request.GET.get('uf')) if legacy_source == 'sicar' else ''
+
+        if not route_source and legacy_source in BATCH_FONTE_SLUGS:
+            if legacy_source == 'sicar' and legacy_uf:
+                return redirect(
+                    'administracao:novo_lote_importacao_fonte_uf',
+                    fonte_slug=legacy_source,
+                    uf=legacy_uf,
+                )
+            return redirect(
+                'administracao:novo_lote_importacao_fonte',
+                fonte_slug=legacy_source,
+            )
+
+        if route_source == 'sicar' and route_uf:
+            return redirect(
+                'administracao:novo_lote_importacao_fonte_uf',
+                fonte_slug=route_source,
+                uf=route_uf,
+            )
+        if route_source:
+            return redirect(
+                'administracao:novo_lote_importacao_fonte',
+                fonte_slug=route_source,
+            )
+        return redirect('administracao:novo_lote_importacao')
+
+    if uf and route_source != 'sicar':
+        return redirect(
+            'administracao:novo_lote_importacao_fonte',
+            fonte_slug=route_source,
+        )
+    if route_source == 'sicar' and uf and not route_uf:
+        return redirect(
+            'administracao:novo_lote_importacao_fonte',
+            fonte_slug=route_source,
+        )
+
     initial = {}
-    fonte_slug = request.GET.get('fonte', '').strip().lower()
-    if fonte_slug in BATCH_FONTE_SLUGS:
-        initial['fonte'] = fonte_slug
-    locked_source = fonte_slug if fonte_slug in BATCH_FONTE_SLUGS else None
-    locked_uf = normalize_uf(request.GET.get('uf')) if locked_source == 'sicar' else ''
+    if route_source:
+        initial['fonte'] = route_source
+
+    locked_source = route_source or None
+    locked_uf = route_uf if locked_source == 'sicar' else ''
     if locked_uf:
         initial['uf'] = locked_uf
     form = ImportacaoLoteForm(

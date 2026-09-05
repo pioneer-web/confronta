@@ -44,7 +44,7 @@
                     </li>
                     {% for source in manage_sidebar_sources %}
                     <li class="nav-item manage-source-nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'novo_lote_importacao' and request.GET.fonte == source.import_source_slug %}active{% elif request.resolver_match.url_name == 'base_detalhe' and request.resolver_match.kwargs.source_slug == source.slug %}active{% elif request.resolver_match.url_name == 'fonte_datasets' and request.resolver_match.kwargs.fonte_slug == source.import_source_slug %}active{% endif %}" href="{% url 'administracao:novo_lote_importacao' %}?fonte={{ source.import_source_slug }}" title="Importar {{ source.label }} em lote">
+                        <a class="nav-link {% if request.resolver_match.kwargs.fonte_slug == source.import_source_slug %}active{% elif request.resolver_match.url_name == 'base_detalhe' and request.resolver_match.kwargs.source_slug == source.slug %}active{% endif %}" href="{% url 'administracao:novo_lote_importacao_fonte' source.import_source_slug %}" title="Importar {{ source.label }} em lote">
                             <span class="nav-link-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v5h14v-5"/></svg></span>
                             <span class="nav-link-title">{{ source.label }}</span>
                         </a>

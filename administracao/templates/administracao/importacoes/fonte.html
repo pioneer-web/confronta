@@ -12,7 +12,7 @@
     </div>
     <div class="mc-page-actions">
         <a class="btn btn-outline-secondary" href="{% url 'administracao:catalogo_bases' %}">Catálogo</a>
-        {% if batch_enabled %}<a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao' %}?fonte={{ fonte_slug }}">Importar em lote</a>{% endif %}
+        {% if batch_enabled %}<a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao_fonte' fonte_slug %}">Importar em lote</a>{% endif %}
     </div>
 </div>
 

@@ -13,7 +13,7 @@
     <div class="mc-page-actions">
         <a class="btn btn-outline-secondary" href="{% url 'administracao:catalogo_bases' %}">Voltar ao catálogo</a>
         {% if source.is_importable %}
-            <a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao' %}?fonte={{ source.import_source_slug }}">Importar em lote</a>
+            <a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao_fonte' source.import_source_slug %}">Importar em lote</a>
             <a class="btn btn-outline-primary" href="{% url 'administracao:fonte_datasets' source.import_source_slug %}">Ver perfis</a>
         {% endif %}
     </div>
@@ -102,7 +102,7 @@
                     <div class="mc-profile-row">
                         <div><strong>{{ spec.label }}</strong><small>{% if spec.mode == 'raw_only' %}RAW flexível: {{ spec.raw_table }}{% else %}{{ spec.stable_table }}{% endif %}</small></div>
                         <div class="mc-profile-actions">
-                            <a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:novo_lote_importacao' %}?fonte=sicar">Importar por UF</a>
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:novo_lote_importacao_fonte' 'sicar' %}">Importar por UF</a>
                             {% if request.user.is_superuser %}<a class="btn btn-outline-danger btn-sm" href="{% url 'administracao:limpar_dataset' 'sicar' spec.slug %}">Excluir dados atuais</a>{% endif %}
                         </div>
                     </div>
