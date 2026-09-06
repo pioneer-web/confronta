@@ -4,7 +4,7 @@
 {% block client_content_class %}client-content-app{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'aplicativo/css/ux-v058.css' %}?v=058">
-<link rel="stylesheet" href="{% static 'aplicativo/css/ux-v057.css' %}?v=057">
+<link rel="stylesheet" href="{% static 'aplicativo/css/ux-v057.css' %}?v=062">
 {% if possui_plano %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-rotate-map@0.3.2/leaflet.css">
 {% if pode_desenhar_glebas %}
@@ -205,6 +205,33 @@
     <div class="territorial-map-column">
         <div id="map" class="territorial-map" aria-label="Mapa de satélite do imóvel consultado"></div>
 
+
+
+        {% if eh_cliente %}
+        <aside class="map-layer-drawer client-notice-drawer" id="client-notice-panel" hidden aria-label="Comunicados do CONFRONTA">
+            <header class="map-layer-drawer-head">
+                <div>
+                    <span>COMUNICADOS</span>
+                    <small>Mensagens do CONFRONTA</small>
+                </div>
+                <button type="button" data-close-notices title="Fechar comunicados" aria-label="Fechar comunicados">×</button>
+            </header>
+            <div class="client-notice-drawer-list">
+                {% for aviso in avisos_cliente %}
+                <article class="client-notice-item {% if aviso.pk not in avisos_lidos %}is-unread{% endif %}" data-notice-id="{{ aviso.pk }}" data-read-url="{% url 'aplicativo:marcar_aviso_lido' aviso.pk %}">
+                    <div class="client-notice-dot" aria-hidden="true"></div>
+                    <div class="client-notice-copy">
+                        <strong>Comunicado CONFRONTA</strong>
+                        <p>{{ aviso.mensagem|linebreaksbr }}</p>
+                        <small>{{ aviso.criado_em|date:'d/m/Y H:i' }}</small>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="client-notice-empty">Nenhum comunicado no momento.</div>
+                {% endfor %}
+            </div>
+        </aside>
+        {% endif %}
 
         <aside class="map-layer-drawer" id="map-layer-drawer" hidden aria-label="Camadas do mapa">
             <header class="map-layer-drawer-head">
@@ -621,10 +648,7 @@
 {% endif %}
 {% if eh_cliente and possui_plano %}
 <div class="client-comms" id="client-comms">
-<button type="button" class="client-notice-fab" id="client-notice-fab" aria-label="Comunicados" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h4l8 4V7l-8 4H4Z"/><path d="M8 13v5"/><path d="M18.5 9.5c1.2 1.5 1.2 3.5 0 5"/></svg>{% if avisos_nao_lidos %}<span class="client-comms-badge" id="client-notice-badge">{{ avisos_nao_lidos }}</span>{% else %}<span class="client-comms-badge" id="client-notice-badge" hidden>0</span>{% endif %}</button>
-<section class="client-notice-panel" id="client-notice-panel" hidden aria-label="Comunicados do CONFRONTA"><header><div><small>CONFRONTA</small><strong>Comunicados</strong></div><button type="button" data-close-notices aria-label="Fechar">×</button></header><div class="client-notice-list">
-{% for aviso in avisos_cliente %}<article class="client-notice-item {% if aviso.pk not in avisos_lidos %}is-unread{% endif %}" data-notice-id="{{ aviso.pk }}" data-read-url="{% url 'aplicativo:marcar_aviso_lido' aviso.pk %}"><div class="client-notice-dot"></div><div><p>{{ aviso.mensagem|linebreaksbr }}</p><small>{{ aviso.criado_em|date:'d/m/Y H:i' }}</small></div></article>{% empty %}<div class="client-notice-empty">Nenhum comunicado no momento.</div>{% endfor %}
-</div></section>
+<button type="button" class="client-notice-fab" id="client-notice-fab" hidden aria-hidden="true" tabindex="-1"></button>
 <button type="button" class="client-chat-fab" id="client-chat-fab" aria-label="Falar com o suporte" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 3Z"/><path d="M8 10h8M8 13h5"/></svg><span class="client-chat-badge" id="client-chat-badge" hidden>0</span></button>
 <section class="client-chat-panel" id="client-chat-panel" hidden data-state-url="{% url 'aplicativo:chat_estado' %}" data-send-url="{% url 'aplicativo:chat_enviar' %}" data-read-url="{% url 'aplicativo:chat_marcar_lido' %}">
 <header class="client-chat-head"><div class="client-chat-avatar" aria-hidden="true">C</div><div><strong>Suporte CONFRONTA</strong><small id="client-chat-status">Envie sua dúvida. Nossa equipe responderá por aqui.</small></div><button type="button" data-close-chat aria-label="Fechar">×</button></header>
@@ -654,5 +678,5 @@
 <script src="{% static 'aplicativo/js/interface.js' %}?v=056-polygonos"></script>
 {% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=056-polygonos"></script>{% endif %}
 {% endif %}
-<script src="{% static 'aplicativo/js/suporte-chat.js' %}?v=058"></script>
+<script src="{% static 'aplicativo/js/suporte-chat.js' %}?v=062"></script>
 {% endblock %}

@@ -23,7 +23,7 @@
     const message = document.getElementById('billing-result-message');
     const status = document.getElementById('billing-confirmation-status');
     const detail = document.getElementById('billing-confirmation-detail');
-    const action = document.getElementById('billing-primary-action');
+    const workspaceAction = document.getElementById('billing-workspace-action');
     let attempts = 0;
     const maxAttempts = 30;
 
@@ -43,9 +43,11 @@
                 message.textContent = 'Seu pagamento foi confirmado pelo CONFRONTA. Sua assinatura está ativa e você já pode acessar o sistema.';
                 status.textContent = 'Acesso liberado';
                 detail.textContent = 'Sua assinatura está ativa.';
-                action.textContent = 'Entrar no CONFRONTA';
                 const accessUrlNode = document.getElementById('billing-access-url');
-                action.href = data.redirect_url || (accessUrlNode ? JSON.parse(accessUrlNode.textContent) : '/');
+                if (workspaceAction) {
+                    workspaceAction.href = data.redirect_url || (accessUrlNode ? JSON.parse(accessUrlNode.textContent) : '/');
+                    workspaceAction.hidden = false;
+                }
                 return;
             }
 

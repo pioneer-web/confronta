@@ -9,7 +9,10 @@ from aplicativo.models import AtendimentoCliente, MensagemAtendimento
 
 
 def _nome(user):
-    return user.get_full_name() or user.email
+    if user is None:
+        return 'Não atribuído'
+    nome = (user.get_full_name() or '').strip()
+    return nome or user.email or 'Usuário'
 
 
 @admin_required
@@ -80,9 +83,22 @@ def atendimento_detalhe(request, pk):
         atendimento.save(update_fields=['atendente', 'status', 'ultima_interacao_em', 'atualizado_em'])
         return redirect('administracao:atendimento_detalhe', pk=atendimento.pk)
 
+    mensagens_chat = list(
+        atendimento.mensagens.select_related('autor').order_by('criado_em', 'id')
+    )
+    mensagens_exibicao = [{
+        'id': item.pk,
+        'texto': item.texto,
+        'cliente': item.autor_id == atendimento.cliente_id,
+        'autor': _nome(item.autor),
+        'criado_em': item.criado_em,
+    } for item in mensagens_chat]
+
     return render(request, 'administracao/atendimentos/detalhe.html', {
         'atendimento': atendimento,
-        'mensagens_chat': atendimento.mensagens.select_related('autor').all(),
+        'cliente_nome': _nome(atendimento.cliente),
+        'atendente_nome': _nome(atendimento.atendente),
+        'mensagens_chat': mensagens_exibicao,
     })
 
 

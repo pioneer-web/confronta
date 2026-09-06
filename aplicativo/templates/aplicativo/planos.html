@@ -12,12 +12,29 @@
 
 {% if perfil_cliente %}
     {% if assinatura_asaas %}
-    <div class="plan-pending-note" style="border-color:#b7d8c0;background:#f3fbf5;color:#244b32;margin-bottom:20px">
-        <strong>Assinatura CONFRONTA: {{ assinatura_asaas.get_status_display }}</strong><br>
-        Modalidade: {{ assinatura_asaas.get_ciclo_display }} · Valor: R$ {{ assinatura_asaas.valor|floatformat:2 }}
-        {% if assinatura_asaas.acesso_ate %} · Acesso até {{ assinatura_asaas.acesso_ate|date:'d/m/Y' }}{% endif %}
-        {% if assinatura_asaas.status == 'PAST_DUE' %}<br><strong>Pagamento em atraso:</strong> o período de carência está sendo aplicado.{% endif %}
-    </div>
+    <section class="current-subscription-card" id="current-subscription-card-v062" aria-label="Resumo da assinatura atual">
+        <div class="current-subscription-head">
+            <div>
+                <span class="eyebrow">Plano atual</span>
+                <h2>{{ assinatura_asaas.plano.nome }} {{ assinatura_asaas.get_ciclo_display }}</h2>
+                <p>Sua contratação e a vigência do acesso em um único lugar.</p>
+            </div>
+            <span class="current-subscription-status {% if assinatura_asaas.status == 'ACTIVE' %}is-active{% elif assinatura_asaas.status == 'PAST_DUE' %}is-warning{% endif %}">
+                {{ assinatura_asaas.get_status_display }}
+            </span>
+        </div>
+        <div class="current-subscription-grid">
+            <div><span>Modalidade</span><strong>{{ assinatura_asaas.get_ciclo_display }}</strong></div>
+            <div><span>Data da contratação</span><strong>{{ assinatura_asaas.iniciado_em|date:'d/m/Y' }}</strong></div>
+            <div><span>Valor contratado</span><strong>R$ {{ assinatura_asaas.valor|floatformat:2 }}</strong></div>
+            <div><span>Próximo vencimento</span><strong>{% if assinatura_asaas.proximo_vencimento %}{{ assinatura_asaas.proximo_vencimento|date:'d/m/Y' }}{% else %}—{% endif %}</strong></div>
+            <div><span>Acesso liberado até</span><strong>{% if assinatura_asaas.acesso_ate %}{{ assinatura_asaas.acesso_ate|date:'d/m/Y' }}{% else %}Conforme assinatura ativa{% endif %}</strong></div>
+            <div><span>Renovação automática</span><strong>{% if assinatura_asaas.cancelamento_solicitado %}Cancelada{% else %}Ativa{% endif %}</strong></div>
+        </div>
+        {% if assinatura_asaas.status == 'PAST_DUE' %}
+        <div class="current-subscription-warning"><strong>Pagamento em atraso.</strong> O período de carência está sendo aplicado.</div>
+        {% endif %}
+    </section>
     {% endif %}
 
     {% if plano_confronta %}

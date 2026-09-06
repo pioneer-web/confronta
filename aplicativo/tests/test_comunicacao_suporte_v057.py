@@ -28,5 +28,5 @@ class ComunicacaoSuporteV057Tests(SimpleTestCase):
     def test_medicao_tem_duplo_clique_edicao_e_exclusao(self):
         js = self._read('aplicativo/static/aplicativo/js/medir-distancia.js')
         self.assertIn("map.on('dblclick', onDoubleClick)", js)
-        self.assertIn("layer.editing.enable()", js)
+        self.assertIn("selectedLayer.editing.enable()", js)
         self.assertIn("measurements.removeLayer(layer)", js)

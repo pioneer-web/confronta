@@ -8027,3 +8027,65 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
 
 /* V3.4 — camada SICOR / Crédito Rural */
 .layer-color-ext-sicor { background: #3b82f6; }
+
+/* CONFRONTA V0.6.2 — pós-pagamento e resumo premium da assinatura */
+.billing-result-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-top:4px;
+}
+.billing-result-actions .cf-auth-submit{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    margin:0;
+    text-align:center;
+}
+.billing-result-actions .billing-subscription-action{
+    background:#fff;
+    color:#0b2d3c;
+    border:1px solid #cbdad6;
+}
+.billing-result-actions .billing-workspace-action{
+    background:#0b2d3c;
+    color:#fff;
+    border:1px solid #0b2d3c;
+}
+.billing-result-actions [hidden]{display:none!important}
+.current-subscription-card{
+    margin:0 0 24px;
+    overflow:hidden;
+    border:1px solid rgba(79,163,106,.38);
+    border-radius:18px;
+    background:linear-gradient(135deg,#f8fcf9 0%,#eef8f2 100%);
+    box-shadow:0 18px 44px rgba(11,45,60,.10);
+}
+.current-subscription-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    padding:22px 24px 18px;
+    border-bottom:1px solid rgba(79,163,106,.18);
+}
+.current-subscription-head h2{margin:5px 0 5px;color:#0b2d3c;font-size:24px}
+.current-subscription-head p{margin:0;color:#64747a;font-size:12px}
+.current-subscription-status{
+    flex:0 0 auto;padding:8px 12px;border:1px solid #c9d7d2;border-radius:999px;
+    background:#fff;color:#40545b;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.05em
+}
+.current-subscription-status.is-active{border-color:#9fd2ad;background:#e8f7ec;color:#215b31}
+.current-subscription-status.is-warning{border-color:#ead08b;background:#fff8e5;color:#815e11}
+.current-subscription-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:rgba(79,163,106,.15)}
+.current-subscription-grid>div{min-width:0;padding:16px 20px;background:rgba(255,255,255,.86)}
+.current-subscription-grid span{display:block;margin-bottom:5px;color:#738279;font-size:9px;font-weight:750;text-transform:uppercase;letter-spacing:.05em}
+.current-subscription-grid strong{display:block;color:#183c31;font-size:13px;overflow-wrap:anywhere}
+.current-subscription-warning{padding:12px 20px;border-top:1px solid #ead08b;background:#fff8e5;color:#815e11;font-size:11px}
+@media(max-width:760px){
+    .billing-result-actions{grid-template-columns:1fr}
+    .current-subscription-head{flex-direction:column}
+    .current-subscription-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.current-subscription-grid{grid-template-columns:1fr}}

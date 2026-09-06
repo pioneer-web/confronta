@@ -17,6 +17,9 @@
     const noticePanel = document.getElementById('client-notice-panel');
     const noticeClose = noticePanel && noticePanel.querySelector('[data-close-notices]');
     const noticeBadge = document.getElementById('rail-comunicados-badge') || document.getElementById('client-notice-badge');
+    const layerButton = document.getElementById('rail-layers');
+    const layerDrawer = document.getElementById('map-layer-drawer');
+    const toolDrawer = document.getElementById('territorial-side-panel');
 
     let pollTimer = null;
     let lastSignature = '';
@@ -167,12 +170,19 @@
         noticeButton.classList.toggle('is-active', open);
         if (open) {
             toggleChat(false);
+            if (layerDrawer) layerDrawer.hidden = true;
+            if (toolDrawer) toolDrawer.hidden = true;
+            if (layerButton) {
+                layerButton.classList.remove('is-active');
+                layerButton.setAttribute('aria-expanded', 'false');
+            }
             noticePanel.querySelectorAll('.client-notice-item.is-unread').forEach(markNoticeItem);
         }
     }
 
     if (noticeButton) noticeButton.addEventListener('click', () => toggleNotices(noticePanel.hidden));
     if (noticeClose) noticeClose.addEventListener('click', () => toggleNotices(false));
+    if (layerButton) layerButton.addEventListener('click', () => toggleNotices(false));
 
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;

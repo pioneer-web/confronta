@@ -14,9 +14,14 @@
                     <div id="billing-confirmation-detail" style="margin-top:4px">Você não precisa refazer o pagamento. Esta página será atualizada automaticamente.</div>
                 {% endif %}
             </div>
-            <a class="cf-auth-submit" id="billing-primary-action" href="{% if acesso_confirmado %}{{ acesso_url }}{% else %}{% url 'aplicativo:planos' %}{% endif %}">
-                {% if acesso_confirmado %}Entrar no CONFRONTA{% else %}Ver minha assinatura{% endif %}
-            </a>
+            <div class="billing-result-actions" id="billing-result-actions-v062">
+                <a class="cf-auth-submit billing-subscription-action" id="billing-subscription-action" href="{% url 'aplicativo:planos' %}">
+                    Ver minha assinatura
+                </a>
+                <a class="cf-auth-submit billing-workspace-action" id="billing-workspace-action" href="{{ acesso_url }}" {% if not acesso_confirmado %}hidden{% endif %}>
+                    Entrar no ambiente de trabalho
+                </a>
+            </div>
         {% elif request.user.is_authenticated %}
             <a class="cf-auth-submit" href="{% url 'aplicativo:planos' %}">Voltar à minha assinatura</a>
         {% else %}

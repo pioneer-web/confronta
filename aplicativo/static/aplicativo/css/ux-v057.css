@@ -24,3 +24,23 @@
 .client-notice-list{max-height:325px;overflow:auto;padding:8px;background:#f7faf9}.client-notice-item{display:grid;grid-template-columns:8px 1fr;gap:9px;padding:10px;border-bottom:1px solid #e2e9e7}.client-notice-dot{width:7px;height:7px;margin-top:5px;border-radius:50%;background:#b9c6c3}.client-notice-item.is-unread .client-notice-dot{background:#f0a93b;box-shadow:0 0 0 3px rgba(240,169,59,.15)}.client-notice-item p{margin:0;color:#30464e;font-size:11px;line-height:1.45}.client-notice-item small{display:block;margin-top:5px;color:#879397;font-size:9px}
 .distance-line-popup{display:grid;gap:6px;padding:2px}.distance-line-popup>strong{color:#0b2d3c;font-size:13px}.distance-line-popup>span{color:#0b7567;font-size:18px;font-weight:800}.distance-line-popup>small{color:#74858a;font-size:10px;line-height:1.35}.distance-line-popup-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px}.distance-line-popup-actions button{height:33px;border-radius:8px;border:1px solid #ccd9d6;background:#fff;color:#40575f;font-size:10px;font-weight:800;cursor:pointer}.distance-line-popup-actions .distance-line-edit{border-color:#9fd5cb;color:#0b7567;background:#eff9f7}.distance-line-popup-actions .distance-line-delete{border-color:#eccaca;color:#a33f3f;background:#fff7f7}
 @media(max-width:680px){.client-comms{right:10px;bottom:30px}.client-chat-panel,.client-notice-panel{width:calc(100vw - 40px);right:-2px}.client-chat-messages{height:280px}}
+
+/* CONFRONTA V0.6.2 — Comunicados como gaveta lateral do mapa */
+.client-notice-drawer{overflow:hidden}
+.client-notice-drawer-list{
+    max-height:min(590px,calc(100vh - 180px));overflow-y:auto;padding:8px;
+    scrollbar-width:thin;scrollbar-color:#1b4b67 transparent
+}
+.client-notice-drawer .client-notice-item{
+    display:grid;grid-template-columns:8px minmax(0,1fr);gap:10px;padding:13px 11px;
+    border-bottom:1px solid rgba(128,177,200,.12);background:transparent
+}
+.client-notice-drawer .client-notice-item:last-child{border-bottom:0}
+.client-notice-drawer .client-notice-dot{width:7px;height:7px;margin-top:5px;border-radius:50%;background:#5f7687}
+.client-notice-drawer .client-notice-item.is-unread .client-notice-dot{
+    background:#f0a93b;box-shadow:0 0 0 3px rgba(240,169,59,.14)
+}
+.client-notice-drawer .client-notice-copy strong{display:block;margin-bottom:5px;color:#dceaf2;font-size:10px;font-weight:700}
+.client-notice-drawer .client-notice-copy p{margin:0;color:#b9ccd7;font-size:10.5px;line-height:1.5;overflow-wrap:anywhere}
+.client-notice-drawer .client-notice-copy small{display:block;margin-top:7px;color:#718da3;font-size:8.5px}
+.client-notice-drawer .client-notice-empty{padding:28px 14px;color:#8da5b4;text-align:center;font-size:10px}
