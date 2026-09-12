@@ -1,0 +1,772 @@
+/* =========================================================
+   CONFRONTA — MAPA / POPUPS
+   Popup do CAR, camadas e polígonos.
+   Extraído do mapa-base sem alteração visual.
+   ========================================================= */
+
+/* =========================================================
+   CONFRONTA — MAPA CLEAN V1
+   Interface leve, simples e orientada ao mapa.
+   Somente visual: não altera regras GIS ou funcionalidades.
+   ========================================================= */
+
+@media screen {
+
+
+    /* ---------- POPUPS ---------- */
+
+    .confronta-feature-leaflet-popup .leaflet-popup-content-wrapper {
+        overflow: hidden !important;
+        border: 1px solid rgba(39,65,74,.12) !important;
+        border-radius: 13px !important;
+        background: #fff !important;
+        box-shadow: 0 16px 42px rgba(5,27,35,.20) !important;
+    }
+
+    .confronta-feature-leaflet-popup .leaflet-popup-content {
+        margin: 0 !important;
+    }
+
+    .confronta-feature-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .cf-feature-popup-head {
+        padding: 13px 14px !important;
+        background: #f8faf9 !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+    }
+
+    .cf-feature-popup-title strong {
+        color: #18353f !important;
+    }
+
+    .cf-feature-popup-title span {
+        color: #7a8c91 !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.1
+   Topo escuro + popup enxuto + relatório editorial
+   ========================================================= */
+
+@media screen {
+
+
+    /* =====================================================
+       POPUP DA GLEBA
+       Menos informação. Mais ação.
+       ===================================================== */
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+        border: 1px solid rgba(40,64,72,.14) !important;
+        border-radius: 6px !important;
+        background: #fff !important;
+        box-shadow: 0 12px 34px rgba(5,25,32,.20) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content {
+        margin: 0 !important;
+        min-width: 280px !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .cf-gleba-popup {
+        min-width: 280px !important;
+    }
+
+    .cf-gleba-popup-head {
+        min-height: 52px !important;
+        padding: 10px 38px 10px 13px !important;
+        gap: 9px !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        background: #fff !important;
+    }
+
+    .cf-gleba-popup-dot {
+        width: 9px !important;
+        height: 9px !important;
+        border-width: 1px !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        color: #173640 !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        margin-top: 1px !important;
+        color: #819095 !important;
+        font-size: 9px !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 12px 13px 13px !important;
+    }
+
+    /* área vira o dado principal */
+    .cf-gleba-popup-metrics {
+        display: block !important;
+    }
+
+    .cf-gleba-popup-metric:first-child {
+        padding: 0 0 10px !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #819095 !important;
+        font-size: 8px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        margin-top: 3px !important;
+        color: #153944 !important;
+        font-size: 21px !important;
+        font-weight: 600 !important;
+    }
+
+    /* origem e CAR são redundantes no contexto da gleba */
+    .cf-gleba-popup-metric:nth-child(2),
+    .cf-gleba-popup-car-line {
+        display: none !important;
+    }
+
+    .cf-gleba-popup-alert {
+        margin: 0 0 11px !important;
+        padding: 8px 9px !important;
+        border: 0 !important;
+        border-left: 3px solid #d5a74c !important;
+        border-radius: 0 !important;
+        background: #fffaf0 !important;
+        color: #78520e !important;
+        font-size: 9px !important;
+        line-height: 1.45 !important;
+    }
+
+    .cf-gleba-popup-alert.is-clear {
+        border-left-color: #4b9b68 !important;
+        background: #f5faf6 !important;
+        color: #316846 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        margin-top: 0 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 34px !important;
+        padding: 7px 8px !important;
+        border-radius: 4px !important;
+        box-shadow: none !important;
+        font-size: 9px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .cf-gleba-popup-action.is-primary {
+        background: #0b5960 !important;
+        color: #fff !important;
+    }
+
+    .cf-gleba-popup-action.is-secondary {
+        border: 1px solid #dce5e2 !important;
+        background: #fff !important;
+        color: #33545d !important;
+    }
+
+    .cf-gleba-popup-action.is-cancel {
+        border: 1px solid #e1e5e3 !important;
+        background: #f8faf9 !important;
+        color: #66797f !important;
+    }
+
+    .cf-gleba-popup-action.is-danger {
+        border: 1px solid #ecd8d8 !important;
+        background: #fff !important;
+        color: #a14646 !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.2 — LEGIBILIDADE + POPUP SAFE
+   ========================================================= */
+
+@media screen {
+
+
+    /* =====================================================
+       POPUPS — base comum
+       ===================================================== */
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper,
+    .confronta-feature-leaflet-popup .leaflet-popup-content-wrapper {
+        border: 1px solid rgba(36,59,67,.16) !important;
+        border-radius: 6px !important;
+        background: #fff !important;
+        box-shadow: 0 16px 38px rgba(4,25,32,.22) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content,
+    .confronta-feature-leaflet-popup .leaflet-popup-content {
+        min-width: 320px !important;
+        max-height: calc(100vh - 145px) !important;
+        margin: 0 !important;
+        overflow-y: auto !important;
+        scrollbar-width: thin;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-tip,
+    .confronta-feature-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .client-content-app .leaflet-popup-close-button {
+        top: 9px !important;
+        right: 9px !important;
+        width: 29px !important;
+        height: 29px !important;
+        font-size: 22px !important;
+        line-height: 27px !important;
+        color: #687d84 !important;
+    }
+
+
+    /* =====================================================
+       POPUP DA GLEBA
+       ===================================================== */
+
+    .cf-gleba-popup {
+        min-width: 320px !important;
+    }
+
+    .cf-gleba-popup-head {
+        min-height: 58px !important;
+        padding: 11px 42px 11px 15px !important;
+    }
+
+    .cf-gleba-popup-dot {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        margin-top: 2px !important;
+        font-size: 10.5px !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 14px 15px 15px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child {
+        padding-bottom: 12px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        font-size: 9.5px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        margin-top: 4px !important;
+        font-size: 25px !important;
+        line-height: 1.1 !important;
+    }
+
+    .cf-gleba-popup-alert {
+        margin-bottom: 13px !important;
+        padding: 10px 11px !important;
+        font-size: 10.5px !important;
+        line-height: 1.5 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 7px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 39px !important;
+        padding: 8px 10px !important;
+        font-size: 10.5px !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .cf-gleba-popup-action.is-danger,
+    .cf-gleba-popup-action.is-cancel {
+        grid-column: 1 / -1 !important;
+    }
+
+
+    /* =====================================================
+       POPUP DE CAR / CAMADAS
+       ===================================================== */
+
+    .cf-feature-popup {
+        min-width: 320px !important;
+    }
+
+    .cf-feature-popup-head {
+        min-height: 58px !important;
+        padding: 11px 42px 11px 15px !important;
+        background: #fff !important;
+    }
+
+    .cf-feature-popup-dot {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .cf-feature-popup-title strong {
+        color: #173640 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-feature-popup-title span {
+        margin-top: 2px !important;
+        color: #778b91 !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-body {
+        padding: 13px 15px 15px !important;
+    }
+
+    .cf-feature-popup-metrics {
+        gap: 8px !important;
+    }
+
+    .cf-feature-popup-metric {
+        padding: 9px 10px !important;
+        border-radius: 4px !important;
+    }
+
+    .cf-feature-popup-metric span {
+        font-size: 9px !important;
+    }
+
+    .cf-feature-popup-metric strong {
+        margin-top: 4px !important;
+        font-size: 11.5px !important;
+    }
+
+    .cf-feature-popup-car-line {
+        margin-top: 9px !important;
+        padding: 8px 2px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e7ecea !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-feature-popup-car-line span {
+        font-size: 9px !important;
+    }
+
+    .cf-feature-popup-car-line strong {
+        margin-top: 3px !important;
+        font-size: 10.5px !important;
+        text-align: left !important;
+    }
+
+    .cf-feature-popup-details {
+        margin-top: 7px !important;
+    }
+
+    .cf-feature-popup-details > div {
+        padding: 7px 1px !important;
+        border-bottom: 1px solid #edf1ef !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-details span {
+        font-size: 9.5px !important;
+    }
+
+    .cf-feature-popup-details strong {
+        font-size: 10.5px !important;
+    }
+
+    .cf-feature-popup-color-section {
+        margin-top: 11px !important;
+        padding-top: 10px !important;
+        border-top: 1px solid #e6ece9 !important;
+    }
+
+    .cf-feature-popup-color-label {
+        margin-bottom: 7px !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-swatches {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 7px !important;
+    }
+
+    .cf-feature-popup-swatch {
+        width: 25px !important;
+        height: 25px !important;
+    }
+
+    .cf-feature-popup-actions {
+        margin-top: 12px !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 7px !important;
+    }
+
+    .cf-feature-popup-action {
+        min-height: 38px !important;
+        padding: 7px 8px !important;
+        border-radius: 4px !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-action svg {
+        width: 15px !important;
+        height: 15px !important;
+    }
+
+    .cf-feature-popup-kml {
+        min-height: 40px !important;
+        margin-top: 8px !important;
+        border-radius: 4px !important;
+        font-size: 10.5px !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.3 — TIPOGRAFIA + TOPO COMPLETO
+   ========================================================= */
+
+@media screen {
+
+
+    /* =====================================================
+       POPUP — tipografia mais limpa e legível
+       ===================================================== */
+
+    .cf-feature-popup,
+    .cf-gleba-popup {
+        color: #243f48 !important;
+        font-weight: 400 !important;
+    }
+
+    .cf-feature-popup-title strong,
+    .cf-gleba-popup-title strong {
+        color: #12343f !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+    }
+
+    .cf-feature-popup-title span,
+    .cf-gleba-popup-title span {
+        color: #526b73 !important;
+        font-size: 10.5px !important;
+        font-weight: 400 !important;
+    }
+
+
+    /* dados principais */
+
+    .cf-feature-popup-metric span,
+    .cf-gleba-popup-metric span {
+        color: #526a72 !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    .cf-feature-popup-metric strong {
+        margin-top: 5px !important;
+        color: #183943 !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #536b73 !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        text-transform: none !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        color: #123943 !important;
+        font-size: 25px !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* CAR consultado */
+
+    .cf-feature-popup-car-line span {
+        color: #506970 !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    .cf-feature-popup-car-line strong {
+        color: #183943 !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        line-height: 1.45 !important;
+    }
+
+
+    /* município, UF, situação etc */
+
+    .cf-feature-popup-details > div {
+        min-height: 34px !important;
+        align-items: center !important;
+    }
+
+    .cf-feature-popup-details span {
+        color: #526a72 !important;
+        font-size: 10.5px !important;
+        font-weight: 400 !important;
+    }
+
+    .cf-feature-popup-details strong {
+        color: #213f48 !important;
+        font-size: 10.8px !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* cores */
+
+    .cf-feature-popup-color-label {
+        color: #405d66 !important;
+        font-size: 10.5px !important;
+        font-weight: 500 !important;
+    }
+
+
+    /* botões */
+
+    .cf-feature-popup-action,
+    .cf-gleba-popup-action,
+    .cf-feature-popup-kml {
+        font-size: 10.5px !important;
+        font-weight: 500 !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.4 — popup legível + topo sem canto branco
+   ========================================================= */
+
+@media screen {
+
+
+    /* -----------------------------------------------------
+       popup da gleba — tipografia realmente legível
+       ----------------------------------------------------- */
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+        border-radius: 6px !important;
+        box-shadow: 0 16px 40px rgba(0,0,0,.24) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content {
+        min-width: 340px !important;
+        max-width: 340px !important;
+    }
+
+    .cf-gleba-popup {
+        min-width: 340px !important;
+        color: #1e3c45 !important;
+        font-family: inherit !important;
+    }
+
+    .cf-gleba-popup-head {
+        padding: 14px 42px 12px 16px !important;
+        border-bottom: 1px solid #dfe6e4 !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        color: #173a44 !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        color: #667d85 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        line-height: 1.25 !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 16px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #6a8087 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        display: block !important;
+        margin-top: 6px !important;
+        color: #163944 !important;
+        font-size: 24px !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        letter-spacing: -.02em !important;
+    }
+
+    .cf-gleba-popup-alert,
+    .cf-gleba-popup-alert.is-clear {
+        padding: 11px 12px !important;
+        margin: 0 0 14px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.45 !important;
+        color: #456a57 !important;
+        background: #f5faf6 !important;
+        border-left: 3px solid #4a9a67 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 42px !important;
+        padding: 10px 12px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .cf-gleba-popup-action.is-danger,
+    .cf-gleba-popup-action.is-cancel {
+        grid-column: 1 / -1 !important;
+    }
+
+    .cf-gleba-popup-action.is-primary {
+        background: #0f6467 !important;
+        color: #ffffff !important;
+        border: 1px solid #0f6467 !important;
+    }
+
+    .cf-gleba-popup-action.is-secondary {
+        background: #f7f9f8 !important;
+        color: #395660 !important;
+        border: 1px solid #d7e0de !important;
+    }
+
+    .cf-gleba-popup-action.is-danger {
+        background: #fff !important;
+        color: #b45656 !important;
+        border: 1px solid #ead1d1 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       popup do CAR / camadas — melhora geral de leitura
+       ----------------------------------------------------- */
+    .confronta-feature-leaflet-popup .leaflet-popup-content {
+        min-width: 340px !important;
+        max-width: 340px !important;
+    }
+
+    .cf-feature-popup {
+        min-width: 340px !important;
+        color: #1f3d46 !important;
+    }
+
+    .cf-feature-popup-title strong {
+        color: #173a44 !important;
+        font-size: 17px !important;
+        font-weight: 700 !important;
+    }
+
+    .cf-feature-popup-title span {
+        color: #667d85 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-feature-popup-metric span,
+    .cf-feature-popup-car-line span,
+    .cf-feature-popup-details span,
+    .cf-feature-popup-color-label {
+        color: #687e85 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.25 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-feature-popup-metric strong,
+    .cf-feature-popup-car-line strong,
+    .cf-feature-popup-details strong {
+        color: #1b3e48 !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        line-height: 1.35 !important;
+    }
+
+    .cf-feature-popup-action,
+    .cf-feature-popup-kml {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }}
+
+@media screen and (max-width: 720px) {
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content,
+    .confronta-feature-leaflet-popup .leaflet-popup-content,
+    .cf-gleba-popup,
+    .cf-feature-popup {
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }}
