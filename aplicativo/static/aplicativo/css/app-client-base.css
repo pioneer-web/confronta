@@ -1,3 +1,520 @@
+/* ============================================================
+   MÓDULO 2 v0.3.2 — refinamento da Área Aplicativo
+   O bloco abaixo substitui visualmente o layout lateral fixo da
+   consulta por um painel flutuante sobre o mapa, sem alterar o
+   CSS operacional do Módulo 1 em administracao/.
+   ============================================================ */
+input[type="tel"] {
+    width: 100%;
+    min-height: 43px;
+    padding: 10px 12px;
+    border: 1px solid #cbd8d2;
+    border-radius: 8px;
+    outline: none;
+    color: var(--text);
+    background: #fff;
+}
+.button-secondary {
+    color: var(--petroleo);
+    background: #fff;
+    border-color: #cbd8d2;
+}
+.button-secondary:hover { border-color: var(--verde); background: #f8fbf9; }
+.alert-success { color: #215a31; background: #eef8f1; border: 1px solid #b9d9c1; }
+.alert-info { color: #254c5e; background: #f0f7fa; border: 1px solid #c5dce6; }
+.message-stack { margin-bottom: 14px; }
+.message-stack .alert { margin-bottom: 8px; }
+.topbar-plan-link {
+    padding: 7px 11px;
+    border: 1px solid rgba(167, 213, 176, .42);
+    border-radius: 999px;
+    color: #dff2e4;
+    font-size: 11px;
+    font-weight: 800;
+}
+.workspace { max-width: none; padding: 18px 20px 24px; }
+.app-page-head { margin-bottom: 12px; }
+.app-page-head h1 { font-size: 25px; }
+.search-card-compact { margin-bottom: 12px; padding: 12px 14px; }
+.field-help { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; }
+.plan-none { color: #745917; background: #fff9e8; border-color: #ead79e; }
+
+.subscription-gate {
+    min-height: 260px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 26px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+.subscription-gate h2 { margin: 7px 0 9px; color: var(--petroleo); font-size: 27px; }
+.subscription-gate p { max-width: 720px; margin: 0; color: var(--muted); line-height: 1.65; }
+
+.map-workspace {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 246px);
+    min-height: 560px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #e6ede9;
+    box-shadow: var(--shadow);
+}
+.map-expanded { width: 100%; height: 100%; min-height: 0; }
+.map-workspace .leaflet-container { background: #e7eee9; }
+
+.floating-info-card {
+    position: absolute;
+    z-index: 650;
+    top: 14px;
+    left: 58px;
+    width: min(365px, calc(100% - 130px));
+    max-height: calc(100% - 62px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(11, 45, 60, .16);
+    border-radius: 12px;
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 12px 34px rgba(11,45,60,.16);
+    backdrop-filter: blur(5px);
+    transition: width .18s ease, max-height .18s ease;
+}
+.floating-info-card.is-collapsed {
+    width: 235px;
+    max-height: 58px;
+}
+.floating-info-card.is-collapsed .floating-info-body { display: none; }
+.floating-info-card.is-collapsed .floating-info-header h2 { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.floating-info-card.is-collapsed .floating-info-header .eyebrow { display: none; }
+.floating-info-header {
+    min-height: 58px;
+    padding: 11px 12px 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+}
+.floating-info-header h2 { margin: 3px 0 0; color: var(--petroleo); font-size: 17px; line-height: 1.15; }
+.floating-info-toggle {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid #cbd8d2;
+    border-radius: 7px;
+    background: #fff;
+    color: var(--petroleo);
+    cursor: pointer;
+    font-size: 19px;
+    font-weight: 700;
+}
+.floating-info-toggle:hover { border-color: var(--verde); }
+.floating-info-body { overflow-y: auto; overscroll-behavior: contain; }
+.floating-section { padding: 13px 14px; border-bottom: 1px solid var(--line); }
+.floating-section:last-child { border-bottom: 0; }
+.floating-section .property-data { margin-top: 0; }
+.floating-section .property-data > div { grid-template-columns: 105px minmax(0, 1fr); padding: 6px 0; }
+.floating-section .section-heading h3 { margin: 3px 0 0; color: var(--petroleo); font-size: 15px; }
+.download-main {
+    margin-top: 10px;
+    min-height: 34px;
+    padding: 8px 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border: 1px solid #b8d7c0;
+    border-radius: 7px;
+    background: #f4faf5;
+    color: var(--floresta);
+    font-size: 11px;
+    font-weight: 800;
+}
+.download-main:hover { background: #ebf6ee; }
+.layer-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid #edf2ef;
+}
+.layer-row .layer-item { border-top: 0; padding: 8px 0; }
+.layer-download {
+    padding: 4px 6px;
+    border: 1px solid #cbd8d2;
+    border-radius: 5px;
+    color: var(--petroleo);
+    font-size: 9px;
+    font-weight: 900;
+}
+.layer-download:hover { border-color: var(--verde); color: var(--floresta); }
+.floating-info-empty { width: 320px; }
+.floating-info-empty .empty-info { padding: 16px 14px; }
+.floating-info-empty .empty-info p { margin: 0; }
+
+.map-floating-tools {
+    position: absolute;
+    z-index: 650;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    padding: 5px;
+    border: 1px solid rgba(11,45,60,.14);
+    border-radius: 9px;
+    background: rgba(255,255,255,.94);
+    box-shadow: 0 7px 20px rgba(11,45,60,.12);
+}
+.map-tool-button {
+    min-height: 32px;
+    padding: 5px 9px;
+    border: 1px solid #d4ded9;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--petroleo);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+}
+.map-tool-button:hover:not(:disabled) { border-color: var(--verde); background: #f5faf6; }
+.map-tool-button:disabled { opacity: .4; cursor: not-allowed; }
+.map-tool-icon { width: 32px; padding: 0; font-size: 15px; }
+.map-note { left: auto; right: 12px; max-width: 520px; }
+.leaflet-control-layers { max-width: 220px; }
+
+.gleba-panel .button { margin-top: 11px; min-height: 36px; font-size: 11px; }
+.gleba-panel .button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Login e cadastro do cliente: cartão único, sem painel lateral. */
+.auth-page {
+    min-height: 100vh;
+    padding: 38px 20px;
+    display: grid;
+    place-items: center;
+    background: #f4f7f5;
+}
+.auth-card {
+    width: min(430px, 100%);
+    padding: 30px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    box-shadow: 0 15px 42px rgba(11,45,60,.09);
+}
+.auth-card-wide { width: min(720px, 100%); }
+.auth-brand {
+    margin-bottom: 24px;
+    display: inline-flex;
+    flex-direction: column;
+    color: var(--petroleo);
+}
+.auth-brand strong { font-size: 23px; letter-spacing: .09em; line-height: 1; }
+.auth-brand span { margin-top: 5px; color: var(--muted); font-size: 10px; }
+.auth-card h1 { margin: 5px 0 8px; color: var(--petroleo); }
+.auth-card > .muted { margin-bottom: 20px; line-height: 1.55; font-size: 13px; }
+.auth-card label { margin-top: 12px; }
+.auth-register-link { margin: 18px 0 0; text-align: center; color: var(--muted); font-size: 12px; }
+.auth-register-link a { color: var(--floresta); font-weight: 800; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.form-field-full { grid-column: 1 / -1; }
+
+.plans-head { align-items: center; }
+.plan-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+.plan-choice-card {
+    padding: 26px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+}
+.plan-choice-total { border-color: #b7d8c0; background: #f8fcf9; }
+.plan-choice-card h2 { margin: 7px 0 11px; color: var(--petroleo); }
+.plan-choice-card p { margin: 0; color: var(--muted); line-height: 1.55; }
+.plan-choice-card ul { margin: 18px 0; padding-left: 18px; color: #36505a; font-size: 13px; line-height: 1.8; }
+.plan-pending-note {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e3d39c;
+    border-radius: 10px;
+    background: #fff9e8;
+    color: #6f5a1f;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+    .map-workspace { height: calc(100vh - 280px); min-height: 540px; }
+    .floating-info-card { left: 52px; width: min(335px, calc(100% - 112px)); }
+    .map-floating-tools { top: auto; bottom: 46px; }
+    .plan-choice-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+    .workspace { padding: 14px; }
+    .topbar-plan-link { display: none; }
+    .map-workspace { height: 68vh; min-height: 500px; }
+    .floating-info-card { top: 56px; left: 10px; width: calc(100% - 20px); max-height: calc(100% - 112px); }
+    .floating-info-card.is-collapsed { width: 210px; }
+    .map-floating-tools { top: 10px; bottom: auto; left: 56%; max-width: calc(100% - 90px); }
+    .map-tool-button:first-child { display: none; }
+    .map-note { display: none; }
+    .subscription-gate { align-items: flex-start; flex-direction: column; padding: 24px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-field-full { grid-column: auto; }
+}
+
+/* MÓDULO 2 — Glebas temporárias: nome, cor, importação, lista individual e alertas. */
+.gleba-new-config {
+    margin-top: 12px;
+    padding: 11px;
+    border: 1px solid #dbe7e1;
+    border-radius: 9px;
+    background: #f8fbf9;
+}
+.gleba-new-config label { margin: 0 0 6px; font-size: 10px; }
+.gleba-new-config input[type="text"] { min-height: 36px; padding: 7px 9px; font-size: 11px; }
+.gleba-color-label { display: block; margin-top: 10px; color: var(--petroleo); font-size: 10px; font-weight: 800; }
+.gleba-color-picker { display: flex; gap: 8px; margin-top: 7px; }
+.gleba-color-swatch {
+    width: 27px;
+    height: 27px;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(11,45,60,.10);
+}
+.gleba-color-swatch[data-color="#2563EB"] { background: #2563EB; }
+.gleba-color-swatch[data-color="#DC2626"] { background: #DC2626; }
+.gleba-color-swatch[data-color="#F97316"] { background: #F97316; }
+.gleba-color-swatch[data-color="#A855F7"] { background: #A855F7; }
+.gleba-color-swatch.swatch-white { background: #fff; border-color: #c8d3ce; }
+.gleba-color-swatch.is-selected { outline: 2px solid var(--petroleo); outline-offset: 2px; }
+.gleba-draw-hint { display: block; margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+.gleba-import-row { margin-top: 9px; }
+.gleba-import-status { margin-top: 7px; color: var(--muted); font-size: 9px; line-height: 1.4; }
+.gleba-import-status.is-error { color: #a53737; }
+.gleba-import-status.is-success { color: #43675a; }
+.gleba-list { display: grid; gap: 8px; margin-top: 10px; }
+.gleba-item {
+    padding: 9px;
+    border: 1px solid #dce5e0;
+    border-radius: 8px;
+    background: #fff;
+}
+.gleba-item.has-overlap { border-color: #e5b98a; background: #fffaf4; }
+.gleba-item-top { display: grid; grid-template-columns: 14px minmax(0,1fr); gap: 7px; align-items: center; }
+.gleba-color-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(11,45,60,.14); }
+.gleba-color-dot.dot-white { border: 1px solid #aab8b2; }
+.gleba-name-input {
+    width: 100%;
+    min-height: 30px !important;
+    padding: 5px 7px !important;
+    border-radius: 6px !important;
+    font-size: 10px !important;
+    font-weight: 800;
+}
+.gleba-item-details { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px; }
+.gleba-item-details strong { color: var(--floresta); font-size: 12px; }
+.gleba-origin { padding: 3px 6px; border-radius: 999px; background: #edf4f0; color: #51665d; font-size: 8px; font-weight: 800; text-transform: uppercase; }
+.gleba-item-controls { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 7px; margin-top: 7px; }
+.gleba-color-select {
+    width: 100%;
+    min-height: 29px;
+    padding: 4px 6px;
+    border: 1px solid #cbd8d2;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+    font-size: 9px;
+}
+.gleba-mini-button {
+    min-width: 43px;
+    min-height: 29px;
+    padding: 4px 7px;
+    border: 1px solid #cbd8d2;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--petroleo);
+    cursor: pointer;
+    font-size: 9px;
+    font-weight: 900;
+}
+.gleba-mini-button:hover { border-color: var(--verde); }
+.gleba-overlap-warning { margin-top: 7px; padding: 6px 7px; border-radius: 6px; background: #fff0df; color: #874c15; font-size: 9px; font-weight: 700; line-height: 1.35; }
+.map-overlap-alert {
+    position: absolute;
+    z-index: 850;
+    top: 66px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: min(640px, calc(100% - 120px));
+    padding: 9px 13px;
+    border: 1px solid #e1a15d;
+    border-radius: 8px;
+    background: rgba(255, 244, 228, .97);
+    color: #7d4716;
+    box-shadow: 0 8px 22px rgba(11,45,60,.13);
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+}
+.map-overlap-alert[hidden] { display: none; }
+
+@media (max-width: 700px) {
+    .map-overlap-alert { top: 50px; max-width: calc(100% - 24px); font-size: 10px; }
+}
+
+/* ======================================================================
+   MÓDULO 2 v0.3.4 — consulta compacta + painel territorial completo
+   ====================================================================== */
+.app-query-header { margin-bottom: 10px; }
+.app-query-title { margin-bottom: 8px; }
+.app-query-title h1 { margin: 2px 0 0; color: var(--petroleo); font-size: 25px; }
+.app-query-row {
+    display: grid;
+    grid-template-columns: minmax(560px, 1.7fr) minmax(280px, .8fr);
+    gap: 14px;
+    align-items: stretch;
+}
+.search-card-inline {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 11px;
+    box-shadow: none;
+}
+.search-card-inline .car-search { gap: 10px; }
+.search-card-inline .button { min-height: 39px; }
+.app-query-description {
+    margin: 0;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid var(--verde-medio);
+    border-radius: 0 9px 9px 0;
+    background: #f4f8f6;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+.app-query-description.standalone { max-width: 760px; margin-top: 8px; }
+
+/* O painel ganhou largura somente para acomodar os dados cruzados. */
+.floating-info-card { width: min(430px, calc(100% - 130px)); }
+.floating-section .property-data-complete > div { grid-template-columns: 118px minmax(0, 1fr); }
+.property-data-complete dd { overflow-wrap: anywhere; }
+
+.layer-row-wrap { border-top: 1px solid #edf2ef; }
+.layer-row-wrap .layer-row { border-top: 0; }
+.layer-feature-details { margin: -2px 0 7px 23px; }
+.source-details > summary,
+.analysis-group > summary {
+    cursor: pointer;
+    color: var(--petroleo);
+    font-size: 9px;
+    font-weight: 800;
+}
+.source-details > summary { color: #526a61; }
+.source-details[open] > summary { margin-bottom: 6px; }
+
+.territorial-cross-section .tiny { margin: 6px 0 10px; font-size: 9px; line-height: 1.45; }
+.analysis-groups { display: grid; gap: 7px; }
+.analysis-group {
+    border: 1px solid #dce6e1;
+    border-radius: 8px;
+    background: #fbfdfc;
+    overflow: hidden;
+}
+.analysis-group.analysis-important { border-color: #e5b98a; background: #fffaf4; }
+.analysis-group > summary {
+    min-height: 37px;
+    padding: 8px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    list-style: none;
+}
+.analysis-group > summary::-webkit-details-marker { display: none; }
+.analysis-group > summary::before { content: '›'; margin-right: 2px; color: #789087; font-size: 13px; transition: transform .12s ease; }
+.analysis-group[open] > summary::before { transform: rotate(90deg); }
+.analysis-group > summary > span { flex: 1; }
+.analysis-group > summary > strong {
+    min-width: 25px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 8px;
+}
+.status-ok { color: #1f6b36; background: #eaf6ed; }
+.status-alert { color: #9b3c20; background: #fff0e8; }
+.status-muted { color: #68766f; background: #edf2ef; }
+.analysis-group-body { padding: 0 9px 9px; }
+.external-layer-control {
+    margin: 1px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #415a50;
+    font-size: 9px;
+    font-weight: 700;
+}
+.source-empty { margin: 3px 0 0; color: #68766f; font-size: 9px; line-height: 1.45; }
+.source-empty.success { color: #2d6a3f; }
+.source-record-list { display: grid; gap: 6px; max-height: 260px; overflow-y: auto; }
+.source-record {
+    padding: 7px;
+    border: 1px solid #e3eae6;
+    border-radius: 7px;
+    background: #fff;
+}
+.source-record-warning { border-color: #efc8b4; background: #fffaf7; }
+.source-record > strong { display: block; margin-bottom: 4px; color: var(--petroleo); font-size: 9px; }
+.source-record dl { margin: 0; }
+.source-record dl > div {
+    padding: 3px 0;
+    display: grid;
+    grid-template-columns: 118px minmax(0, 1fr);
+    gap: 7px;
+    border-top: 1px solid #f0f3f1;
+    font-size: 8.5px;
+}
+.source-record dl > div:first-child { border-top: 0; }
+.source-record dt { color: #6a7b74; }
+.source-record dd { margin: 0; color: #213c48; font-weight: 700; overflow-wrap: anywhere; }
+
+.gleba-item-controls { grid-template-columns: minmax(0,1fr) auto auto; }
+.gleba-delete-button { color: #a63838; border-color: #e6c1c1; }
+.gleba-delete-button:hover { color: #842626; border-color: #c88181; background: #fff6f6; }
+
+@media (max-width: 1100px) {
+    .app-query-row { grid-template-columns: 1fr; }
+    .app-query-description { min-height: 46px; }
+    .floating-info-card { width: min(400px, calc(100% - 118px)); }
+}
+@media (max-width: 700px) {
+    .app-query-title h1 { font-size: 22px; }
+    .search-card-inline .car-search { grid-template-columns: 1fr; }
+    .app-query-description { border-left-width: 2px; font-size: 11px; }
+    .floating-info-card { width: calc(100% - 20px); }
+    .source-record dl > div { grid-template-columns: 105px minmax(0, 1fr); }
+}
+
 /* ======================================================================
    MÓDULO 2 — CONFRONTA v0.3.5
    Navegação fixa, home interna, tela operacional CAR, painel direito,
