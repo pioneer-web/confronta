@@ -9,7 +9,7 @@ class FonteSincronizacao(models.Model):
         BAIXANDO = 'BAIXANDO', 'Baixando'
         VALIDANDO = 'VALIDANDO', 'Validando'
         IMPORTANDO = 'IMPORTANDO', 'Importando'
-        CONCLUIDO = 'CONCLUIDO', 'Atualizado'
+        CONCLUIDO = 'CONCLUIDO', 'Concluído'
         SEM_ALTERACAO = 'SEM_ALTERACAO', 'Sem alteração'
         FALHOU = 'FALHOU', 'Falhou'
 

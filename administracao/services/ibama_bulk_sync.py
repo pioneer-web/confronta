@@ -1008,35 +1008,102 @@ def _db_fingerprint_map():
 
 
 def _normalize_operational():
+    """Normaliza o status operacional aceitando schema legado ou canônico."""
     with transaction.atomic(), connection.cursor() as cursor:
         cursor.execute("SELECT to_regclass('dados_ibama.ibama_embargo')")
         if cursor.fetchone()[0] is None:
             return {}
-        cursor.execute('ALTER TABLE dados_ibama.ibama_embargo ADD COLUMN IF NOT EXISTS status_normalizado text')
+
         cursor.execute(
+            """
+            SELECT column_name
+              FROM information_schema.columns
+             WHERE table_schema='dados_ibama'
+               AND table_name='ibama_embargo'
+            """
+        )
+        existing = {row[0] for row in cursor.fetchall()}
+
+        cursor.execute(
+            'ALTER TABLE dados_ibama.ibama_embargo '
+            'ADD COLUMN IF NOT EXISTS status_normalizado text'
+        )
+
+        def expr(name, fallback=None):
+            if name in existing:
+                return sql.SQL("{}").format(sql.Identifier(name))
+            if fallback and fallback in existing:
+                return sql.SQL("{}").format(sql.Identifier(fallback))
+            return sql.SQL("NULL::text")
+
+        sit_cancelado = expr('sit_cancelado')
+        sit_desembargo = expr('sit_desembargo')
+        tipo_desembargo = expr('tipo_desembargo')
+        status_original = expr('status_original', 'situacao')
+        status_aie = expr('status_aie')
+
+        query = sql.SQL(
             """
             UPDATE dados_ibama.ibama_embargo
                SET status_normalizado = CASE
-                   WHEN upper(coalesce(sit_cancelado,'')) = 'S'
-                        OR upper(coalesce(status_original,'')) LIKE '%CANCEL%'
+                   WHEN upper(coalesce({sit_cancelado},'')) = 'S'
+                        OR upper(coalesce({status_original},'')) LIKE '%CANCEL%'
                      THEN 'CANCELADO'
-                   WHEN upper(coalesce(sit_desembargo,'')) = 'S'
-                        OR upper(coalesce(tipo_desembargo,'')) LIKE '%DESEMBARG%'
+
+                   WHEN upper(coalesce({sit_desembargo},'')) = 'S'
+                        OR upper(coalesce({tipo_desembargo},'')) LIKE '%DESEMBARG%'
+                        OR upper(coalesce({status_original},'')) LIKE '%DESEMBARG%'
                      THEN 'DESEMBARGADO'
-                   WHEN upper(coalesce(status_original,'')) LIKE '%SUBSTITU%'
-                        OR upper(coalesce(status_original,'')) LIKE '%EXCLU%'
-                        OR upper(coalesce(status_aie,'')) LIKE '%EXCLU%'
+
+                   WHEN upper(coalesce({status_original},'')) LIKE '%SUBSTITU%'
+                        OR upper(coalesce({status_original},'')) LIKE '%EXCLU%'
+                        OR upper(coalesce({status_aie},'')) LIKE '%EXCLU%'
                      THEN 'A_VERIFICAR'
-                   WHEN nullif(trim(coalesce(status_original,'') || ' ' || coalesce(status_aie,'')), '') IS NULL
+
+                   WHEN nullif(
+                        trim(
+                            coalesce({status_original},'') || ' ' ||
+                            coalesce({status_aie},'')
+                        ),
+                        ''
+                   ) IS NULL
                      THEN 'A_VERIFICAR'
+
                    ELSE 'ATIVO'
                END
             """
+        ).format(
+            sit_cancelado=sit_cancelado,
+            sit_desembargo=sit_desembargo,
+            tipo_desembargo=tipo_desembargo,
+            status_original=status_original,
+            status_aie=status_aie,
         )
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_ibama_embargo_status_norm ON dados_ibama.ibama_embargo(status_normalizado)')
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_ibama_embargo_uf ON dados_ibama.ibama_embargo(uf)')
-        cursor.execute('SELECT status_normalizado, COUNT(*) FROM dados_ibama.ibama_embargo GROUP BY status_normalizado')
-        return {str(status or 'A_VERIFICAR'): int(total) for status, total in cursor.fetchall()}
+
+        cursor.execute(query)
+
+        cursor.execute(
+            'CREATE INDEX IF NOT EXISTS idx_ibama_embargo_status_norm '
+            'ON dados_ibama.ibama_embargo(status_normalizado)'
+        )
+
+        if 'uf' in existing:
+            cursor.execute(
+                'CREATE INDEX IF NOT EXISTS idx_ibama_embargo_uf '
+                'ON dados_ibama.ibama_embargo(uf)'
+            )
+
+        cursor.execute(
+            """
+            SELECT status_normalizado, COUNT(*)
+              FROM dados_ibama.ibama_embargo
+             GROUP BY status_normalizado
+            """
+        )
+        return {
+            str(status or 'A_VERIFICAR'): int(total)
+            for status, total in cursor.fetchall()
+        }
 
 
 def _process_gpkg(job, gpkg: Path, user):
@@ -1224,6 +1291,12 @@ def process_ibama_bulk_job(job: FonteSincronizacao):
         if imp.status not in allowed:
             raise RuntimeError(imp.motivo_rejeicao or f'Importação IBAMA terminou em {imp.get_status_display()}.')
 
+        _touch(
+            job,
+            status=FonteSincronizacao.Status.IMPORTANDO,
+            progress=95,
+            stage='Normalizando status operacional IBAMA'
+        )
         status_counts = _normalize_operational()
         new_fingerprints = _db_fingerprint_map()
         old_keys = set(old_fingerprints)
@@ -1266,7 +1339,7 @@ def process_ibama_bulk_job(job: FonteSincronizacao):
     )
     job.progresso = 100
     job.etapa = (
-        'IBAMA atualizado no PostGIS'
+        'Atualização concluída com sucesso — IBAMA atualizado no PostGIS'
         if job.status == FonteSincronizacao.Status.CONCLUIDO
         else 'Sem alteração — banco preservado'
     )

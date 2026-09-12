@@ -22,6 +22,64 @@
     </div>
 </div>
 
+
+{% if fonte_slug == 'ibama' and ibama_sync %}
+<section id="ibama-sync-panel"
+         class="mc-card mc-detail-section"
+         data-url="{% url 'administracao:status_sincronizacao_fonte' ibama_sync.pk %}"
+         data-active="{% if ibama_sync.ativo %}1{% else %}0{% endif %}">
+    <div class="mc-card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <div class="mc-eyebrow">ATUALIZAÇÃO IBAMA</div>
+                <strong id="ibama-status">{{ ibama_sync.get_status_display }}</strong>
+                <div id="ibama-stage" style="margin-top:5px;">{{ ibama_sync.etapa }}</div>
+            </div>
+            <strong id="ibama-percent" style="font-size:24px;">{{ ibama_sync.progresso }}%</strong>
+        </div>
+
+        <div style="height:12px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin-top:15px;">
+            <div id="ibama-bar"
+                 style="height:100%;background:#2563eb;width:{{ ibama_sync.progresso }}%;transition:width .4s ease;">
+            </div>
+        </div>
+
+        <div id="ibama-error" style="color:#b91c1c;margin-top:10px;"></div>
+    </div>
+</section>
+
+<script>
+(function () {
+    const panel = document.getElementById('ibama-sync-panel');
+    if (!panel) return;
+
+    const url = panel.dataset.url;
+    let active = panel.dataset.active === '1';
+
+    async function poll() {
+        if (!active) return;
+        try {
+            const r = await fetch(url, {cache:'no-store'});
+            const d = await r.json();
+
+            document.getElementById('ibama-status').textContent = d.status_label || d.status;
+            document.getElementById('ibama-stage').textContent = d.stage || '';
+            document.getElementById('ibama-percent').textContent = d.progress + '%';
+            document.getElementById('ibama-bar').style.width = d.progress + '%';
+            document.getElementById('ibama-error').textContent = d.error || '';
+
+            active = d.active;
+            if (active) setTimeout(poll, 2000);
+        } catch(e) {
+            setTimeout(poll, 4000);
+        }
+    }
+
+    poll();
+})();
+</script>
+{% endif %}
+
 {% for grupo, itens in grupos %}
 <section class="mc-card mc-detail-section">
     <div class="mc-card-header">

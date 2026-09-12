@@ -51,7 +51,7 @@ PRODES_DATASETS = (
         ('amazonia', 'amazon', 'desmatamento', 'prodes'),
         'AMAZONIA',
         'DESMATAMENTO',
-        ('yearly_deforestation_amazonia_legal',),
+        ('yearly_deforestation_amazonia_legal', 'prodes_amazonia_legal'),
     ),
     _spec(
         'prodes-amazonia-nao-florestal',
