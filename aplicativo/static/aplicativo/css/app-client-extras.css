@@ -1,0 +1,189 @@
+/* =========================================================
+   AVISOS AOS CLIENTES v0.3.9
+   Contador individual de não lidos + ajuda fechável.
+   ========================================================= */
+.client-alert-menu > summary {
+    position: relative;
+}
+
+.client-alert-menu.has-unread > summary {
+    color: #ffc45b;
+    background: rgba(196, 120, 16, .12);
+    border-color: rgba(255, 196, 91, .22);
+}
+
+.client-alert-menu.has-unread > summary:hover,
+.client-alert-menu.has-unread[open] > summary {
+    color: #ffd47e;
+    background: rgba(196, 120, 16, .18);
+    border-color: rgba(255, 196, 91, .34);
+}
+
+.client-alert-badge {
+    position: absolute;
+    top: -1px;
+    right: -2px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #061d30;
+    border-radius: 999px;
+    background: #f2a51d;
+    color: #071d31;
+    font-size: 9px;
+    font-weight: 950;
+    line-height: 1;
+    box-shadow: 0 2px 7px rgba(0, 0, 0, .28);
+}
+
+.client-alert-popover {
+    width: min(360px, calc(100vw - 30px));
+}
+
+.client-alert-list {
+    max-height: min(430px, calc(100vh - 120px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.client-alert-read-form {
+    margin: 0;
+}
+
+.client-alert-read-form + .client-alert-read-form {
+    border-top: 1px solid rgba(145, 181, 201, .10);
+}
+
+.client-alert-item {
+    width: 100%;
+    padding: 14px 15px;
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 10px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background .15s ease;
+}
+
+.client-alert-item:hover {
+    background: rgba(34, 100, 127, .16);
+}
+
+.client-alert-state {
+    width: 7px;
+    height: 7px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: #5b7487;
+}
+
+.client-alert-item.is-unread .client-alert-state {
+    background: #f2a51d;
+    box-shadow: 0 0 0 3px rgba(242, 165, 29, .12);
+}
+
+.client-alert-copy {
+    min-width: 0;
+    display: block;
+}
+
+.client-alert-copy strong {
+    display: block;
+    color: #dbe9f2;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.5;
+    white-space: normal;
+}
+
+.client-alert-item.is-unread .client-alert-copy strong {
+    color: #fff;
+    font-weight: 800;
+}
+
+.client-alert-copy time {
+    display: block;
+    margin-top: 6px;
+    color: #7891a4;
+    font-size: 9px;
+}
+
+.client-alert-item.is-read {
+    opacity: .70;
+}
+
+.client-help-page-basic {
+    position: relative;
+}
+
+.client-help-close {
+    position: absolute;
+    top: -3px;
+    right: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #cddae0;
+    border-radius: 10px;
+    background: #fff;
+    color: #24465a;
+    box-shadow: 0 6px 18px rgba(6, 37, 54, .06);
+    cursor: pointer;
+    font-size: 26px;
+    font-weight: 350;
+    line-height: 1;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.client-help-close:hover {
+    border-color: #98afb9;
+    background: #f5f8fa;
+    color: #08263a;
+}
+
+@media (max-width: 720px) {
+    .client-help-close {
+        top: -8px;
+        width: 34px;
+        height: 34px;
+        font-size: 23px;
+    }
+    .client-page-hero { padding-right: 44px; }
+}
+
+/* ==========================================================
+   v0.3.10 — HARDENING DE AUTENTICAÇÃO E CADASTRO
+   ========================================================== */
+.security-honeypot {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.selected-plan-security,
+.security-flow-card {
+    border: 1px solid var(--line, rgba(255,255,255,.12));
+    border-radius: 14px;
+    padding: 16px;
+    margin: 14px 0;
+}
+.selected-plan-security { display: grid; gap: 3px; }
+.selected-plan-security > span,
+.selected-plan-security > small { color: var(--muted, #8491a3); }
+.security-flow-card { display: grid; gap: 12px; }
+.security-flow-card > div { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; }
+.registration-plan-links { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 14px; }
+.registration-plan-links > strong { width: 100%; }
+
+
