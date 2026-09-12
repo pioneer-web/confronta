@@ -320,67 +320,6 @@
     }
 
 
-    /* ---------- CAMADAS ---------- */
-
-    .cf-shell-v15 #map-layer-drawer {
-        top: 14px !important;
-        left: 14px !important;
-        width: 292px !important;
-        max-height: calc(100% - 104px) !important;
-        overflow: hidden !important;
-        border: 1px solid rgba(42,66,74,.13) !important;
-        border-radius: 12px !important;
-        background: rgba(255,255,255,.97) !important;
-        box-shadow: 0 14px 36px rgba(7,27,34,.18) !important;
-        backdrop-filter: blur(10px);
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head {
-        min-height: 52px !important;
-        padding: 10px 12px !important;
-        background: #fff !important;
-        border-bottom: 1px solid #e4ebe8 !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head span {
-        color: #17343e !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head small {
-        color: #7a8c91 !important;
-        font-size: 9px !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head button {
-        color: #667b82 !important;
-        background: #f5f8f7 !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-list {
-        padding: 5px 8px 8px !important;
-        background: #fff !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-eye {
-        min-height: 40px !important;
-        padding: 7px 5px !important;
-        border-bottom: 1px solid #edf1ef !important;
-        color: #344e57 !important;
-        background: transparent !important;
-        font-size: 10.5px !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-eye:last-child {
-        border-bottom: 0 !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer .map-layer-eye:hover {
-        background: #f6f9f7 !important;
-    }
-
-
     /* ---------- PAINEL LATERAL ---------- */
 
     .cf-shell-v15 .territorial-tool-drawer {
@@ -547,13 +486,6 @@
         min-height: 58px !important;
         padding: 8px 10px !important;
     }
-
-    .cf-shell-v15 #map-layer-drawer {
-        top: 9px !important;
-        left: 8px !important;
-        width: min(280px, calc(100% - 16px)) !important;
-        max-height: calc(100% - 88px) !important;
-    }
 }
 
 
@@ -605,10 +537,6 @@
        ===================================================== */
 
     .map-top-insight-bar {
-        border-radius: 6px !important;
-    }
-
-    .cf-shell-v15 #map-layer-drawer {
         border-radius: 6px !important;
     }
 
@@ -766,234 +694,7 @@
         color: #a14646 !important;
     }
 
-
-    /* =====================================================
-       RELATÓRIO
-       Visual de documento técnico/web.
-       ===================================================== */
-
-    .cf-shell-v15 .territorial-side-panel.is-report-mode {
-        top: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: min(980px, calc(100% - 90px)) !important;
-        border: 0 !important;
-        border-left: 1px solid #dce5e1 !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-        box-shadow: -12px 0 34px rgba(8,29,37,.14) !important;
-    }
-
-    .cf-shell-v15 .territorial-side-panel.is-report-maximized {
-        inset: 0 !important;
-        width: 100% !important;
-        max-width: none !important;
-        border-radius: 0 !important;
-    }
-
-    .cf-shell-v15 .territorial-side-panel.is-report-mode
-    .territorial-tool-drawer-head {
-        min-height: 60px !important;
-        padding: 9px 18px !important;
-        background: #fff !important;
-        border-bottom: 1px solid #dfe7e4 !important;
-    }
-
-    /* retira o ícone decorativo grande */
-    .cf-shell-v15 .territorial-side-panel.is-report-mode
-    .territorial-tool-drawer-title {
-        min-height: 0 !important;
-        padding-left: 0 !important;
-    }
-
-    .cf-shell-v15 .territorial-side-panel.is-report-mode
-    .territorial-tool-drawer-title::before {
-        display: none !important;
-    }
-
-    .cf-shell-v15 .territorial-side-panel.is-report-mode
-    .territorial-tool-drawer-title span {
-        color: #658078 !important;
-        font-size: 8px !important;
-        letter-spacing: .08em !important;
-    }
-
-    .cf-shell-v15 .territorial-side-panel.is-report-mode
-    .territorial-tool-drawer-title strong {
-        margin-top: 2px !important;
-        color: #173640 !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-    }
-
-    .cf-shell-v15 .territorial-side-panel.is-report-mode
-    .territorial-side-body {
-        padding: 0 !important;
-        background: #fff !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view {
-        width: min(100%, 920px) !important;
-        margin: 0 auto !important;
-        padding: 28px 34px 50px !important;
-        background: #fff !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-head {
-        margin-bottom: 28px !important;
-        padding: 0 0 18px !important;
-        border-bottom: 2px solid #173640 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-head h2 {
-        margin: 3px 0 0 !important;
-        color: #173640 !important;
-        font-size: 24px !important;
-        font-weight: 600 !important;
-        letter-spacing: -.02em !important;
-    }
-
-    /* seções deixam de parecer cards */
-    .cf-shell-v15 .territorial-report-view .report-section {
-        margin: 0 !important;
-        padding: 24px 0 !important;
-        border: 0 !important;
-        border-bottom: 1px solid #e2e8e5 !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-        box-shadow: none !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-section:last-child {
-        border-bottom: 0 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-section h3 {
-        margin: 0 0 16px !important;
-        color: #173640 !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-    }
-
-    /* dados: colunas simples, sem caixas */
-    .cf-shell-v15 .territorial-report-view .report-data {
-        gap: 0 !important;
-        border-top: 1px solid #e5ebe8 !important;
-        border-left: 1px solid #e5ebe8 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-data > div {
-        padding: 12px 14px !important;
-        border: 0 !important;
-        border-right: 1px solid #e5ebe8 !important;
-        border-bottom: 1px solid #e5ebe8 !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-data dt {
-        color: #7a898e !important;
-        font-size: 8.5px !important;
-        font-weight: 500 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-data dd {
-        margin-top: 4px !important;
-        color: #173640 !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-    }
-
-    /* polígonos: linhas, não cards */
-    .cf-shell-v15 .territorial-report-view .report-list {
-        display: block !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-list > div {
-        min-height: 42px !important;
-        padding: 9px 2px !important;
-        border: 0 !important;
-        border-bottom: 1px solid #e7ece9 !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-    }
-
-    /* alertas/análises */
-    .cf-shell-v15 .territorial-report-view .report-analysis-list {
-        gap: 0 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-analysis-card {
-        padding: 16px 0 16px 14px !important;
-        border: 0 !important;
-        border-left: 3px solid #d7dfdc !important;
-        border-bottom: 1px solid #e5ebe8 !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-        box-shadow: none !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view
-    .report-analysis-card.state-alerta,
-    .cf-shell-v15 .territorial-report-view
-    .report-analysis-card.state-atencao {
-        border-left-color: #d3a041 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-analysis-head strong {
-        font-size: 15px !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-analysis-head span {
-        padding: 3px 7px !important;
-        border-radius: 3px !important;
-        font-size: 9px !important;
-    }
-
-    /* fatos: sem caixas internas */
-    .cf-shell-v15 .territorial-report-view .report-fact-stack {
-        gap: 0 !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-fact-row {
-        padding: 9px 0 !important;
-        border: 0 !important;
-        border-bottom: 1px solid #edf1ef !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-caution,
-    .cf-shell-v15 .territorial-report-view .report-restriction-summary {
-        border-radius: 3px !important;
-        box-shadow: none !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-record-card {
-        padding: 0 !important;
-        border: 1px solid #e3e9e6 !important;
-        border-radius: 0 !important;
-        background: #fff !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view .report-map-preview {
-        border-radius: 3px !important;
-    }
-
 }
-
-
-/* celular */
-@media screen and (max-width: 720px) {
-    .cf-shell-v15 .territorial-side-panel.is-report-mode {
-        width: calc(100% - 8px) !important;
-    }
-
-    .cf-shell-v15 .territorial-report-view {
-        padding: 20px 16px 38px !important;
-    }
-}
-
 
 
 /* =========================================================
@@ -1339,7 +1040,6 @@
 }
 
 
-
 /* =========================================================
    MAPA CLEAN V1.3 — TIPOGRAFIA + TOPO COMPLETO
    ========================================================= */
@@ -1571,7 +1271,6 @@
         height: calc(100vh - 48px) !important;
     }
 }
-
 
 
 /* =========================================================
