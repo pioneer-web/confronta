@@ -288,12 +288,198 @@
     else renderReportMap([]);
 
     const printButton = document.getElementById('print-current-report');
+    let activePrintRoot = null;
+
+    function normalizePrintLabel(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase();
+    }
+
+    function addPrintMeta(container, label, value) {
+        const item = document.createElement('div');
+        item.className = 'cf-print-meta-item';
+
+        const key = document.createElement('span');
+        key.textContent = label;
+
+        const content = document.createElement('strong');
+        content.textContent = value || 'Não informado';
+
+        item.append(key, content);
+        container.appendChild(item);
+    }
+
+    function cleanupPrintReport() {
+        document.body.classList.remove('is-printing-report');
+
+        if (activePrintRoot && activePrintRoot.parentNode) {
+            activePrintRoot.parentNode.removeChild(activePrintRoot);
+        }
+
+        activePrintRoot = null;
+    }
+
+    function buildPrintReport() {
+        const source = document.querySelector(
+            '[data-territorial-view-panel="report"]'
+        );
+
+        if (!source) return null;
+
+        const root = document.createElement('div');
+        root.id = 'cf-print-root';
+
+        const report = source.cloneNode(true);
+        report.removeAttribute('hidden');
+        report.classList.add('cf-print-report');
+
+        /* Elementos exclusivos da tela. */
+        report.querySelectorAll(
+            '.report-actions, #print-current-report, #toggle-report-maximize'
+        ).forEach((element) => element.remove());
+
+        /* Ícones ficam fora do PDF.
+           Evita o problema dos SVG gigantes na impressão. */
+        report.querySelectorAll('.report-intel-icon')
+            .forEach((element) => element.remove());
+
+        /* Nunca expõe geometria bruta ou campos internos no relatório. */
+        report.querySelectorAll('.report-record-card > div')
+            .forEach((row) => {
+                const label = normalizePrintLabel(
+                    row.querySelector('dt')?.textContent
+                );
+
+                const internalLabels = new Set([
+                    'confronta full geometry',
+                    'full geometry',
+                    'geometry',
+                    'geom',
+                    'geojson',
+                    'wkt'
+                ]);
+
+                if (internalLabels.has(label)) {
+                    row.remove();
+                }
+            });
+
+        /* Remove registros que ficaram vazios. */
+        report.querySelectorAll('.report-record-card')
+            .forEach((card) => {
+                if (!card.children.length) card.remove();
+            });
+
+        /* Cabeçalho próprio do PDF. */
+        const header = document.createElement('header');
+        header.className = 'cf-print-cover-head';
+
+        const brandRow = document.createElement('div');
+        brandRow.className = 'cf-print-brand-row';
+
+        const brandBox = document.createElement('div');
+
+        const brand = document.createElement('div');
+        brand.className = 'cf-print-brand';
+        brand.textContent = 'CONFRONTA';
+
+        const documentTitle = document.createElement('div');
+        documentTitle.className = 'cf-print-document-title';
+        documentTitle.textContent = 'Relatório de análise territorial';
+
+        brandBox.append(brand, documentTitle);
+
+        const generated = document.createElement('div');
+        generated.className = 'cf-print-generated';
+        generated.textContent = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
+
+        brandRow.append(brandBox, generated);
+
+        const meta = document.createElement('div');
+        meta.className = 'cf-print-meta';
+
+        const imovel =
+            context &&
+            context.consulta &&
+            context.consulta.imovel
+                ? context.consulta.imovel
+                : {};
+
+        const areaNumber = Number(imovel.area_total_ha);
+        const areaText = Number.isFinite(areaNumber)
+            ? `${areaNumber.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })} ha`
+            : 'Não informada';
+
+        const municipio = [
+            imovel.municipio,
+            imovel.uf
+        ].filter(Boolean).join(' / ');
+
+        addPrintMeta(
+            meta,
+            'CAR',
+            imovel.cod_imovel || 'Não informado'
+        );
+
+        addPrintMeta(
+            meta,
+            'Município',
+            municipio || 'Não informado'
+        );
+
+        addPrintMeta(
+            meta,
+            'Área',
+            areaText
+        );
+
+        addPrintMeta(
+            meta,
+            'Situação',
+            imovel.situacao_apresentacao ||
+            imovel.situacao ||
+            'Não informada'
+        );
+
+        header.append(brandRow, meta);
+
+        const mapSection = report.querySelector('.report-map-section');
+
+        if (mapSection) {
+            report.insertBefore(header, mapSection);
+        } else {
+            report.prepend(header);
+        }
+
+        root.appendChild(report);
+        return root;
+    }
+
     if (printButton) {
         printButton.addEventListener('click', () => {
             setTerritorialView('report');
-            window.setTimeout(() => window.print(), 60);
+
+            cleanupPrintReport();
+
+            activePrintRoot = buildPrintReport();
+            if (!activePrintRoot) return;
+
+            document.body.appendChild(activePrintRoot);
+            document.body.classList.add('is-printing-report');
+
+            window.setTimeout(() => {
+                window.print();
+            }, 100);
         });
     }
+
+    window.addEventListener('afterprint', cleanupPrintReport);
 
     // ==================================================================
     // HOME v14 — ferramentas visíveis antes da consulta.

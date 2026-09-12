@@ -5,17 +5,26 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'aplicativo/css/ux-v058.css' %}?v=058">
 <link rel="stylesheet" href="{% static 'aplicativo/css/ux-v057.css' %}?v=062">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-clean-v1.css' %}?v=005">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=001">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=001">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=001">
 {% if possui_plano %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-rotate-map@0.3.2/leaflet.css">
+
 {% if pode_desenhar_glebas %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" crossorigin="">
 <link rel="stylesheet" href="{% static 'aplicativo/css/poligonos.css' %}?v=056-polygonos">
 {% endif %}
+
+{# Overrides visuais do mapa — sempre carregados por último #}
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-clean-v1.css' %}?v=006">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=002">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=002">
+
+{% if pode_desenhar_glebas %}
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=003">
 {% endif %}
+
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=002">
+{% endif %}
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio-print.css' %}?v=001">
 {% endblock %}
 
 {% block client_rail_tools %}
@@ -679,7 +688,7 @@
 <script src="{% static 'aplicativo/js/mapa.js' %}?v=060-popup-safe"></script>
 <script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
 {% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}
-<script src="{% static 'aplicativo/js/interface.js' %}?v=056-polygonos"></script>
+<script src="{% static 'aplicativo/js/interface.js' %}?v=057-report-print"></script>
 {% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=056-polygonos"></script>{% endif %}
 {% endif %}
 <script src="{% static 'aplicativo/js/suporte-chat.js' %}?v=062"></script>

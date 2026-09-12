@@ -1,0 +1,633 @@
+
+/* =========================================================
+   CONFRONTA — RELATÓRIO / IMPRESSÃO PDF
+   Isolado do layout da aplicação.
+   ========================================================= */
+
+@page {
+    size: A4 portrait;
+    margin: 11mm 12mm 13mm;
+}
+
+@media print {
+
+    html,
+    body {
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+
+    /* -----------------------------------------------------
+       Imprime SOMENTE o relatório clonado.
+       Elimina menu, topo, mapa do sistema, chat etc.
+       ----------------------------------------------------- */
+
+    body.is-printing-report > * {
+        display: none !important;
+    }
+
+    body.is-printing-report > #cf-print-root {
+        display: block !important;
+    }
+
+    #cf-print-root {
+        position: static !important;
+        display: block !important;
+
+        width: 100% !important;
+        height: auto !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        background: #fff !important;
+        color: #183943 !important;
+    }
+
+    #cf-print-root *,
+    #cf-print-root *::before,
+    #cf-print-root *::after {
+        box-sizing: border-box !important;
+    }
+
+
+    /* -----------------------------------------------------
+       DOCUMENTO
+       ----------------------------------------------------- */
+
+    #cf-print-root .cf-print-report {
+        display: block !important;
+
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        overflow: visible !important;
+
+        border: 0 !important;
+        border-radius: 0 !important;
+
+        background: #fff !important;
+        box-shadow: none !important;
+
+        font-family: Arial, "Segoe UI", sans-serif !important;
+        font-size: 9pt !important;
+        line-height: 1.42 !important;
+    }
+
+
+    /* cabeçalho original de tela não vai para PDF */
+
+    #cf-print-root .report-head,
+    #cf-print-root .report-actions,
+    #cf-print-root #print-current-report,
+    #cf-print-root #toggle-report-maximize {
+        display: none !important;
+    }
+
+
+    /* -----------------------------------------------------
+       CABEÇALHO PROFISSIONAL DO PDF
+       ----------------------------------------------------- */
+
+    #cf-print-root .cf-print-cover-head {
+        margin: 0 0 7mm !important;
+        padding: 0 0 5mm !important;
+
+        border-bottom: 1.2mm solid #0b2d3c !important;
+
+        break-after: avoid !important;
+        page-break-after: avoid !important;
+    }
+
+    #cf-print-root .cf-print-brand-row {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 10mm !important;
+    }
+
+    #cf-print-root .cf-print-brand {
+        color: #0b2d3c !important;
+
+        font-size: 17pt !important;
+        font-weight: 700 !important;
+        letter-spacing: .06em !important;
+    }
+
+    #cf-print-root .cf-print-document-title {
+        margin-top: 1.5mm !important;
+
+        color: #3d555e !important;
+
+        font-size: 9pt !important;
+        font-weight: 500 !important;
+    }
+
+    #cf-print-root .cf-print-generated {
+        color: #63767c !important;
+
+        font-size: 7.5pt !important;
+        font-weight: 400 !important;
+
+        text-align: right !important;
+    }
+
+
+    /* dados principais na capa */
+
+    #cf-print-root .cf-print-meta {
+        display: grid !important;
+        grid-template-columns: 2fr 1.1fr .75fr .75fr !important;
+
+        margin-top: 5mm !important;
+
+        border-top: .25mm solid #d9e2df !important;
+        border-left: .25mm solid #d9e2df !important;
+    }
+
+    #cf-print-root .cf-print-meta-item {
+        min-width: 0 !important;
+        padding: 3mm !important;
+
+        border-right: .25mm solid #d9e2df !important;
+        border-bottom: .25mm solid #d9e2df !important;
+    }
+
+    #cf-print-root .cf-print-meta-item span {
+        display: block !important;
+
+        color: #687b81 !important;
+
+        font-size: 7pt !important;
+        font-weight: 500 !important;
+
+        text-transform: uppercase !important;
+    }
+
+    #cf-print-root .cf-print-meta-item strong {
+        display: block !important;
+
+        margin-top: 1mm !important;
+
+        color: #183943 !important;
+
+        font-size: 9pt !important;
+        font-weight: 600 !important;
+
+        line-height: 1.3 !important;
+        overflow-wrap: anywhere !important;
+    }
+
+
+    /* -----------------------------------------------------
+       MAPA — primeira página
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-map-section {
+        page: auto !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        border: 0 !important;
+
+        break-before: auto !important;
+        page-break-before: auto !important;
+
+        break-after: page !important;
+        page-break-after: always !important;
+
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    #cf-print-root .report-map-section h3 {
+        margin: 0 0 3mm !important;
+
+        color: #183943 !important;
+
+        font-size: 12pt !important;
+        font-weight: 600 !important;
+    }
+
+    #cf-print-root .report-map-preview {
+        width: 100% !important;
+        height: 108mm !important;
+        min-height: 0 !important;
+        max-height: 108mm !important;
+
+        display: block !important;
+
+        overflow: hidden !important;
+
+        border: .3mm solid #cfdad6 !important;
+        border-radius: 0 !important;
+
+        background: #f7faf8 !important;
+    }
+
+    #cf-print-root .report-map-preview svg {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: none !important;
+    }
+
+    #cf-print-root .report-map-note {
+        margin: 2.5mm 0 0 !important;
+
+        color: #596d74 !important;
+
+        font-size: 7.5pt !important;
+        line-height: 1.4 !important;
+    }
+
+    #cf-print-root .report-gleba-label {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       SEÇÕES
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-section {
+        display: block !important;
+
+        margin: 0 !important;
+        padding: 5mm 0 !important;
+
+        border: 0 !important;
+        border-bottom: .25mm solid #dce4e1 !important;
+        border-radius: 0 !important;
+
+        background: #fff !important;
+        box-shadow: none !important;
+
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+    }
+
+    #cf-print-root .report-section:last-child {
+        border-bottom: 0 !important;
+    }
+
+    #cf-print-root .report-section h3 {
+        margin: 0 0 3.5mm !important;
+
+        color: #153640 !important;
+
+        font-size: 11.5pt !important;
+        font-weight: 600 !important;
+
+        break-after: avoid !important;
+        page-break-after: avoid !important;
+    }
+
+
+    /* -----------------------------------------------------
+       DADOS DO IMÓVEL
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-data {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+
+        gap: 0 !important;
+
+        margin: 0 !important;
+
+        border-top: .25mm solid #dce4e1 !important;
+        border-left: .25mm solid #dce4e1 !important;
+    }
+
+    #cf-print-root .report-data > div {
+        min-height: 16mm !important;
+
+        padding: 2.5mm 3mm !important;
+
+        border: 0 !important;
+        border-right: .25mm solid #dce4e1 !important;
+        border-bottom: .25mm solid #dce4e1 !important;
+        border-radius: 0 !important;
+
+        background: #fff !important;
+
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    #cf-print-root .report-data dt {
+        color: #63777e !important;
+
+        font-size: 7pt !important;
+        font-weight: 500 !important;
+
+        text-transform: uppercase !important;
+    }
+
+    #cf-print-root .report-data dd {
+        margin: 1.2mm 0 0 !important;
+
+        color: #173943 !important;
+
+        font-size: 9pt !important;
+        font-weight: 600 !important;
+
+        overflow-wrap: anywhere !important;
+    }
+
+
+    /* -----------------------------------------------------
+       LISTAS
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-list {
+        display: block !important;
+    }
+
+    #cf-print-root .report-list > div {
+        min-height: 9mm !important;
+
+        padding: 2mm 0 !important;
+
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 6mm !important;
+
+        border: 0 !important;
+        border-bottom: .2mm solid #e5ebe8 !important;
+        border-radius: 0 !important;
+
+        background: transparent !important;
+
+        break-inside: avoid !important;
+    }
+
+    #cf-print-root .report-list span,
+    #cf-print-root .report-list strong {
+        font-size: 8.5pt !important;
+    }
+
+
+    /* -----------------------------------------------------
+       RESUMO DE ALERTAS
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-restriction-summary {
+        padding: 3mm 3.5mm !important;
+
+        border: 0 !important;
+        border-left: 1mm solid #c9790b !important;
+        border-radius: 0 !important;
+
+        background: #fff8eb !important;
+
+        box-shadow: none !important;
+
+        break-inside: avoid !important;
+    }
+
+    #cf-print-root .report-restriction-summary strong {
+        color: #8b5605 !important;
+
+        font-size: 9.5pt !important;
+        font-weight: 600 !important;
+    }
+
+    #cf-print-root .report-restriction-summary span {
+        margin-top: 1mm !important;
+
+        color: #465c63 !important;
+
+        font-size: 8pt !important;
+    }
+
+
+    /* -----------------------------------------------------
+       ALERTAS
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-analysis-list {
+        display: block !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #cf-print-root .report-analysis-card,
+    #cf-print-root .report-intel-card {
+        display: block !important;
+
+        margin: 0 !important;
+        padding: 3.5mm 0 3.5mm 3mm !important;
+
+        border: 0 !important;
+        border-left: .7mm solid #aebbb7 !important;
+        border-bottom: .2mm solid #e2e8e5 !important;
+        border-radius: 0 !important;
+
+        background: #fff !important;
+
+        box-shadow: none !important;
+
+        /* IMPORTANTE:
+           cartões grandes podem continuar na página seguinte */
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+    }
+
+    #cf-print-root .report-analysis-card.state-alerta,
+    #cf-print-root .report-analysis-card.state-atencao {
+        border-left-color: #c9790b !important;
+    }
+
+
+    /* ícones não são necessários no PDF.
+       Isto elimina os desenhos pretos gigantes. */
+
+    #cf-print-root .report-intel-icon {
+        display: none !important;
+    }
+
+    #cf-print-root .report-intel-head {
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) auto !important;
+        gap: 5mm !important;
+        align-items: start !important;
+
+        break-after: avoid !important;
+        page-break-after: avoid !important;
+    }
+
+    #cf-print-root .report-intel-title strong {
+        display: block !important;
+
+        color: #173943 !important;
+
+        font-size: 10pt !important;
+        font-weight: 600 !important;
+    }
+
+    #cf-print-root .report-intel-title p {
+        margin: 1mm 0 0 !important;
+
+        color: #465f67 !important;
+
+        font-size: 8pt !important;
+        line-height: 1.4 !important;
+    }
+
+    #cf-print-root .report-status-badge {
+        padding: 1mm 2mm !important;
+
+        border-radius: 1mm !important;
+
+        background: #eef2f0 !important;
+        color: #445b63 !important;
+
+        font-size: 7.5pt !important;
+        font-weight: 600 !important;
+
+        white-space: nowrap !important;
+    }
+
+    #cf-print-root .state-alerta .report-status-badge,
+    #cf-print-root .state-atencao .report-status-badge {
+        background: #fff3df !important;
+        color: #955a04 !important;
+    }
+
+
+    /* fatos */
+
+    #cf-print-root .report-fact-stack {
+        display: block !important;
+
+        margin-top: 2mm !important;
+    }
+
+    #cf-print-root .report-fact-row {
+        display: grid !important;
+        grid-template-columns: 46mm minmax(0, 1fr) !important;
+        gap: 4mm !important;
+
+        padding: 1.6mm 0 !important;
+
+        border: 0 !important;
+        border-bottom: .2mm solid #e8eeeb !important;
+        border-radius: 0 !important;
+
+        background: transparent !important;
+
+        break-inside: avoid !important;
+    }
+
+    #cf-print-root .report-fact-row span {
+        color: #62767d !important;
+
+        font-size: 7.5pt !important;
+        font-weight: 500 !important;
+    }
+
+    #cf-print-root .report-fact-row strong {
+        color: #1c3c46 !important;
+
+        font-size: 8pt !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       REGISTROS DETALHADOS
+       Mais compactos: duas colunas.
+       ----------------------------------------------------- */
+
+    #cf-print-root .report-record-grid {
+        display: block !important;
+
+        margin-top: 3mm !important;
+    }
+
+    #cf-print-root .report-record-card {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+        gap: 0 !important;
+
+        margin: 0 0 3mm !important;
+        padding: 0 !important;
+
+        border: .25mm solid #dce4e1 !important;
+        border-radius: 0 !important;
+
+        background: #fff !important;
+        box-shadow: none !important;
+
+        break-inside: auto !important;
+        page-break-inside: auto !important;
+    }
+
+    #cf-print-root .report-record-card > div {
+        display: block !important;
+
+        min-width: 0 !important;
+        padding: 2mm 2.5mm !important;
+
+        border: 0 !important;
+        border-right: .2mm solid #e7ecea !important;
+        border-bottom: .2mm solid #e7ecea !important;
+
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    #cf-print-root .report-record-card dt {
+        color: #687b81 !important;
+
+        font-size: 6.8pt !important;
+        font-weight: 500 !important;
+    }
+
+    #cf-print-root .report-record-card dd {
+        margin: .8mm 0 0 !important;
+
+        color: #173943 !important;
+
+        font-size: 7.8pt !important;
+        font-weight: 500 !important;
+        line-height: 1.35 !important;
+
+        overflow-wrap: anywhere !important;
+    }
+
+
+    /* avisos */
+
+    #cf-print-root .report-caution {
+        padding: 2.5mm 3mm !important;
+
+        border: 0 !important;
+        border-left: .8mm solid #c9790b !important;
+        border-radius: 0 !important;
+
+        background: #fff8eb !important;
+        color: #704b0b !important;
+
+        font-size: 8pt !important;
+
+        break-inside: avoid !important;
+    }
+}
