@@ -679,16 +679,8 @@
         color: #253a42;
         box-shadow: 0 20px 58px rgba(6,28,35,.24);
     }
-    .cf-shell-v15 .territorial-side-panel.is-report-mode {
-        width: min(760px, calc(100% - 28px));
-        background: #f4f7f5;
-    }
-    .cf-shell-v15 .territorial-side-panel.is-report-maximized {
-        top: 8px;
-        right: 8px;
-        bottom: 8px;
-        width: calc(100% - 16px);
-    }
+
+
     .cf-shell-v15 .territorial-tool-drawer-head {
         min-height: 58px;
         padding: 10px 12px 10px 16px;
@@ -878,13 +870,6 @@
     overflow: hidden;
 }
 
-.cf-shell-v15 .map-layer-drawer {
-    top: 94px;
-    left: 14px;
-    right: auto;
-    width: 288px;
-    max-height: calc(100% - 210px);
-}
 
 .map-insight-panel {
     position: absolute;
@@ -1053,11 +1038,7 @@
         gap: 8px;
     }
 
-    .cf-shell-v15 .map-layer-drawer {
-        top: 86px;
-        width: min(280px, calc(100% - 24px));
-        max-height: calc(100% - 300px);
-    }
+
 }
 
 @media (max-width: 720px) {
@@ -1102,12 +1083,7 @@
         min-height: 58vh;
     }
 
-    .cf-shell-v15 .map-layer-drawer {
-        top: 78px;
-        left: 8px;
-        width: min(270px, calc(100% - 16px));
-        max-height: calc(58vh - 96px);
-    }
+
 }
 
 /* =========================================================
@@ -1129,9 +1105,6 @@
     background: #0a2028;
 }
 
-.cf-shell-v15 .client-content-app {
-    height: 100vh;
-}
 
 .cf-shell-v15 .client-rail {
     inset: 0 auto 0 0;
@@ -1151,13 +1124,6 @@
     height: 100vh;
 }
 
-.cf-shell-v15 .map-layer-drawer {
-    top: 18px;
-    left: 18px;
-    right: auto;
-    width: 284px;
-    max-height: calc(100% - 36px);
-}
 
 .map-floating-query {
     position: absolute;
@@ -1268,9 +1234,6 @@
     cursor: pointer;
 }
 
-.map-top-insight-alert strong {
-    color: #f7bf19;
-}
 
 .map-top-insight-alert small {
     overflow: hidden;
@@ -1343,12 +1306,7 @@
         grid-template-columns: 1fr;
     }
 
-    .cf-shell-v15 .map-layer-drawer {
-        top: 18px;
-        left: 10px;
-        width: min(260px, calc(100% - 20px));
-        max-height: calc(100% - 330px);
-    }
+
 }
 .map-floating-query.is-highlighted .map-floating-query-panel {
     animation: confrontaQueryPulse .75s ease;
@@ -1481,9 +1439,6 @@
     height: calc(100vh - 54px);
 }
 
-.cf-shell-v15 .client-content-app {
-    height: calc(100vh - 54px);
-}
 
 .cf-shell-v15 .client-content-app .territorial-screen,
 .cf-shell-v15 .territorial-screen-empty,
@@ -1585,9 +1540,7 @@ button.map-top-insight-item,
         height: calc(100vh - 50px);
     }
 
-    .cf-shell-v15 .client-content-app {
-        height: calc(100vh - 50px);
-    }
+
 
     .cf-shell-v15 .top-query-cluster-slim {
         width: 100%;
@@ -2071,10 +2024,7 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
 /* =========================================================
    CONFRONTA — V1.9 ajuste visual do relatório
    ========================================================= */
-.cf-shell-v15 .territorial-report-view {
-    padding: 18px;
-    background: #f3f6f5;
-}
+
 
 .cf-shell-v15 .territorial-report-view .report-head {
     margin-bottom: 14px;
@@ -2111,41 +2061,6 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     box-shadow: 0 10px 24px rgba(12, 39, 52, .045);
 }
 
-.cf-shell-v15 .territorial-report-view .report-section h3 {
-    margin: 0 0 14px;
-    color: #18343f;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-.cf-shell-v15 .territorial-report-view .report-data {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.cf-shell-v15 .territorial-report-view .report-data > div {
-    padding: 12px 14px;
-    border-radius: 12px;
-    background: #f7faf8;
-    border: 1px solid #edf2ef;
-}
-
-.cf-shell-v15 .territorial-report-view .report-data dt {
-    color: #73858b;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-}
-
-.cf-shell-v15 .territorial-report-view .report-data dd {
-    margin: 6px 0 0;
-    color: #18343f;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.45;
-}
 
 .cf-shell-v15 .territorial-report-view .report-list {
     display: grid;
@@ -2164,29 +2079,6 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     border: 1px solid #edf2ef;
 }
 
-.cf-shell-v15 .territorial-report-view .report-list span {
-    color: #48606a;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.cf-shell-v15 .territorial-report-view .report-list strong {
-    color: #18343f;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.cf-shell-v15 .territorial-report-view .report-restriction-summary {
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1px solid #f3ddb4;
-    background: linear-gradient(180deg, #fff9ee 0%, #fff5e5 100%);
-}
-
-.cf-shell-v15 .territorial-report-view .report-restriction-summary strong {
-    color: #8d5f0b;
-    font-size: 14px;
-}
 
 .cf-shell-v15 .territorial-report-view .report-restriction-summary span {
     margin-top: 5px;
@@ -2263,11 +2155,6 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     border: 1px solid #edf2ef;
 }
 
-.cf-shell-v15 .territorial-report-view .report-fact-row span {
-    color: #60747b;
-    font-size: 12px;
-    font-weight: 500;
-}
 
 .cf-shell-v15 .territorial-report-view .report-fact-row strong {
     color: #17323d;
@@ -2288,17 +2175,6 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     line-height: 1.55 !important;
 }
 
-.cf-shell-v15 .territorial-report-view .report-analysis-details {
-    margin-top: 12px;
-    border-top: 1px solid #ecf1ef;
-    padding-top: 12px;
-}
-
-.cf-shell-v15 .territorial-report-view .report-analysis-details summary {
-    color: #0f5d72;
-    font-size: 12px;
-    font-weight: 700;
-}
 
 .cf-shell-v15 .territorial-report-view .report-record-grid {
     display: grid;
@@ -2307,12 +2183,6 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     margin-top: 12px;
 }
 
-.cf-shell-v15 .territorial-report-view .report-record-card {
-    padding: 10px 0;
-    border: 1px solid #e3eae7;
-    border-radius: 12px;
-    background: #fbfcfc;
-}
 
 .cf-shell-v15 .territorial-report-view .report-record-card > div {
     display: grid;

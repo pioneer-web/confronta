@@ -100,7 +100,7 @@
     background: #041c31;
 }
 .territorial-tool-drawer-title span { font-weight: 600; }
-.territorial-tool-drawer-title strong { font-weight: 500; }
+
 
 /* Ficha rápida: uma barra horizontal em desktop, ocupando pouca altura. */
 .map-property-summary {
@@ -117,7 +117,7 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
 }
-.map-property-summary:not([hidden]) { display: flex; }
+
 .map-summary-head {
     width: min(320px, 25%);
     min-width: 235px;
@@ -222,7 +222,7 @@
 .map-property-summary.is-collapsed .map-summary-identity strong { max-width: 360px; }
 
 /* HUD acompanha a nova barra, que agora é bem mais baixa. */
-.client-content-app .map-live-area { bottom: 94px; }
+
 .map-property-summary.is-collapsed ~ .map-live-area { bottom: 74px; }
 
 /* Popups: camada territorial e gleba usam o mesmo componente visual. */
@@ -260,14 +260,7 @@
     gap: 9px;
     border-bottom: 1px solid #e5ecef;
 }
-.cf-feature-popup-dot,
-.cf-gleba-popup-dot {
-    width: 10px;
-    height: 10px;
-    flex: 0 0 auto;
-    border: 1px solid rgba(5, 34, 50, .16);
-    border-radius: 50%;
-}
+
 
 .cf-feature-popup-title strong,
 .cf-gleba-popup-title strong {
@@ -280,22 +273,8 @@
     font-weight: 600;
     line-height: 1.25;
 }
-.cf-feature-popup-title span,
-.cf-gleba-popup-title span {
-    display: block;
-    margin-top: 3px;
-    color: #81939b;
-    font-size: 8.5px;
-    font-weight: 400;
-}
-.cf-feature-popup-body,
-.cf-gleba-popup-body { padding: 10px 13px 12px; }
-.cf-feature-popup-metrics,
-.cf-gleba-popup-metrics {
-    display: grid;
-    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-    gap: 7px;
-}
+
+
 .cf-feature-popup-metric,
 .cf-gleba-popup-metric {
     min-width: 0;
@@ -305,14 +284,7 @@
     background: #f7faf9;
 }
 
-.cf-feature-popup-metric span,
-.cf-gleba-popup-metric span {
-    color: #82949c;
-    font-size: 7.5px;
-    font-weight: 400;
-    letter-spacing: .025em;
-    text-transform: uppercase;
-}
+
 .cf-feature-popup-metric strong,
 .cf-gleba-popup-metric strong {
     margin-top: 3px;
@@ -406,9 +378,9 @@
 .territorial-tab { font-weight: 600; }
 
 @media (max-width: 1280px) {
-    .map-property-summary { width: min(980px, calc(100% - 30px)); }
+
     .map-summary-head { width: 250px; min-width: 220px; }
-    .map-summary-grid { grid-template-columns: repeat(4, minmax(105px, 1fr)); }
+
     .map-summary-grid .map-summary-item { min-height: 52px; }
     .map-summary-grid .map-summary-item:nth-child(4n) { border-right: 0; }
     .map-summary-grid .map-summary-item:nth-child(-n+4) { border-bottom: 1px solid rgba(153, 189, 207, .08); }
