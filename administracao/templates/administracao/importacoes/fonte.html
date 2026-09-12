@@ -11,6 +11,12 @@
         </div>
     </div>
     <div class="mc-page-actions">
+        {% if fonte_slug == 'ibama' %}
+        <form method="post" action="{% url 'administracao:atualizar_ibama_agora' %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Atualizar agora</button>
+        </form>
+        {% endif %}
         <a class="btn btn-outline-secondary" href="{% url 'administracao:catalogo_bases' %}">Catálogo</a>
         {% if batch_enabled %}<a class="btn btn-primary" href="{% url 'administracao:novo_lote_importacao_fonte' fonte_slug %}">Importar em lote</a>{% endif %}
     </div>

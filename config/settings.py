@@ -104,6 +104,10 @@ SOURCE_HTTP_RETRY_BACKOFF_SECONDS=env_int('SOURCE_HTTP_RETRY_BACKOFF_SECONDS',2)
 IBAMA_AUTOMATION_ENABLED=env_bool('IBAMA_AUTOMATION_ENABLED',True)
 IBAMA_AUTOMATION_HOUR=env_int('IBAMA_AUTOMATION_HOUR',5)
 IBAMA_AUTOMATION_MINUTE=env_int('IBAMA_AUTOMATION_MINUTE',0)
+IBAMA_CKAN_PACKAGE_URL=os.getenv(
+    'IBAMA_CKAN_PACKAGE_URL',
+    'https://dadosabertos.ibama.gov.br/api/3/action/package_show?id=fiscalizacao-termo-de-embargo',
+).strip()
 # v0.4: downloads em lote oficiais do Dados Abertos IBAMA. PAMGIA foi removido
 # do caminho crítico da ingestão por não oferecer comportamento estável para bulk.
 IBAMA_TERMO_EMBARGO_URL=os.getenv(

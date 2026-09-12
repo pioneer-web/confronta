@@ -1,0 +1,39 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Financeiro — CONFRONTA{% endblock %}
+
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+        </div>
+        <div>
+            <span class="mc-eyebrow">Gestão comercial</span>
+            <h1>Financeiro</h1>
+            <p class="mc-page-subtitle">Planos, assinaturas e integração financeira do CONFRONTA.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mc-hub-grid">
+    <a class="mc-hub-card mc-hub-card-large" href="{% url 'administracao:planos' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>
+        </div>
+        <div>
+            <strong>Planos comerciais</strong>
+            <span>Cadastre, altere valores, períodos e disponibilidade dos planos.</span>
+        </div>
+    </a>
+
+    <a class="mc-hub-card mc-hub-card-large" href="{% url 'administracao:financeiro_asaas' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></svg>
+        </div>
+        <div>
+            <strong>Assinaturas Asaas</strong>
+            <span>Acompanhe cobranças, pagamentos e situação das assinaturas.</span>
+        </div>
+    </a>
+</div>
+{% endblock %}

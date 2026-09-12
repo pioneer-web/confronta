@@ -1,3 +1,5 @@
+from administracao.constants import FONTE_SLUGS
+
 from django.db import connection, transaction
 from django.utils import timezone
 from psycopg import sql

@@ -1,0 +1,39 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Sistema — CONFRONTA{% endblock %}
+
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.2 3h-4.4l-.3 2.7a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.3 2.7h4.4l.3-2.7a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/></svg>
+        </div>
+        <div>
+            <span class="mc-eyebrow">Operação técnica</span>
+            <h1>Sistema</h1>
+            <p class="mc-page-subtitle">Ferramentas técnicas e acompanhamento da integridade das bases do CONFRONTA.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mc-hub-grid">
+    <a class="mc-hub-card mc-hub-card-large" href="{% url 'administracao:alertas' %}">
+        <div class="mc-hub-icon mc-hub-icon-warning">
+            <svg viewBox="0 0 24 24"><path d="M12 3 2.8 19h18.4L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg>
+        </div>
+        <div>
+            <strong>Alertas do banco</strong>
+            <span>Verifique inconsistências, tabelas e situações que exigem atenção técnica.</span>
+        </div>
+    </a>
+
+    <a class="mc-hub-card mc-hub-card-large" href="{% url 'administracao:catalogo_bases' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </div>
+        <div>
+            <strong>Catálogo técnico</strong>
+            <span>Consulte as fontes, datasets e estrutura das bases configuradas.</span>
+        </div>
+    </a>
+</div>
+{% endblock %}

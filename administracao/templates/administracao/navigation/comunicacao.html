@@ -1,0 +1,41 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Comunicação — CONFRONTA{% endblock %}
+
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3Z"/><path d="M8 10h8M8 13h5"/></svg>
+        </div>
+        <div>
+            <span class="mc-eyebrow">Relacionamento</span>
+            <h1>Comunicação</h1>
+            <p class="mc-page-subtitle">Atendimento, mensagens e comunicados enviados aos clientes.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mc-hub-grid">
+    <a class="mc-hub-card mc-hub-card-large" href="{% url 'administracao:atendimentos' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3Z"/><path d="M8 10h8M8 13h5"/></svg>
+        </div>
+        <div>
+            <strong>Chat com clientes</strong>
+            <span>Visualize conversas, mensagens e atendimentos pendentes.</span>
+        </div>
+    </a>
+
+    {% if can_manage_commercial %}
+    <a class="mc-hub-card mc-hub-card-large" href="{% url 'administracao:avisos_clientes' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+        </div>
+        <div>
+            <strong>Avisos aos clientes</strong>
+            <span>Crie e controle comunicados apresentados dentro do sistema.</span>
+        </div>
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

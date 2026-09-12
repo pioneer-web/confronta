@@ -1,0 +1,98 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Dados e Importações — CONFRONTA{% endblock %}
+
+{% block content %}
+<div class="mc-page-header">
+    <div class="mc-page-heading">
+        <div class="mc-page-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 7h16v12H4z"/><path d="M8 3h8v4H8z"/><path d="M12 11v5m0 0-2-2m2 2 2-2"/></svg>
+        </div>
+        <div>
+            <span class="mc-eyebrow">Central operacional</span>
+            <h1>Dados e Importações</h1>
+            <p class="mc-page-subtitle">Importe, atualize e acompanhe todas as bases geoespaciais utilizadas pelo CONFRONTA.</p>
+        </div>
+    </div>
+</div>
+
+<div class="mc-hub-grid mc-hub-grid-3 mb-4">
+    <a class="mc-hub-card" href="{% url 'administracao:lotes_recentes' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+        </div>
+        <div>
+            <strong>Lotes recentes</strong>
+            <span>Acompanhar fila, processamento, falhas e interrupções.</span>
+        </div>
+    </a>
+
+    <a class="mc-hub-card" href="{% url 'administracao:historico_importacoes' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </div>
+        <div>
+            <strong>Histórico</strong>
+            <span>Consultar importações anteriores e resultados do pipeline.</span>
+        </div>
+    </a>
+
+    <a class="mc-hub-card" href="{% url 'administracao:catalogo_bases' %}">
+        <div class="mc-hub-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+        </div>
+        <div>
+            <strong>Catálogo de bases</strong>
+            <span>Visualizar as bases e datasets disponíveis no sistema.</span>
+        </div>
+    </a>
+</div>
+
+<div class="mc-section-heading">
+    <div>
+        <span class="mc-eyebrow">Fontes de dados</span>
+        <h2>Escolha a base que deseja atualizar</h2>
+    </div>
+</div>
+
+<div class="mc-source-grid">
+    {% for source in manage_sidebar_sources %}
+    <article class="mc-source-card">
+        <div class="mc-source-card-top">
+            <div class="mc-source-monogram">{{ source.organization|slice:":2"|upper }}</div>
+            <div class="mc-source-head">
+                <strong>{{ source.label }}</strong>
+                <span>{{ source.organization }}</span>
+            </div>
+        </div>
+
+        <p>{{ source.purpose }}</p>
+
+        <div class="mc-source-meta">
+            <span>{{ source.dataset_count }} perfil{{ source.dataset_count|pluralize:"is" }}</span>
+            <span>{{ source.implementation|default:"OPERACIONAL" }}</span>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            {% if source.import_source_slug == 'ibama' %}
+            <form method="post"
+                  action="{% url 'administracao:atualizar_ibama_agora' %}"
+                  style="margin:0;">
+                {% csrf_token %}
+                <button type="submit"
+                        class="button primary mc-source-action">
+                    Atualizar agora
+                </button>
+            </form>
+            {% endif %}
+
+            <a class="button primary mc-source-action"
+               href="{% url 'administracao:novo_lote_importacao_fonte' source.import_source_slug %}">
+                Importar arquivos
+            </a>
+        </div>
+    </article>
+    {% empty %}
+    <div class="mc-empty-state">Nenhuma fonte de dados disponível para importação.</div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,3 +1,4 @@
+from datetime import date
 from django.db import connection
 from psycopg import sql
 
@@ -5,6 +6,7 @@ from .exceptions import GISValidationError
 from .field_matching import find_matching_field
 
 DEFAULT_PRODES_START_YEAR = 2019
+DEFAULT_PRODES_START_DATE = date(2019, 8, 1)
 
 
 def normalize_prodes_start_year(value, *, default=DEFAULT_PRODES_START_YEAR):
@@ -33,82 +35,141 @@ def _table_columns(schema, table):
 
 
 def apply_prodes_year_filter(schema, table, spec, start_year):
-    """Filtra o staging PRODES antes de RAW/operação e devolve contagens auditáveis.
-
-    A fonte oficial permanece intacta em disco. O corte é aplicado apenas à cópia
-    temporária em staging. Registros com ano inválido são contabilizados e removidos
-    somente da cópia de staging; os registros válidos continuam o fluxo. Se o campo
-    de ano não existir ou o filtro produzir uma partição vazia, a promoção é bloqueada.
-    """
     if spec.fonte_slug != 'prodes':
         return {}
 
     start_year = normalize_prodes_start_year(start_year)
+
+    start_date = (
+        DEFAULT_PRODES_START_DATE
+        if start_year == DEFAULT_PRODES_START_YEAR
+        else date(start_year, 1, 1)
+    )
+
     columns = _table_columns(schema, table)
-    year_field_spec = next((field for field in spec.fields if field.canonical == 'year'), None)
-    aliases = year_field_spec.aliases if year_field_spec else ('year', 'ano', 'year_prodes')
-    year_column = find_matching_field(columns, aliases)
+
+    year_field_spec = next(
+        (field for field in spec.fields if field.canonical == 'year'),
+        None,
+    )
+    year_aliases = (
+        year_field_spec.aliases
+        if year_field_spec
+        else ('year', 'ano', 'year_prodes')
+    )
+    year_column = find_matching_field(columns, year_aliases)
+
+    date_field_spec = next(
+        (field for field in spec.fields if field.canonical == 'image_date'),
+        None,
+    )
+    date_aliases = (
+        date_field_spec.aliases
+        if date_field_spec
+        else ('image_date', 'data_imagem')
+    )
+    date_column = find_matching_field(columns, date_aliases)
+
     if not year_column:
         raise GISValidationError(
-            'O campo de ano do PRODES não foi localizado no staging. A base anterior foi preservada.'
+            'Campo year/ano do PRODES não localizado.'
         )
 
-    table_ident = sql.SQL('{}.{}').format(sql.Identifier(schema), sql.Identifier(table))
-    field_ident = sql.Identifier(year_column)
+    if not date_column:
+        raise GISValidationError(
+            'Campo image_date/data_imagem do PRODES não localizado. '
+            'A importação foi bloqueada para evitar corte temporal incorreto.'
+        )
+
+    table_ident = sql.SQL('{}.{}').format(
+        sql.Identifier(schema),
+        sql.Identifier(table),
+    )
+
+    year_ident = sql.Identifier(year_column)
+    date_ident = sql.Identifier(date_column)
+
     year_expr = sql.SQL(
         "CASE WHEN trim({field}::text) ~ '^[0-9]{{4}}([.]0+)?$' "
         "THEN trim({field}::text)::numeric::integer ELSE NULL END"
-    ).format(field=field_ident)
+    ).format(field=year_ident)
+
+    date_expr = sql.SQL(
+        "CASE "
+        "WHEN pg_input_is_valid(left(trim({field}::text), 10), 'date') "
+        "THEN left(trim({field}::text), 10)::date "
+        "ELSE NULL END"
+    ).format(field=date_ident)
 
     with connection.cursor() as cursor:
         cursor.execute(
             sql.SQL(
                 'SELECT COUNT(*), '
+                'COUNT(*) FILTER (WHERE {date_expr} IS NULL), '
+                'COUNT(*) FILTER (WHERE {date_expr} < %s), '
+                'COUNT(*) FILTER (WHERE {date_expr} >= %s AND {year_expr} IS NOT NULL), '
                 'COUNT(*) FILTER (WHERE {year_expr} IS NULL), '
-                'COUNT(*) FILTER (WHERE {year_expr} < %s), '
-                'COUNT(*) FILTER (WHERE {year_expr} >= %s), '
+                'MIN({date_expr}), MAX({date_expr}), '
                 'MIN({year_expr}), MAX({year_expr}) '
                 'FROM {table}'
-            ).format(year_expr=year_expr, table=table_ident),
-            [start_year, start_year],
+            ).format(
+                date_expr=date_expr,
+                year_expr=year_expr,
+                table=table_ident,
+            ),
+            [start_date, start_date],
         )
-        total, invalid, discarded, retained, min_year, max_year = cursor.fetchone()
+
+        (
+            total,
+            invalid_date,
+            discarded,
+            retained,
+            invalid_year,
+            min_date,
+            max_date,
+            min_year,
+            max_year,
+        ) = cursor.fetchone()
 
         if not retained:
             raise GISValidationError(
-                f'Nenhuma ocorrência PRODES atende ao corte de {start_year} ou posterior. '
-                'A promoção foi bloqueada para evitar substituir a partição ativa por uma base vazia.'
+                f'Nenhuma ocorrência PRODES atende ao corte de '
+                f'{start_date.strftime("%d/%m/%Y")} ou posterior.'
             )
-
-        invalid_values = []
-        if invalid:
-            cursor.execute(
-                sql.SQL(
-                    'SELECT DISTINCT trim({field}::text) '
-                    'FROM {table} WHERE {year_expr} IS NULL LIMIT 20'
-                ).format(field=field_ident, table=table_ident, year_expr=year_expr)
-            )
-            invalid_values = [row[0] for row in cursor.fetchall()]
 
         cursor.execute(
-            sql.SQL('DELETE FROM {table} WHERE {year_expr} IS NULL OR {year_expr} < %s').format(
-                table=table_ident, year_expr=year_expr
+            sql.SQL(
+                'DELETE FROM {table} '
+                'WHERE {date_expr} IS NULL '
+                'OR {date_expr} < %s '
+                'OR {year_expr} IS NULL'
+            ).format(
+                table=table_ident,
+                date_expr=date_expr,
+                year_expr=year_expr,
             ),
-            [start_year],
+            [start_date],
         )
+
         removed = cursor.rowcount if cursor.rowcount and cursor.rowcount > 0 else 0
 
     return {
         'aplicado': True,
         'ano_inicial': start_year,
+        'data_inicial': start_date.isoformat(),
         'campo_ano': year_column,
+        'campo_data': date_column,
         'registros_originais': int(total or 0),
+        'registros_descartados_antes_da_data': int(discarded or 0),
         'registros_descartados_antes_do_ano': int(discarded or 0),
         'registros_removidos_staging': int(removed or 0),
         'registros_mantidos': int(retained or 0),
-        'registros_ano_invalido': int(invalid or 0),
-        'tem_pendencias': bool(invalid),
-        'valores_ano_invalidos_amostra': invalid_values,
+        'registros_data_invalida': int(invalid_date or 0),
+        'registros_ano_invalido': int(invalid_year or 0),
+        'tem_pendencias': bool(invalid_date or invalid_year),
+        'data_minima_encontrada': min_date.isoformat() if min_date else None,
+        'data_maxima_encontrada': max_date.isoformat() if max_date else None,
         'ano_minimo_encontrado': min_year,
         'ano_maximo_encontrado': max_year,
     }

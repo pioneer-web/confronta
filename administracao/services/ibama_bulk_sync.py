@@ -31,7 +31,7 @@ from administracao.services.pipeline import process_import
 logger = logging.getLogger(__name__)
 
 IBAMA_DATASET = 'ibama-termos-embargo'
-IBAMA_COLLECTOR_VERSION = 'bulk-dados-abertos-v0.4.2'
+IBAMA_COLLECTOR_VERSION = 'ckan-dados-abertos-v0.5.0'
 
 
 @dataclass(frozen=True)
@@ -380,13 +380,20 @@ def _resource_candidates(spec: IbamaResourceSpec, discovered):
         'historico': 'IBAMA_HISTORICO_URL',
     }.get(spec.key)
     values = []
+
+    # CKAN é a fonte principal para descoberta da URL oficial atual.
+    for item in discovered.get(spec.key, []):
+        values.append(item.get('url'))
+
+    # Configuração explícita fica como primeiro fallback.
     if override_name:
         override = str(getattr(settings, override_name, '') or '').strip()
         if override:
             values.append(override)
+
+    # Rotas oficiais conhecidas ficam como último fallback.
     values.extend(spec.direct_urls)
-    for item in discovered.get(spec.key, []):
-        values.append(item.get('url'))
+
     return _dedupe_urls(values)
 
 
@@ -1075,7 +1082,7 @@ def process_ibama_bulk_job(job: FonteSincronizacao):
         stage='Descobrindo recursos oficiais do Dados Abertos IBAMA',
         details={
             'estrategia_ibama': IBAMA_COLLECTOR_VERSION,
-            'coletor': 'Dados Abertos IBAMA / CSV',
+            'coletor': 'IBAMA CKAN + fallback oficial',
         },
         error='',
     )

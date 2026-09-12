@@ -104,7 +104,7 @@ class BatchRecoveryCopyFallbackTests(SimpleTestCase):
             source.parent.mkdir(parents=True)
             source.write_bytes(b'\x1f\x8bteste')
             with override_settings(BATCH_RECOVERY_DIR=recovery):
-                with patch('administracao.services.batch.os.link', side_effect=OSError('hardlink indisponivel')):
+                with patch('administracao.services.batch_storage.os.link', side_effect=OSError('hardlink indisponivel')):
                     result = _create_recovery_link(source, 30, 'item_0001/sicor_glebas_wkt_2026.gz')
             self.assertIsNotNone(result)
             self.assertTrue(result.is_file())
