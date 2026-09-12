@@ -126,9 +126,11 @@ class BatchImportUnitTests(SimpleTestCase):
     def test_form_lote_oferece_multiplos_arquivos_e_todas_as_fontes(self):
         form = ImportacaoLoteForm()
         values = {value for value, _label in form.fields['fonte'].choices}
-        self.assertEqual(values, {'sicar','ibama','icmbio','cnuc','prodes','incra'})
+        self.assertEqual(
+            values,
+            {'sicar','ibama','icmbio','cnuc','prodes','incra','sicor','sigef','sncr','funai'},
+        )
         self.assertIn('arquivos', form.fields)
-        self.assertIn('arquivo_lote', form.fields)
 
     def test_fingerprint_shapefile_ignora_metadados_auxiliares_e_data_dbf(self):
         with tempfile.TemporaryDirectory() as tmp:

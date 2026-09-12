@@ -44,6 +44,13 @@ def fonte_datasets(request, fonte_slug):
             'administracao/importacoes/sicar.html',
             {'fonte': fonte, 'fonte_slug': fonte_slug, 'estados': rows, 'resumo': summary},
         )
+    ibama_sync = None
+    if fonte_slug == 'ibama':
+        ibama_sync = FonteSincronizacao.objects.filter(
+            fonte_slug='ibama',
+            dataset_slug='ibama-termos-embargo',
+        ).order_by('-pk').first()
+
     return render(
         request,
         'administracao/importacoes/fonte.html',
@@ -52,6 +59,7 @@ def fonte_datasets(request, fonte_slug):
             'fonte_slug': fonte_slug,
             'grupos': source_groups(fonte_slug),
             'batch_enabled': fonte_slug in BATCH_FONTE_SLUGS,
+            'ibama_sync': ibama_sync,
         },
     )
 

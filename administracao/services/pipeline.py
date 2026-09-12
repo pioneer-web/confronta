@@ -290,7 +290,14 @@ def process_import(uploaded_file, dataset_slug, usuario, context=None, progress_
 
         input_suffix = Path(quarantine).suffix.lower()
         raw_spatial = spec.mode == 'raw_only' and spec.data_kind == 'spatial_flexible'
-        if input_suffix == '.gpkg' and not (spec.fonte_slug == 'sicar' or raw_spatial):
+        internal_ibama_gpkg = (
+            input_suffix == '.gpkg'
+            and spec.slug == 'ibama-termos-embargo'
+            and context.get('origem_automatica') is True
+            and context.get('fonte_bulk') == 'dados_abertos_ibama'
+            and bool(context.get('sincronizacao_id'))
+        )
+        if input_suffix == '.gpkg' and not (spec.fonte_slug == 'sicar' or raw_spatial or internal_ibama_gpkg):
             raise SecurityValidationError('GeoPackage direto não está habilitado para este perfil.')
         if input_suffix in DIRECT_VECTOR_SUFFIXES - {'.gpkg'} and not raw_spatial:
             raise SecurityValidationError('Formato vetorial direto habilitado apenas para perfis RAW flexíveis.')

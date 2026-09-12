@@ -48,7 +48,14 @@ def _mapped_fields(fields, spec):
 def score_layer(layer, spec: DatasetSpec):
     fields = layer.get('fields', [])
     family = geometry_family(layer.get('geometry_type'))
-    allowed = family in spec.geometry_families
+
+    prodes_yearly_unknown = (
+        spec.fonte_slug == 'prodes'
+        and family in {'unknown', ''}
+        and norm(layer.get('layer_name')) == 'yearly_deforestation'
+    )
+
+    allowed = family in spec.geometry_families or prodes_yearly_unknown
     required = []
     required_groups = [field.aliases for field in spec.fields if field.required] or list(spec.identity_required)
     for group in required_groups:

@@ -1,6 +1,6 @@
 from django.urls import path
 from administracao.views import auth, dashboard, importacoes, bases
-from administracao.views import administradores, clientes, planos, alertas, avisos_clientes, financeiro, atendimentos
+from administracao.views import administradores, clientes, planos, alertas, avisos_clientes, financeiro, atendimentos, navigation
 
 app_name = 'administracao'
 
@@ -8,6 +8,10 @@ urlpatterns = [
     path('login/', auth.login_view, name='login'),
     path('logout/', auth.logout_view, name='logout'),
     path('', dashboard.dashboard, name='dashboard'),
+    path('dados/', navigation.central_dados, name='central_dados'),
+    path('financeiro/', navigation.central_financeiro, name='central_financeiro'),
+    path('comunicacao/', navigation.central_comunicacao, name='central_comunicacao'),
+    path('sistema/', navigation.central_sistema, name='central_sistema'),
 
     # Bases e ingestão do Manage Confronta.
     path('bases/', bases.catalogo_bases, name='catalogo_bases'),

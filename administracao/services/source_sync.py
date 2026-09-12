@@ -30,7 +30,7 @@ ACTIVE_STATUSES = {
 }
 
 IBAMA_DATASET = 'ibama-termos-embargo'
-IBAMA_COLLECTOR_VERSION = 'bulk-dados-abertos-v0.4.2'
+IBAMA_COLLECTOR_VERSION = 'ckan-dados-abertos-v0.5.0'
 INCRA_SIGEF_DATASET = 'incra-sigef-parcelas'
 INCRA_SNCI_DATASET = 'incra-snci-certificados'
 
@@ -88,7 +88,7 @@ def enqueue_ibama(*, user=None, origem=FonteSincronizacao.Origem.MANUAL):
         job.detalhes = {
             **(job.detalhes or {}),
             'estrategia_ibama': IBAMA_COLLECTOR_VERSION,
-            'coletor': 'Dados Abertos IBAMA / CSV',
+            'coletor': 'IBAMA CKAN + fallback oficial',
         }
         job.save(update_fields=['detalhes'])
     return job, created
