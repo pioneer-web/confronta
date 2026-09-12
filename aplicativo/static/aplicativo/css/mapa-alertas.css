@@ -1,0 +1,446 @@
+/* =========================================================
+   CONFRONTA — ALERTAS DO MAPA
+   Módulo isolado.
+   Não altera GIS, dados ou regras territoriais.
+   ========================================================= */
+
+:root {
+    --cf-alert: #C9790B;
+    --cf-alert-dark: #9B5B05;
+    --cf-alert-soft: #FFF8EB;
+    --cf-alert-border: #E6C183;
+
+    --cf-text: #183943;
+    --cf-text-secondary: #526970;
+    --cf-border: #DCE5E2;
+    --cf-surface: #FFFFFF;
+    --cf-surface-soft: #F7F9F8;
+}
+
+
+/* =========================================================
+   PAINEL DE ALERTAS
+   ========================================================= */
+
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode {
+    width: min(470px, calc(100% - 24px)) !important;
+    border: 1px solid var(--cf-border) !important;
+    border-radius: 6px !important;
+    background: var(--cf-surface) !important;
+    box-shadow: -10px 0 32px rgba(8, 31, 39, .16) !important;
+}
+
+
+/* Cabeçalho */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-tool-drawer-head {
+    min-height: 62px !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--cf-border) !important;
+    background: #fff !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-tool-drawer-title span {
+    color: #657a81 !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: .08em !important;
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-tool-drawer-title strong {
+    margin-top: 3px !important;
+    color: var(--cf-text) !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-tool-close {
+    width: 34px !important;
+    height: 34px !important;
+    border: 1px solid #dce5e2 !important;
+    border-radius: 4px !important;
+    background: #f4f7f6 !important;
+    color: #516970 !important;
+}
+
+
+/* =========================================================
+   ALERTAS = ALERTAS
+   Camadas continuam disponíveis no botão Camadas.
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.car-summary-card,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-tabs,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.car-layer-list,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+[data-side-panel="layers"]
+> .panel-section-title:not(.alert-title) {
+    display: none !important;
+}
+
+
+/* Corpo */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-side-body {
+    padding: 0 !important;
+    background: #fff !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-tab-panel {
+    padding: 18px 16px 24px !important;
+}
+
+
+/* =========================================================
+   TÍTULO DA SEÇÃO
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-title {
+    margin: 0 0 14px !important;
+    padding: 0 0 13px !important;
+    border-bottom: 1px solid var(--cf-border) !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-title h3 {
+    margin: 0 !important;
+    color: var(--cf-text) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-title span {
+    display: block !important;
+    margin-top: 4px !important;
+    color: var(--cf-text-secondary) !important;
+    font-size: 11.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    opacity: 1 !important;
+}
+
+
+/* =========================================================
+   LISTA DE ALERTAS
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-list {
+    display: grid !important;
+    gap: 10px !important;
+}
+
+
+/* Card padrão */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item {
+    margin: 0 !important;
+    padding: 13px 14px !important;
+
+    border: 1px solid var(--cf-border) !important;
+    border-left: 3px solid #AEBDB8 !important;
+    border-radius: 4px !important;
+
+    background: #fff !important;
+    box-shadow: none !important;
+
+    color: var(--cf-text) !important;
+}
+
+
+/* Alertas identificados */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item.state-alerta,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item.state-atencao {
+    border-left-color: var(--cf-alert) !important;
+    background: #FFFCF7 !important;
+}
+
+
+/* Estado positivo */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item.state-ok,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item.state-livre {
+    border-left-color: #44875A !important;
+}
+
+
+/* Cabeçalho do alerta */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-head {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-head strong {
+    color: #173943 !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-head span {
+    flex: 0 0 auto !important;
+    color: #64787F !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    opacity: 1 !important;
+}
+
+
+/* Status de alerta */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.state-alerta
+.property-alert-head span,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.state-atencao
+.property-alert-head span {
+    color: var(--cf-alert-dark) !important;
+}
+
+
+/* Texto */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item p {
+    margin: 7px 0 0 !important;
+    color: #4B626A !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item p strong {
+    color: #314E57 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   DETALHES
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item details {
+    margin-top: 10px !important;
+    padding-top: 9px !important;
+    border-top: 1px solid #E5EBE8 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.property-alert-item summary {
+    color: #375862 !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+
+/* registros internos */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-records {
+    margin-top: 10px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-records dl {
+    margin: 0 0 10px !important;
+    padding: 0 !important;
+
+    border: 1px solid #E2E8E5 !important;
+    border-radius: 3px !important;
+
+    background: #FAFBFA !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-records dl > div {
+    display: grid !important;
+    grid-template-columns: minmax(125px, .75fr) minmax(0, 1.25fr) !important;
+    gap: 12px !important;
+
+    padding: 8px 10px !important;
+
+    border-bottom: 1px solid #E8EDEA !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-records dl > div:last-child {
+    border-bottom: 0 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-records dt {
+    color: #61767D !important;
+    font-size: 10.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.alert-records dd {
+    margin: 0 !important;
+    color: #233F48 !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere !important;
+}
+
+
+/* =========================================================
+   BARRA INFERIOR — ALERTA PADRONIZADO
+   ========================================================= */
+
+.map-top-insight-alert {
+    position: relative !important;
+}
+
+.map-top-insight-alert .map-top-insight-label {
+    color: #5B7077 !important;
+    opacity: 1 !important;
+}
+
+.map-top-insight-alert strong {
+    color: var(--cf-alert) !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
+}
+
+
+/* leve indicação visual sem poluir */
+.map-top-insight-alert::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 15px;
+    right: 15px;
+    height: 3px;
+
+    background: var(--cf-alert);
+}
+
+
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-alerts-mode
+.territorial-side-body {
+    scrollbar-width: thin !important;
+    scrollbar-color: #B6C5C0 transparent !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 720px) {
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-alerts-mode {
+        width: calc(100% - 8px) !important;
+        border-radius: 4px !important;
+    }
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-alerts-mode
+    .territorial-tab-panel {
+        padding: 14px 12px 20px !important;
+    }
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-alerts-mode
+    .property-alert-head {
+        display: block !important;
+    }
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-alerts-mode
+    .property-alert-head span {
+        display: block !important;
+        margin-top: 4px !important;
+    }
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-alerts-mode
+    .alert-records dl > div {
+        grid-template-columns: 1fr !important;
+        gap: 3px !important;
+    }
+}
+

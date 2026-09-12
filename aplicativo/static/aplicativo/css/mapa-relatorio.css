@@ -1,0 +1,618 @@
+
+/* =========================================================
+   CONFRONTA — MAPA / RELATÓRIO
+   Visual técnico, editorial e limpo
+   ========================================================= */
+
+:root {
+    --cf-report-text: #183943;
+    --cf-report-muted: #5e7279;
+    --cf-report-line: #dce5e2;
+    --cf-report-soft: #f6f8f7;
+
+    --cf-report-alert: #c9790b;
+    --cf-report-alert-soft: #fff8eb;
+
+    --cf-report-green: #39764c;
+}
+
+
+/* =========================================================
+   PAINEL
+   ========================================================= */
+
+.cf-shell-v15 .territorial-side-panel.is-report-mode {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+
+    width: min(1000px, calc(100% - 90px)) !important;
+    max-width: none !important;
+
+    border: 0 !important;
+    border-left: 1px solid var(--cf-report-line) !important;
+    border-radius: 0 !important;
+
+    background: #fff !important;
+
+    box-shadow: -12px 0 36px rgba(6, 28, 36, .16) !important;
+}
+
+
+/* maximizado */
+
+.cf-shell-v15 .territorial-side-panel.is-report-maximized {
+    inset: 0 !important;
+
+    width: 100% !important;
+    max-width: none !important;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+}
+
+
+/* =========================================================
+   CABEÇALHO DO PAINEL
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-tool-drawer-head {
+    min-height: 64px !important;
+
+    padding: 11px 18px !important;
+
+    border-bottom: 1px solid var(--cf-report-line) !important;
+
+    background: #fff !important;
+}
+
+
+/* remove bloco decorativo antigo */
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-tool-drawer-title {
+    min-height: 0 !important;
+    padding-left: 0 !important;
+}
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-tool-drawer-title::before {
+    display: none !important;
+}
+
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-tool-drawer-title span {
+    color: #667b82 !important;
+
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: .08em !important;
+
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-tool-drawer-title strong {
+    margin-top: 3px !important;
+
+    color: var(--cf-report-text) !important;
+
+    font-size: 17px !important;
+    font-weight: 600 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* fechar */
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-tool-close {
+    width: 34px !important;
+    height: 34px !important;
+
+    border: 1px solid var(--cf-report-line) !important;
+    border-radius: 4px !important;
+
+    background: #f4f7f6 !important;
+    color: #526970 !important;
+}
+
+
+/* =========================================================
+   CORPO
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-side-panel.is-report-mode
+.territorial-side-body {
+    padding: 0 !important;
+
+    background: #fff !important;
+
+    overflow-y: auto !important;
+}
+
+
+/* documento */
+
+.cf-shell-v15 .territorial-report-view {
+    width: min(100%, 920px) !important;
+
+    margin: 0 auto !important;
+    padding: 30px 36px 54px !important;
+
+    background: #fff !important;
+}
+
+
+/* =========================================================
+   CABEÇALHO DO RELATÓRIO
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-head {
+    margin: 0 0 28px !important;
+
+    padding: 0 0 18px !important;
+
+    border-bottom: 2px solid #173943 !important;
+
+    background: transparent !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-head .eyebrow {
+    color: #577267 !important;
+
+    font-size: 10px !important;
+    font-weight: 600 !important;
+
+    letter-spacing: .08em !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-head h2 {
+    margin: 4px 0 0 !important;
+
+    color: #173943 !important;
+
+    font-size: 25px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+
+    letter-spacing: -.02em !important;
+}
+
+
+/* ações */
+
+.cf-shell-v15 .territorial-report-view .report-actions button {
+    min-height: 38px !important;
+
+    padding: 8px 12px !important;
+
+    border: 1px solid #cfdad6 !important;
+    border-radius: 4px !important;
+
+    background: #fff !important;
+    color: #34545d !important;
+
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+
+    box-shadow: none !important;
+}
+
+
+/* =========================================================
+   SEÇÕES
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-section {
+    margin: 0 !important;
+
+    padding: 24px 0 !important;
+
+    border: 0 !important;
+    border-bottom: 1px solid var(--cf-report-line) !important;
+    border-radius: 0 !important;
+
+    background: #fff !important;
+
+    box-shadow: none !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-section:last-child {
+    border-bottom: 0 !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-section h3 {
+    margin: 0 0 16px !important;
+
+    color: var(--cf-report-text) !important;
+
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+}
+
+
+/* =========================================================
+   DADOS DO IMÓVEL — formato de tabela limpa
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-data {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+
+    gap: 0 !important;
+
+    border-top: 1px solid var(--cf-report-line) !important;
+    border-left: 1px solid var(--cf-report-line) !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-data > div {
+    min-height: 70px !important;
+
+    padding: 12px 14px !important;
+
+    border: 0 !important;
+    border-right: 1px solid var(--cf-report-line) !important;
+    border-bottom: 1px solid var(--cf-report-line) !important;
+    border-radius: 0 !important;
+
+    background: #fff !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-data dt {
+    color: var(--cf-report-muted) !important;
+
+    font-size: 10.5px !important;
+    font-weight: 500 !important;
+
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-data dd {
+    margin: 6px 0 0 !important;
+
+    color: var(--cf-report-text) !important;
+
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+}
+
+
+/* =========================================================
+   POLÍGONOS DO RELATÓRIO
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-list {
+    display: block !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-list > div {
+    min-height: 46px !important;
+
+    padding: 10px 2px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    border: 0 !important;
+    border-bottom: 1px solid #e8eeeb !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-list span {
+    color: #45616a !important;
+
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-list strong {
+    color: var(--cf-report-text) !important;
+
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   RESUMO DE ALERTA
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-report-view
+.report-restriction-summary {
+    padding: 13px 14px !important;
+
+    border: 0 !important;
+    border-left: 4px solid var(--cf-report-alert) !important;
+    border-radius: 0 !important;
+
+    background: var(--cf-report-alert-soft) !important;
+
+    box-shadow: none !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-restriction-summary strong {
+    color: #8f5706 !important;
+
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-restriction-summary span {
+    color: #5f696c !important;
+
+    font-size: 12px !important;
+}
+
+
+/* =========================================================
+   ANÁLISES
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-analysis-list {
+    display: block !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-analysis-card {
+    margin: 0 !important;
+
+    padding: 17px 0 17px 15px !important;
+
+    border: 0 !important;
+    border-left: 3px solid #aebdb8 !important;
+    border-bottom: 1px solid #e5ebe8 !important;
+    border-radius: 0 !important;
+
+    background: #fff !important;
+
+    box-shadow: none !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-card.state-alerta,
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-card.state-atencao {
+    border-left-color: var(--cf-report-alert) !important;
+}
+
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-head strong {
+    color: var(--cf-report-text) !important;
+
+    font-size: 15px !important;
+    font-weight: 600 !important;
+}
+
+
+/* etiqueta status */
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-head span {
+    padding: 3px 7px !important;
+
+    border-radius: 3px !important;
+
+    background: #edf2f0 !important;
+    color: #50676f !important;
+
+    font-size: 10px !important;
+    font-weight: 600 !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.state-alerta
+.report-analysis-head span,
+
+.cf-shell-v15
+.territorial-report-view
+.state-atencao
+.report-analysis-head span {
+    background: #fff5e6 !important;
+    color: #985b04 !important;
+}
+
+
+/* mensagem */
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-message {
+    color: #486169 !important;
+
+    font-size: 12.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
+}
+
+
+/* =========================================================
+   FATOS
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-fact-stack {
+    display: block !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-fact-row {
+    display: grid !important;
+    grid-template-columns: minmax(180px,240px) minmax(0,1fr) !important;
+    gap: 16px !important;
+
+    padding: 9px 0 !important;
+
+    border: 0 !important;
+    border-bottom: 1px solid #edf1ef !important;
+    border-radius: 0 !important;
+
+    background: transparent !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-fact-row span {
+    color: #60757c !important;
+
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+}
+
+.cf-shell-v15 .territorial-report-view .report-fact-row strong {
+    color: #203e47 !important;
+
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+
+/* =========================================================
+   DETALHES E REGISTROS
+   ========================================================= */
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-details {
+    margin-top: 13px !important;
+    padding-top: 11px !important;
+
+    border-top: 1px solid #e8eeeb !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-analysis-details summary {
+    color: #365962 !important;
+
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+}
+
+
+/* registro */
+
+.cf-shell-v15
+.territorial-report-view
+.report-record-card {
+    padding: 0 !important;
+
+    border: 1px solid var(--cf-report-line) !important;
+    border-radius: 0 !important;
+
+    background: #fff !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-record-card > div {
+    padding: 9px 12px !important;
+
+    border-bottom: 1px solid #e9eeec !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-record-card dt {
+    color: #60757c !important;
+
+    font-size: 10.5px !important;
+    font-weight: 500 !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-record-card dd {
+    color: #203e47 !important;
+
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+}
+
+
+/* =========================================================
+   MAPA DO RELATÓRIO
+   ========================================================= */
+
+.cf-shell-v15 .territorial-report-view .report-map-preview {
+    overflow: hidden !important;
+
+    border: 1px solid var(--cf-report-line) !important;
+    border-radius: 3px !important;
+
+    background: var(--cf-report-soft) !important;
+}
+
+.cf-shell-v15
+.territorial-report-view
+.report-map-note {
+    margin-top: 7px !important;
+
+    color: var(--cf-report-muted) !important;
+
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width:900px) {
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode {
+        width: calc(100% - 8px) !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view {
+        padding: 22px 18px 40px !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data {
+        grid-template-columns: 1fr !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-fact-row,
+    .cf-shell-v15 .territorial-report-view .report-record-card > div {
+        grid-template-columns: 1fr !important;
+        gap: 4px !important;
+    }
+}
+
+
+/* =========================================================
+   IMPRESSÃO
+   Não altera o fluxo existente; apenas remove ornamentos.
+   ========================================================= */
+
+@media print {
+
+    .cf-shell-v15 .territorial-report-view .report-section,
+    .cf-shell-v15 .territorial-report-view .report-analysis-card {
+        box-shadow: none !important;
+    }
+}

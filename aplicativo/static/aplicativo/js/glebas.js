@@ -416,7 +416,10 @@
             maxWidth: 330,
             minWidth: 250,
             closeButton: true,
-            autoPanPadding: [28, 28],
+            autoPan: true,
+            keepInView: true,
+            autoPanPaddingTopLeft: [24, 24],
+            autoPanPaddingBottomRight: [24, 92],
             className: 'confronta-gleba-leaflet-popup'
         });
     }

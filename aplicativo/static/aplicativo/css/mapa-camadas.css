@@ -1,0 +1,183 @@
+
+/* =========================================================
+   CONFRONTA — MAPA / CAMADAS
+   Módulo visual isolado
+   ========================================================= */
+
+:root {
+    --cf-layer-text: #183943;
+    --cf-layer-muted: #5d7279;
+    --cf-layer-line: #dce5e2;
+    --cf-layer-soft: #f6f9f7;
+    --cf-layer-green: #287847;
+}
+
+.cf-shell-v15 #map-layer-drawer {
+    width: 330px !important;
+    max-height: calc(100% - 34px) !important;
+
+    border: 1px solid var(--cf-layer-line) !important;
+    border-radius: 5px !important;
+
+    background: #fff !important;
+    box-shadow: 0 14px 34px rgba(7, 28, 35, .18) !important;
+}
+
+
+/* cabeçalho */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-drawer-head {
+    min-height: 62px !important;
+    padding: 12px 14px !important;
+
+    border-bottom: 1px solid var(--cf-layer-line) !important;
+
+    background: #fff !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-drawer-head span {
+    color: var(--cf-layer-text) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-drawer-head small {
+    margin-top: 3px !important;
+
+    color: var(--cf-layer-muted) !important;
+    font-size: 11px !important;
+    font-weight: 400 !important;
+
+    opacity: 1 !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-drawer-head button {
+    width: 34px !important;
+    height: 34px !important;
+
+    border: 1px solid var(--cf-layer-line) !important;
+    border-radius: 4px !important;
+
+    background: #f4f7f6 !important;
+    color: #526970 !important;
+
+    font-size: 20px !important;
+}
+
+
+/* lista */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-drawer-list {
+    padding: 5px 9px 8px !important;
+    overflow-y: auto !important;
+
+    background: #fff !important;
+
+    scrollbar-width: thin !important;
+    scrollbar-color: #b7c5c0 transparent !important;
+}
+
+
+/* linha da camada */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye {
+    width: 100% !important;
+    min-height: 48px !important;
+
+    padding: 8px 7px !important;
+
+    display: grid !important;
+    grid-template-columns: 14px minmax(0,1fr) 26px !important;
+    gap: 10px !important;
+    align-items: center !important;
+
+    border: 0 !important;
+    border-bottom: 1px solid #e8eeeb !important;
+    border-radius: 0 !important;
+
+    background: #fff !important;
+
+    text-align: left !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye:last-child {
+    border-bottom: 0 !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye:hover {
+    background: var(--cf-layer-soft) !important;
+}
+
+
+/* camada ligada */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye.is-active {
+    background: #f5faf6 !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye.is-active .map-layer-name {
+    color: #214a34 !important;
+}
+
+
+/* amostra de cor */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-swatch {
+    width: 12px !important;
+    height: 12px !important;
+
+    border-radius: 2px !important;
+    box-shadow: 0 0 0 1px rgba(20,48,57,.18) !important;
+}
+
+
+/* nome */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-name {
+    min-width: 0 !important;
+
+    color: #314d56 !important;
+
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+
+    opacity: 1 !important;
+}
+
+
+/* olho */
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye svg {
+    width: 21px !important;
+    height: 21px !important;
+
+    justify-self: center !important;
+
+    fill: none !important;
+    stroke-width: 1.7 !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye.is-active svg {
+    stroke: var(--cf-layer-green) !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye:not(.is-active) svg {
+    stroke: #809297 !important;
+}
+
+
+/* mobile */
+
+@media (max-width:720px) {
+
+    .cf-shell-v15 #map-layer-drawer {
+        width: min(310px, calc(100% - 16px)) !important;
+        border-radius: 4px !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-name {
+        font-size: 12px !important;
+    }
+}

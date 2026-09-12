@@ -1,0 +1,482 @@
+/* =========================================================
+   CONFRONTA — MAPA / POLÍGONOS
+   Override visual modular sobre poligonos.css
+   ========================================================= */
+
+:root {
+    --poly-text: #183943;
+    --poly-muted: #5b7077;
+    --poly-line: #d8e2df;
+    --poly-soft: #f6f9f8;
+    --poly-primary: #0f6467;
+    --poly-danger: #b95757;
+}
+
+
+/* PAINEL */
+
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode {
+    width: min(460px, calc(100vw - 90px)) !important;
+    border: 1px solid var(--poly-line) !important;
+    border-radius: 5px !important;
+    background: #fff !important;
+    box-shadow: -10px 0 30px rgba(8,31,39,.16) !important;
+}
+
+
+/* CABEÇALHO */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tool-drawer-head {
+    min-height: 62px !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--poly-line) !important;
+    background: #fff !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tool-drawer-title span {
+    color: #687d84 !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: .08em !important;
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tool-drawer-title strong {
+    margin-top: 3px !important;
+    color: var(--poly-text) !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tool-close {
+    width: 34px !important;
+    height: 34px !important;
+    border: 1px solid var(--poly-line) !important;
+    border-radius: 4px !important;
+    background: #f4f7f6 !important;
+    color: #526970 !important;
+}
+
+
+/* ABA POLÍGONOS */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tabs {
+    border-bottom: 1px solid var(--poly-line) !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tab {
+    min-height: 42px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.territorial-tab-panel {
+    padding: 16px 14px 22px !important;
+}
+
+
+/* INTRO */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-tool-intro {
+    grid-template-columns: 50px minmax(0,1fr) auto !important;
+    gap: 12px !important;
+    padding: 14px 0 18px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-tool-intro-icon {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 5px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-tool-intro-copy .eyebrow {
+    color: #14786f !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-tool-intro-copy h3 {
+    color: var(--poly-text) !important;
+    font-size: 17px !important;
+    font-weight: 600 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-tool-intro-copy p {
+    margin-top: 5px !important;
+    color: var(--poly-muted) !important;
+    font-size: 12.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.5 !important;
+}
+
+
+/* NOVO POLÍGONO */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-new-button {
+    min-height: 38px !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    background: #183943 !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+}
+
+
+/* RESUMO */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-session-summary {
+    min-height: 44px !important;
+    margin: 13px 0 !important;
+    padding: 10px 12px !important;
+
+    border: 1px solid var(--poly-line) !important;
+    border-radius: 4px !important;
+
+    background: var(--poly-soft) !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-session-summary span {
+    color: var(--poly-muted) !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-session-summary strong {
+    color: var(--poly-primary) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+
+/* ITEM DA LISTA */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item {
+    grid-template-columns: 76px minmax(0,1fr) auto !important;
+    gap: 11px !important;
+
+    margin-bottom: 10px !important;
+    padding: 12px !important;
+
+    border: 1px solid var(--poly-line) !important;
+    border-radius: 5px !important;
+
+    background: #fff !important;
+
+    box-shadow: none !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item:hover {
+    border-color: #aac9c2 !important;
+    box-shadow: none !important;
+}
+
+
+/* MINIATURA */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item-preview {
+    width: 76px !important;
+    height: 62px !important;
+
+    border-radius: 4px !important;
+
+    background: #f4f7f6 !important;
+}
+
+
+/* NOME */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-name-input {
+    min-height: 40px !important;
+
+    padding: 8px 10px !important;
+
+    border: 1px solid #becfc9 !important;
+    border-radius: 4px !important;
+
+    background: #fff !important;
+
+    color: var(--poly-text) !important;
+
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-name-input:focus {
+    border-color: #458d82 !important;
+    box-shadow: 0 0 0 2px rgba(15,100,103,.09) !important;
+}
+
+
+/* META */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item-meta {
+    margin-top: 6px !important;
+    gap: 8px !important;
+
+    color: var(--poly-muted) !important;
+
+    font-size: 11.5px !important;
+    font-weight: 400 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item-meta strong {
+    color: #405d65 !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+}
+
+
+/* AÇÕES KML CSV OLHO */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item-actions {
+    grid-template-columns: 38px 45px 45px !important;
+    gap: 6px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-action-icon,
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-export-button {
+    height: 38px !important;
+
+    border: 1px solid #cedbd7 !important;
+    border-radius: 4px !important;
+
+    background: #fff !important;
+
+    color: #506a72 !important;
+
+    font-size: 11px !important;
+    font-weight: 600 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-action-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-eye.is-active {
+    border-color: #73bcb0 !important;
+    background: #eef8f6 !important;
+    color: #0f756c !important;
+}
+
+
+/* EDITAR / EXCLUIR */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-item-secondary-actions {
+    margin-top: 1px !important;
+    gap: 16px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-text-action {
+    color: #516970 !important;
+
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-text-action.is-danger {
+    color: var(--poly-danger) !important;
+}
+
+
+/* EXPORTAR TODOS */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-bulk-actions {
+    gap: 9px !important;
+    margin-top: 15px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-bulk-actions .button {
+    min-height: 42px !important;
+
+    border-radius: 4px !important;
+
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+
+/* WORKFLOW */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-workflow-head {
+    padding-bottom: 14px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-workflow-title h3 {
+    color: var(--poly-text) !important;
+    font-size: 17px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-workflow-title p {
+    color: var(--poly-muted) !important;
+    font-size: 12px !important;
+}
+
+
+/* abas desenhar/importar */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-mode-tabs {
+    border-radius: 4px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-mode-tab {
+    min-height: 42px !important;
+
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+}
+
+
+/* DESENHAR */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-draw-helper {
+    min-height: 100px !important;
+
+    border-radius: 4px !important;
+
+    color: var(--poly-text) !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-draw-helper strong {
+    font-size: 13px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-draw-helper span {
+    font-size: 11.5px !important;
+}
+
+
+/* IMPORTAÇÃO */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-import-dropzone {
+    border-radius: 4px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-import-dropzone strong {
+    font-size: 13px !important;
+}
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-import-dropzone span {
+    font-size: 11.5px !important;
+}
+
+
+/* COR */
+
+.cf-shell-v15
+.territorial-tool-drawer.is-glebas-mode
+.polygon-color-row {
+    border-radius: 4px !important;
+}
+
+
+/* MOBILE */
+
+@media(max-width:720px) {
+    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode {
+        width: calc(100vw - 8px) !important;
+    }
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-glebas-mode
+    .polygon-tool-intro {
+        grid-template-columns: 46px 1fr !important;
+    }
+
+    .cf-shell-v15
+    .territorial-tool-drawer.is-glebas-mode
+    .polygon-new-button {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+    }
+}

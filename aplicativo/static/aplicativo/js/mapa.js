@@ -43,6 +43,57 @@
         console.warn('CONFRONTA: falha ao carregar tile de satélite Esri.', event && event.coords ? event.coords : event);
     });
 
+
+    // MAPA CLEAN V1.2 — mantém qualquer popup integralmente visível.
+    // Considera também a faixa-resumo existente na parte inferior do mapa.
+    function keepPopupInsideSafeArea(popup) {
+        if (!popup || typeof popup.getElement !== 'function') return;
+
+        const popupElement = popup.getElement();
+        const mapContainer = map.getContainer();
+
+        if (!popupElement || !mapContainer) return;
+
+        const mapRect = mapContainer.getBoundingClientRect();
+        const popupRect = popupElement.getBoundingClientRect();
+
+        const safeTop = mapRect.top + 16;
+        const safeLeft = mapRect.left + 18;
+        const safeRight = mapRect.right - 18;
+        const safeBottom = mapRect.bottom - 92;
+
+        let shiftX = 0;
+        let shiftY = 0;
+
+        if (popupRect.left < safeLeft) {
+            shiftX = safeLeft - popupRect.left;
+        } else if (popupRect.right > safeRight) {
+            shiftX = safeRight - popupRect.right;
+        }
+
+        if (popupRect.top < safeTop) {
+            shiftY = safeTop - popupRect.top;
+        } else if (popupRect.bottom > safeBottom) {
+            shiftY = safeBottom - popupRect.bottom;
+        }
+
+        if (Math.abs(shiftX) > 1 || Math.abs(shiftY) > 1) {
+            map.panBy(
+                [-shiftX, -shiftY],
+                {
+                    animate: true,
+                    duration: 0.18
+                }
+            );
+        }
+    }
+
+    map.on('popupopen', function (event) {
+        const popup = event && event.popup;
+        window.setTimeout(() => keepPopupInsideSafeArea(popup), 40);
+        window.setTimeout(() => keepPopupInsideSafeArea(popup), 180);
+    });
+
     const rawData = document.getElementById('consulta-territorial-data');
     const configElement = document.getElementById('app-config');
     const canDraw = Boolean(configElement && configElement.dataset.canDraw === '1');
@@ -510,7 +561,10 @@
                     maxWidth: 360,
                     minWidth: 270,
                     closeButton: true,
-                    autoPanPadding: [28, 28],
+                    autoPan: true,
+            keepInView: true,
+            autoPanPaddingTopLeft: [24, 24],
+            autoPanPaddingBottomRight: [24, 92],
                     className: 'confronta-feature-leaflet-popup'
                 });
             }
@@ -550,7 +604,10 @@
                     maxWidth: 360,
                     minWidth: 270,
                     closeButton: true,
-                    autoPanPadding: [28, 28],
+                    autoPan: true,
+            keepInView: true,
+            autoPanPaddingTopLeft: [24, 24],
+            autoPanPaddingBottomRight: [24, 92],
                     className: 'confronta-feature-leaflet-popup'
                 });
             }

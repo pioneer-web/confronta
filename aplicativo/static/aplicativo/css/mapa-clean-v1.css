@@ -1,0 +1,2289 @@
+
+/* =========================================================
+   CONFRONTA — MAPA CLEAN V1
+   Interface leve, simples e orientada ao mapa.
+   Somente visual: não altera regras GIS ou funcionalidades.
+   ========================================================= */
+
+@media screen {
+
+    /* ---------- ESTRUTURA ---------- */
+
+    .cf-shell-v15.client-shell {
+        grid-template-columns: 104px minmax(0, 1fr) !important;
+        background: #eef3f1 !important;
+    }
+
+    .cf-shell-v15 .client-main {
+        min-width: 0;
+        background: #eef3f1 !important;
+    }
+
+    .cf-shell-v15 .client-content-app {
+        height: calc(100vh - 50px) !important;
+        padding: 0 !important;
+        background: #0b2530 !important;
+    }
+
+    .cf-shell-v15 .territorial-screen,
+    .cf-shell-v15 .territorial-screen-empty {
+        height: 100% !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+
+    /* ---------- MENU LATERAL ---------- */
+
+    .cf-shell-v15 .client-rail {
+        inset: 50px auto 0 0 !important;
+        width: 104px !important;
+        height: calc(100vh - 50px) !important;
+        padding: 0 7px !important;
+        overflow: visible !important;
+        background: #082b3a !important;
+        border-right: 1px solid rgba(255,255,255,.07) !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-brand {
+        width: 100% !important;
+        height: 54px !important;
+        margin: 0 !important;
+        padding: 9px 0 7px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-brand img {
+        width: 29px !important;
+        height: 29px !important;
+    }
+
+    .cf-shell-v15 .client-rail-brand strong {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-nav.client-rail-nav-single {
+        padding: 5px 0 8px !important;
+        gap: 2px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        scrollbar-width: none;
+    }
+
+    .cf-shell-v15 .client-rail-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cf-shell-v15 .client-rail-link,
+    .cf-shell-v15 .client-rail-link.car-rail-tool,
+    .cf-shell-v15 .client-rail-link.client-rail-home {
+        width: 88px !important;
+        min-height: 48px !important;
+        margin: 0 auto !important;
+        padding: 6px 3px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        border: 0 !important;
+        border-radius: 9px !important;
+        background: transparent !important;
+        color: #a9bec8 !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-link svg {
+        width: 19px !important;
+        height: 19px !important;
+        flex: 0 0 auto !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 1.65 !important;
+    }
+
+    .cf-shell-v15 .client-rail-label {
+        display: block !important;
+        max-width: 82px;
+        overflow: hidden;
+        color: inherit !important;
+        font-size: 8.5px !important;
+        font-weight: 500 !important;
+        line-height: 1.1 !important;
+        text-align: center !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cf-shell-v15 .client-rail-link:hover:not(:disabled) {
+        background: rgba(255,255,255,.055) !important;
+        color: #edf6f7 !important;
+    }
+
+    .cf-shell-v15 .client-rail-link.is-active {
+        background: rgba(80,176,104,.13) !important;
+        color: #6fda8e !important;
+    }
+
+    .cf-shell-v15 .client-rail-link.is-disabled {
+        opacity: .34 !important;
+    }
+
+    /* recurso ainda indisponível não precisa ocupar espaço */
+    .cf-shell-v15 .client-rail-link[aria-label="Histórico em breve"] {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-footer {
+        padding: 6px 0 10px !important;
+    }
+
+    .cf-shell-v15 .client-rail-user-menu > summary {
+        width: 50px !important;
+        height: 50px !important;
+        margin: 0 auto !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        border-radius: 11px !important;
+        background: rgba(255,255,255,.045) !important;
+    }
+
+    .cf-shell-v15 .client-rail-user-copy,
+    .cf-shell-v15 .client-rail-user-status {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-user-popover {
+        left: 114px !important;
+        bottom: 12px !important;
+    }
+
+
+    /* ---------- TOPO ---------- */
+
+    .cf-shell-v15 .client-topbar {
+        min-height: 50px !important;
+        height: 50px !important;
+        padding: 5px 12px !important;
+        background: rgba(255,255,255,.985) !important;
+        border-bottom: 1px solid #dce5e1 !important;
+        box-shadow: 0 2px 10px rgba(18,49,58,.06) !important;
+    }
+
+    .cf-shell-v15 .client-topbar-query-area {
+        justify-content: center !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim {
+        width: min(590px, calc(100vw - 150px)) !important;
+        gap: 7px !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button {
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0 13px !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        background: #28663b !important;
+        color: #fff !important;
+        font-size: 10.5px !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button:hover {
+        background: #205832 !important;
+    }
+
+    .cf-shell-v15 form.topbar-car-search,
+    .cf-shell-v15 .topbar-car-search.client-global-search {
+        width: 410px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        border: 1px solid #d5dfdb !important;
+        border-radius: 8px !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .topbar-car-search input[type="text"] {
+        height: 34px !important;
+        min-height: 34px !important;
+        font-size: 11px !important;
+    }
+
+    .cf-shell-v15 .topbar-car-search .client-global-search-submit {
+        height: 36px !important;
+        min-height: 36px !important;
+        background: #f7f9f8 !important;
+    }
+
+
+    /* ---------- MAPA ---------- */
+
+    .cf-shell-v15 .territorial-map-column,
+    .cf-shell-v15 .territorial-map,
+    .cf-shell-v15 .territorial-map-empty {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .cf-shell-v15 .leaflet-control-zoom,
+    .cf-shell-v15 .confronta-rotation-control {
+        overflow: hidden;
+        border: 1px solid rgba(41,65,74,.12) !important;
+        border-radius: 9px !important;
+        box-shadow: 0 5px 18px rgba(10,30,38,.13) !important;
+    }
+
+    .cf-shell-v15 .leaflet-control-zoom a,
+    .cf-shell-v15 .confronta-rotation-button {
+        width: 34px !important;
+        height: 34px !important;
+        line-height: 34px !important;
+        border-color: #e4eae7 !important;
+        background: rgba(255,255,255,.96) !important;
+        color: #27434d !important;
+    }
+
+    .cf-shell-v15 .leaflet-control-attribution {
+        padding: 2px 6px !important;
+        background: rgba(255,255,255,.74) !important;
+        color: #687b80 !important;
+        font-size: 8px !important;
+    }
+
+
+    /* ---------- RESUMO INFERIOR ---------- */
+
+    .map-top-insight-bar {
+        bottom: 14px !important;
+        width: min(760px, calc(100% - 170px)) !important;
+        min-height: 64px !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(39,65,74,.12) !important;
+        border-radius: 12px !important;
+        background: rgba(255,255,255,.96) !important;
+        box-shadow: 0 10px 30px rgba(4,24,31,.18) !important;
+        backdrop-filter: blur(8px);
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item,
+    .map-top-insight-alert {
+        min-height: 64px !important;
+        padding: 10px 15px !important;
+        color: #17343e !important;
+        background: transparent !important;
+    }
+
+    .map-top-insight-item:not(:last-child) {
+        border-right: 1px solid #e3e9e6 !important;
+    }
+
+    .map-top-insight-label {
+        color: #76878c !important;
+        font-size: 9px !important;
+        font-weight: 500 !important;
+    }
+
+    .map-top-insight-item strong {
+        color: #17343e !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+
+    .map-top-insight-item .is-positive {
+        color: #24753c !important;
+    }
+
+    .map-top-insight-alert strong {
+        color: #a76709 !important;
+    }
+
+    /* detalhes continuam acessíveis ao clicar em Alertas */
+    .map-top-insight-alert small {
+        display: none !important;
+    }
+
+    .map-top-insight-alert:hover {
+        background: #f7faf8 !important;
+    }
+
+
+    /* ---------- CAMADAS ---------- */
+
+    .cf-shell-v15 #map-layer-drawer {
+        top: 14px !important;
+        left: 14px !important;
+        width: 292px !important;
+        max-height: calc(100% - 104px) !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(42,66,74,.13) !important;
+        border-radius: 12px !important;
+        background: rgba(255,255,255,.97) !important;
+        box-shadow: 0 14px 36px rgba(7,27,34,.18) !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head {
+        min-height: 52px !important;
+        padding: 10px 12px !important;
+        background: #fff !important;
+        border-bottom: 1px solid #e4ebe8 !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head span {
+        color: #17343e !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head small {
+        color: #7a8c91 !important;
+        font-size: 9px !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-head button {
+        color: #667b82 !important;
+        background: #f5f8f7 !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-drawer-list {
+        padding: 5px 8px 8px !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-eye {
+        min-height: 40px !important;
+        padding: 7px 5px !important;
+        border-bottom: 1px solid #edf1ef !important;
+        color: #344e57 !important;
+        background: transparent !important;
+        font-size: 10.5px !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-eye:last-child {
+        border-bottom: 0 !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer .map-layer-eye:hover {
+        background: #f6f9f7 !important;
+    }
+
+
+    /* ---------- PAINEL LATERAL ---------- */
+
+    .cf-shell-v15 .territorial-tool-drawer {
+        border-left: 1px solid #dce5e1 !important;
+        background: #fff !important;
+        box-shadow: -12px 0 34px rgba(9,32,39,.13) !important;
+    }
+
+    .cf-shell-v15 .territorial-tool-drawer-head {
+        background: #f9fbfa !important;
+        border-bottom: 1px solid #e1e8e5 !important;
+    }
+
+    .cf-shell-v15 .territorial-tool-drawer-title span {
+        color: #819196 !important;
+    }
+
+    .cf-shell-v15 .territorial-tool-drawer-title strong {
+        color: #18353f !important;
+    }
+
+    .cf-shell-v15 .territorial-tool-close {
+        background: #eef3f1 !important;
+        color: #647b82 !important;
+    }
+
+
+    /* ---------- POPUPS ---------- */
+
+    .confronta-feature-leaflet-popup .leaflet-popup-content-wrapper {
+        overflow: hidden !important;
+        border: 1px solid rgba(39,65,74,.12) !important;
+        border-radius: 13px !important;
+        background: #fff !important;
+        box-shadow: 0 16px 42px rgba(5,27,35,.20) !important;
+    }
+
+    .confronta-feature-leaflet-popup .leaflet-popup-content {
+        margin: 0 !important;
+    }
+
+    .confronta-feature-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .cf-feature-popup-head {
+        padding: 13px 14px !important;
+        background: #f8faf9 !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+    }
+
+    .cf-feature-popup-title strong {
+        color: #18353f !important;
+    }
+
+    .cf-feature-popup-title span {
+        color: #7a8c91 !important;
+    }
+
+
+    /* ---------- ALERTA SOBRE O MAPA ---------- */
+
+    .map-overlap-alert:not([hidden]) {
+        max-width: min(520px, calc(100% - 40px)) !important;
+        padding: 9px 13px !important;
+        border: 1px solid #efd9b7 !important;
+        border-radius: 9px !important;
+        background: rgba(255,250,240,.96) !important;
+        color: #865518 !important;
+        box-shadow: 0 7px 20px rgba(43,28,7,.12) !important;
+        font-size: 10px !important;
+    }
+}
+
+
+/* ---------- TABLET ---------- */
+
+@media screen and (max-width: 1100px) {
+
+    .cf-shell-v15.client-shell {
+        grid-template-columns: 64px minmax(0,1fr) !important;
+    }
+
+    .cf-shell-v15 .client-rail {
+        width: 64px !important;
+        padding: 0 5px !important;
+    }
+
+    .cf-shell-v15 .client-rail-link,
+    .cf-shell-v15 .client-rail-link.car-rail-tool,
+    .cf-shell-v15 .client-rail-link.client-rail-home {
+        width: 52px !important;
+        min-height: 44px !important;
+    }
+
+    .cf-shell-v15 .client-rail-label {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-user-popover {
+        left: 72px !important;
+    }
+
+    .map-top-insight-bar {
+        width: calc(100% - 100px) !important;
+    }
+}
+
+
+/* ---------- CELULAR ---------- */
+
+@media screen and (max-width: 720px) {
+
+    .cf-shell-v15 .client-topbar {
+        height: 48px !important;
+        min-height: 48px !important;
+        padding: 5px 7px !important;
+    }
+
+    .cf-shell-v15 .client-rail {
+        inset: 48px auto 0 0 !important;
+        height: calc(100vh - 48px) !important;
+        width: 56px !important;
+    }
+
+    .cf-shell-v15.client-shell {
+        grid-template-columns: 56px minmax(0,1fr) !important;
+    }
+
+    .cf-shell-v15 .client-content-app {
+        height: calc(100vh - 48px) !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim {
+        width: 100% !important;
+        gap: 5px !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button {
+        padding: 0 9px !important;
+    }
+
+    .cf-shell-v15 form.topbar-car-search,
+    .cf-shell-v15 .topbar-car-search.client-global-search {
+        width: auto !important;
+        flex: 1 1 auto !important;
+    }
+
+    .map-top-insight-bar {
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 9px !important;
+        width: auto !important;
+        transform: none !important;
+        display: flex !important;
+        overflow-x: auto !important;
+        border-radius: 10px !important;
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item {
+        flex: 0 0 145px !important;
+        min-width: 145px !important;
+        min-height: 58px !important;
+        padding: 8px 10px !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer {
+        top: 9px !important;
+        left: 8px !important;
+        width: min(280px, calc(100% - 16px)) !important;
+        max-height: calc(100% - 88px) !important;
+    }
+}
+
+
+/* =========================================================
+   MAPA CLEAN V1.1
+   Topo escuro + popup enxuto + relatório editorial
+   ========================================================= */
+
+@media screen {
+
+    /* =====================================================
+       TOPO — mesma identidade da barra lateral
+       ===================================================== */
+
+    .cf-shell-v15 .client-topbar {
+        background: #082b3a !important;
+        border-bottom: 1px solid rgba(255,255,255,.07) !important;
+        box-shadow: 0 2px 10px rgba(2,20,28,.18) !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button {
+        border: 1px solid rgba(255,255,255,.18) !important;
+        background: rgba(255,255,255,.07) !important;
+        color: #f1f7f5 !important;
+        box-shadow: none !important;
+        border-radius: 5px !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button > span {
+        color: #7ed99a !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button:hover {
+        border-color: rgba(126,217,154,.42) !important;
+        background: rgba(126,217,154,.10) !important;
+    }
+
+    .cf-shell-v15 form.topbar-car-search,
+    .cf-shell-v15 .topbar-car-search.client-global-search,
+    .cf-shell-v15 .topbar-car-search.cf-global-search {
+        border-color: rgba(255,255,255,.15) !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
+
+
+    /* =====================================================
+       REDUZ ARREDONDAMENTO GERAL DO MAPA
+       ===================================================== */
+
+    .map-top-insight-bar {
+        border-radius: 6px !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer {
+        border-radius: 6px !important;
+    }
+
+    .cf-shell-v15 .leaflet-control-zoom,
+    .cf-shell-v15 .confronta-rotation-control {
+        border-radius: 5px !important;
+    }
+
+
+    /* =====================================================
+       POPUP DA GLEBA
+       Menos informação. Mais ação.
+       ===================================================== */
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+        border: 1px solid rgba(40,64,72,.14) !important;
+        border-radius: 6px !important;
+        background: #fff !important;
+        box-shadow: 0 12px 34px rgba(5,25,32,.20) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content {
+        margin: 0 !important;
+        min-width: 280px !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .cf-gleba-popup {
+        min-width: 280px !important;
+    }
+
+    .cf-gleba-popup-head {
+        min-height: 52px !important;
+        padding: 10px 38px 10px 13px !important;
+        gap: 9px !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        background: #fff !important;
+    }
+
+    .cf-gleba-popup-dot {
+        width: 9px !important;
+        height: 9px !important;
+        border-width: 1px !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        color: #173640 !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        margin-top: 1px !important;
+        color: #819095 !important;
+        font-size: 9px !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 12px 13px 13px !important;
+    }
+
+    /* área vira o dado principal */
+    .cf-gleba-popup-metrics {
+        display: block !important;
+    }
+
+    .cf-gleba-popup-metric:first-child {
+        padding: 0 0 10px !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #819095 !important;
+        font-size: 8px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        margin-top: 3px !important;
+        color: #153944 !important;
+        font-size: 21px !important;
+        font-weight: 600 !important;
+    }
+
+    /* origem e CAR são redundantes no contexto da gleba */
+    .cf-gleba-popup-metric:nth-child(2),
+    .cf-gleba-popup-car-line {
+        display: none !important;
+    }
+
+    .cf-gleba-popup-alert {
+        margin: 0 0 11px !important;
+        padding: 8px 9px !important;
+        border: 0 !important;
+        border-left: 3px solid #d5a74c !important;
+        border-radius: 0 !important;
+        background: #fffaf0 !important;
+        color: #78520e !important;
+        font-size: 9px !important;
+        line-height: 1.45 !important;
+    }
+
+    .cf-gleba-popup-alert.is-clear {
+        border-left-color: #4b9b68 !important;
+        background: #f5faf6 !important;
+        color: #316846 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        margin-top: 0 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 34px !important;
+        padding: 7px 8px !important;
+        border-radius: 4px !important;
+        box-shadow: none !important;
+        font-size: 9px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .cf-gleba-popup-action.is-primary {
+        background: #0b5960 !important;
+        color: #fff !important;
+    }
+
+    .cf-gleba-popup-action.is-secondary {
+        border: 1px solid #dce5e2 !important;
+        background: #fff !important;
+        color: #33545d !important;
+    }
+
+    .cf-gleba-popup-action.is-cancel {
+        border: 1px solid #e1e5e3 !important;
+        background: #f8faf9 !important;
+        color: #66797f !important;
+    }
+
+    .cf-gleba-popup-action.is-danger {
+        border: 1px solid #ecd8d8 !important;
+        background: #fff !important;
+        color: #a14646 !important;
+    }
+
+
+    /* =====================================================
+       RELATÓRIO
+       Visual de documento técnico/web.
+       ===================================================== */
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode {
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: min(980px, calc(100% - 90px)) !important;
+        border: 0 !important;
+        border-left: 1px solid #dce5e1 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: -12px 0 34px rgba(8,29,37,.14) !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-maximized {
+        inset: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        border-radius: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-head {
+        min-height: 60px !important;
+        padding: 9px 18px !important;
+        background: #fff !important;
+        border-bottom: 1px solid #dfe7e4 !important;
+    }
+
+    /* retira o ícone decorativo grande */
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title {
+        min-height: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title::before {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title span {
+        color: #658078 !important;
+        font-size: 8px !important;
+        letter-spacing: .08em !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title strong {
+        margin-top: 2px !important;
+        color: #173640 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-side-body {
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view {
+        width: min(100%, 920px) !important;
+        margin: 0 auto !important;
+        padding: 28px 34px 50px !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-head {
+        margin-bottom: 28px !important;
+        padding: 0 0 18px !important;
+        border-bottom: 2px solid #173640 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-head h2 {
+        margin: 3px 0 0 !important;
+        color: #173640 !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        letter-spacing: -.02em !important;
+    }
+
+    /* seções deixam de parecer cards */
+    .cf-shell-v15 .territorial-report-view .report-section {
+        margin: 0 !important;
+        padding: 24px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e2e8e5 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-section:last-child {
+        border-bottom: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-section h3 {
+        margin: 0 0 16px !important;
+        color: #173640 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+
+    /* dados: colunas simples, sem caixas */
+    .cf-shell-v15 .territorial-report-view .report-data {
+        gap: 0 !important;
+        border-top: 1px solid #e5ebe8 !important;
+        border-left: 1px solid #e5ebe8 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data > div {
+        padding: 12px 14px !important;
+        border: 0 !important;
+        border-right: 1px solid #e5ebe8 !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data dt {
+        color: #7a898e !important;
+        font-size: 8.5px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data dd {
+        margin-top: 4px !important;
+        color: #173640 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+
+    /* polígonos: linhas, não cards */
+    .cf-shell-v15 .territorial-report-view .report-list {
+        display: block !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-list > div {
+        min-height: 42px !important;
+        padding: 9px 2px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e7ece9 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    /* alertas/análises */
+    .cf-shell-v15 .territorial-report-view .report-analysis-list {
+        gap: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-analysis-card {
+        padding: 16px 0 16px 14px !important;
+        border: 0 !important;
+        border-left: 3px solid #d7dfdc !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view
+    .report-analysis-card.state-alerta,
+    .cf-shell-v15 .territorial-report-view
+    .report-analysis-card.state-atencao {
+        border-left-color: #d3a041 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-analysis-head strong {
+        font-size: 15px !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-analysis-head span {
+        padding: 3px 7px !important;
+        border-radius: 3px !important;
+        font-size: 9px !important;
+    }
+
+    /* fatos: sem caixas internas */
+    .cf-shell-v15 .territorial-report-view .report-fact-stack {
+        gap: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-fact-row {
+        padding: 9px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px solid #edf1ef !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-caution,
+    .cf-shell-v15 .territorial-report-view .report-restriction-summary {
+        border-radius: 3px !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-record-card {
+        padding: 0 !important;
+        border: 1px solid #e3e9e6 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-map-preview {
+        border-radius: 3px !important;
+    }
+
+}
+
+
+/* celular */
+@media screen and (max-width: 720px) {
+    .cf-shell-v15 .territorial-side-panel.is-report-mode {
+        width: calc(100% - 8px) !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view {
+        padding: 20px 16px 38px !important;
+    }
+}
+
+
+
+/* =========================================================
+   MAPA CLEAN V1.1
+   Topo escuro + popup enxuto + relatório editorial
+   ========================================================= */
+
+@media screen {
+
+    /* =====================================================
+       TOPO — mesma identidade da barra lateral
+       ===================================================== */
+
+    .cf-shell-v15 .client-topbar {
+        background: #082b3a !important;
+        border-bottom: 1px solid rgba(255,255,255,.07) !important;
+        box-shadow: 0 2px 10px rgba(2,20,28,.18) !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button {
+        border: 1px solid rgba(255,255,255,.18) !important;
+        background: rgba(255,255,255,.07) !important;
+        color: #f1f7f5 !important;
+        box-shadow: none !important;
+        border-radius: 5px !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button > span {
+        color: #7ed99a !important;
+    }
+
+    .cf-shell-v15 .top-query-cluster-slim .new-query-button:hover {
+        border-color: rgba(126,217,154,.42) !important;
+        background: rgba(126,217,154,.10) !important;
+    }
+
+    .cf-shell-v15 form.topbar-car-search,
+    .cf-shell-v15 .topbar-car-search.client-global-search,
+    .cf-shell-v15 .topbar-car-search.cf-global-search {
+        border-color: rgba(255,255,255,.15) !important;
+        border-radius: 5px !important;
+        box-shadow: none !important;
+    }
+
+
+    /* =====================================================
+       REDUZ ARREDONDAMENTO GERAL DO MAPA
+       ===================================================== */
+
+    .map-top-insight-bar {
+        border-radius: 6px !important;
+    }
+
+    .cf-shell-v15 #map-layer-drawer {
+        border-radius: 6px !important;
+    }
+
+    .cf-shell-v15 .leaflet-control-zoom,
+    .cf-shell-v15 .confronta-rotation-control {
+        border-radius: 5px !important;
+    }
+
+
+    /* =====================================================
+       POPUP DA GLEBA
+       Menos informação. Mais ação.
+       ===================================================== */
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+        border: 1px solid rgba(40,64,72,.14) !important;
+        border-radius: 6px !important;
+        background: #fff !important;
+        box-shadow: 0 12px 34px rgba(5,25,32,.20) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content {
+        margin: 0 !important;
+        min-width: 280px !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .cf-gleba-popup {
+        min-width: 280px !important;
+    }
+
+    .cf-gleba-popup-head {
+        min-height: 52px !important;
+        padding: 10px 38px 10px 13px !important;
+        gap: 9px !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        background: #fff !important;
+    }
+
+    .cf-gleba-popup-dot {
+        width: 9px !important;
+        height: 9px !important;
+        border-width: 1px !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        color: #173640 !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        margin-top: 1px !important;
+        color: #819095 !important;
+        font-size: 9px !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 12px 13px 13px !important;
+    }
+
+    /* área vira o dado principal */
+    .cf-gleba-popup-metrics {
+        display: block !important;
+    }
+
+    .cf-gleba-popup-metric:first-child {
+        padding: 0 0 10px !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #819095 !important;
+        font-size: 8px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        margin-top: 3px !important;
+        color: #153944 !important;
+        font-size: 21px !important;
+        font-weight: 600 !important;
+    }
+
+    /* origem e CAR são redundantes no contexto da gleba */
+    .cf-gleba-popup-metric:nth-child(2),
+    .cf-gleba-popup-car-line {
+        display: none !important;
+    }
+
+    .cf-gleba-popup-alert {
+        margin: 0 0 11px !important;
+        padding: 8px 9px !important;
+        border: 0 !important;
+        border-left: 3px solid #d5a74c !important;
+        border-radius: 0 !important;
+        background: #fffaf0 !important;
+        color: #78520e !important;
+        font-size: 9px !important;
+        line-height: 1.45 !important;
+    }
+
+    .cf-gleba-popup-alert.is-clear {
+        border-left-color: #4b9b68 !important;
+        background: #f5faf6 !important;
+        color: #316846 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        margin-top: 0 !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 34px !important;
+        padding: 7px 8px !important;
+        border-radius: 4px !important;
+        box-shadow: none !important;
+        font-size: 9px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .cf-gleba-popup-action.is-primary {
+        background: #0b5960 !important;
+        color: #fff !important;
+    }
+
+    .cf-gleba-popup-action.is-secondary {
+        border: 1px solid #dce5e2 !important;
+        background: #fff !important;
+        color: #33545d !important;
+    }
+
+    .cf-gleba-popup-action.is-cancel {
+        border: 1px solid #e1e5e3 !important;
+        background: #f8faf9 !important;
+        color: #66797f !important;
+    }
+
+    .cf-gleba-popup-action.is-danger {
+        border: 1px solid #ecd8d8 !important;
+        background: #fff !important;
+        color: #a14646 !important;
+    }
+
+
+    /* =====================================================
+       RELATÓRIO
+       Visual de documento técnico/web.
+       ===================================================== */
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode {
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: min(980px, calc(100% - 90px)) !important;
+        border: 0 !important;
+        border-left: 1px solid #dce5e1 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: -12px 0 34px rgba(8,29,37,.14) !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-maximized {
+        inset: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        border-radius: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-head {
+        min-height: 60px !important;
+        padding: 9px 18px !important;
+        background: #fff !important;
+        border-bottom: 1px solid #dfe7e4 !important;
+    }
+
+    /* retira o ícone decorativo grande */
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title {
+        min-height: 0 !important;
+        padding-left: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title::before {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title span {
+        color: #658078 !important;
+        font-size: 8px !important;
+        letter-spacing: .08em !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-tool-drawer-title strong {
+        margin-top: 2px !important;
+        color: #173640 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-shell-v15 .territorial-side-panel.is-report-mode
+    .territorial-side-body {
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view {
+        width: min(100%, 920px) !important;
+        margin: 0 auto !important;
+        padding: 28px 34px 50px !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-head {
+        margin-bottom: 28px !important;
+        padding: 0 0 18px !important;
+        border-bottom: 2px solid #173640 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-head h2 {
+        margin: 3px 0 0 !important;
+        color: #173640 !important;
+        font-size: 24px !important;
+        font-weight: 600 !important;
+        letter-spacing: -.02em !important;
+    }
+
+    /* seções deixam de parecer cards */
+    .cf-shell-v15 .territorial-report-view .report-section {
+        margin: 0 !important;
+        padding: 24px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e2e8e5 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-section:last-child {
+        border-bottom: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-section h3 {
+        margin: 0 0 16px !important;
+        color: #173640 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+
+    /* dados: colunas simples, sem caixas */
+    .cf-shell-v15 .territorial-report-view .report-data {
+        gap: 0 !important;
+        border-top: 1px solid #e5ebe8 !important;
+        border-left: 1px solid #e5ebe8 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data > div {
+        padding: 12px 14px !important;
+        border: 0 !important;
+        border-right: 1px solid #e5ebe8 !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data dt {
+        color: #7a898e !important;
+        font-size: 8.5px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-data dd {
+        margin-top: 4px !important;
+        color: #173640 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+
+    /* polígonos: linhas, não cards */
+    .cf-shell-v15 .territorial-report-view .report-list {
+        display: block !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-list > div {
+        min-height: 42px !important;
+        padding: 9px 2px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e7ece9 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    /* alertas/análises */
+    .cf-shell-v15 .territorial-report-view .report-analysis-list {
+        gap: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-analysis-card {
+        padding: 16px 0 16px 14px !important;
+        border: 0 !important;
+        border-left: 3px solid #d7dfdc !important;
+        border-bottom: 1px solid #e5ebe8 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view
+    .report-analysis-card.state-alerta,
+    .cf-shell-v15 .territorial-report-view
+    .report-analysis-card.state-atencao {
+        border-left-color: #d3a041 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-analysis-head strong {
+        font-size: 15px !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-analysis-head span {
+        padding: 3px 7px !important;
+        border-radius: 3px !important;
+        font-size: 9px !important;
+    }
+
+    /* fatos: sem caixas internas */
+    .cf-shell-v15 .territorial-report-view .report-fact-stack {
+        gap: 0 !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-fact-row {
+        padding: 9px 0 !important;
+        border: 0 !important;
+        border-bottom: 1px solid #edf1ef !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-caution,
+    .cf-shell-v15 .territorial-report-view .report-restriction-summary {
+        border-radius: 3px !important;
+        box-shadow: none !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-record-card {
+        padding: 0 !important;
+        border: 1px solid #e3e9e6 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view .report-map-preview {
+        border-radius: 3px !important;
+    }
+
+}
+
+
+/* celular */
+@media screen and (max-width: 720px) {
+    .cf-shell-v15 .territorial-side-panel.is-report-mode {
+        width: calc(100% - 8px) !important;
+    }
+
+    .cf-shell-v15 .territorial-report-view {
+        padding: 20px 16px 38px !important;
+    }
+}
+
+
+
+/* =========================================================
+   MAPA CLEAN V1.2 — LEGIBILIDADE + POPUP SAFE
+   ========================================================= */
+
+@media screen {
+
+    /* une visualmente topo e rail */
+    .cf-shell-v15.client-shell {
+        background: #082b3a !important;
+    }
+
+
+    /* =====================================================
+       MENU — leitura confortável
+       ===================================================== */
+
+    .cf-shell-v15 .client-rail {
+        width: 108px !important;
+    }
+
+    .cf-shell-v15.client-shell {
+        grid-template-columns: 108px minmax(0,1fr) !important;
+    }
+
+    .cf-shell-v15 .client-rail-link,
+    .cf-shell-v15 .client-rail-link.car-rail-tool,
+    .cf-shell-v15 .client-rail-link.client-rail-home {
+        width: 94px !important;
+        min-height: 54px !important;
+        padding: 6px 4px !important;
+        gap: 5px !important;
+    }
+
+    .cf-shell-v15 .client-rail-link svg {
+        width: 23px !important;
+        height: 23px !important;
+        stroke-width: 1.7 !important;
+    }
+
+    .cf-shell-v15 .client-rail-label {
+        display: block !important;
+        max-width: 90px !important;
+        color: #c4d4da !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        line-height: 1.15 !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        text-align: center !important;
+    }
+
+    .cf-shell-v15 .client-rail-link.is-active {
+        color: #72dc94 !important;
+    }
+
+    .cf-shell-v15 .client-rail-link.is-active .client-rail-label {
+        color: #72dc94 !important;
+    }
+
+    .cf-shell-v15 .client-rail-user-popover {
+        left: 118px !important;
+    }
+
+
+    /* =====================================================
+       POPUPS — base comum
+       ===================================================== */
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper,
+    .confronta-feature-leaflet-popup .leaflet-popup-content-wrapper {
+        border: 1px solid rgba(36,59,67,.16) !important;
+        border-radius: 6px !important;
+        background: #fff !important;
+        box-shadow: 0 16px 38px rgba(4,25,32,.22) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content,
+    .confronta-feature-leaflet-popup .leaflet-popup-content {
+        min-width: 320px !important;
+        max-height: calc(100vh - 145px) !important;
+        margin: 0 !important;
+        overflow-y: auto !important;
+        scrollbar-width: thin;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-tip,
+    .confronta-feature-leaflet-popup .leaflet-popup-tip {
+        background: #fff !important;
+    }
+
+    .client-content-app .leaflet-popup-close-button {
+        top: 9px !important;
+        right: 9px !important;
+        width: 29px !important;
+        height: 29px !important;
+        font-size: 22px !important;
+        line-height: 27px !important;
+        color: #687d84 !important;
+    }
+
+
+    /* =====================================================
+       POPUP DA GLEBA
+       ===================================================== */
+
+    .cf-gleba-popup {
+        min-width: 320px !important;
+    }
+
+    .cf-gleba-popup-head {
+        min-height: 58px !important;
+        padding: 11px 42px 11px 15px !important;
+    }
+
+    .cf-gleba-popup-dot {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        margin-top: 2px !important;
+        font-size: 10.5px !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 14px 15px 15px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child {
+        padding-bottom: 12px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        font-size: 9.5px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        margin-top: 4px !important;
+        font-size: 25px !important;
+        line-height: 1.1 !important;
+    }
+
+    .cf-gleba-popup-alert {
+        margin-bottom: 13px !important;
+        padding: 10px 11px !important;
+        font-size: 10.5px !important;
+        line-height: 1.5 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 7px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 39px !important;
+        padding: 8px 10px !important;
+        font-size: 10.5px !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .cf-gleba-popup-action.is-danger,
+    .cf-gleba-popup-action.is-cancel {
+        grid-column: 1 / -1 !important;
+    }
+
+
+    /* =====================================================
+       POPUP DE CAR / CAMADAS
+       ===================================================== */
+
+    .cf-feature-popup {
+        min-width: 320px !important;
+    }
+
+    .cf-feature-popup-head {
+        min-height: 58px !important;
+        padding: 11px 42px 11px 15px !important;
+        background: #fff !important;
+    }
+
+    .cf-feature-popup-dot {
+        width: 11px !important;
+        height: 11px !important;
+    }
+
+    .cf-feature-popup-title strong {
+        color: #173640 !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-feature-popup-title span {
+        margin-top: 2px !important;
+        color: #778b91 !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-body {
+        padding: 13px 15px 15px !important;
+    }
+
+    .cf-feature-popup-metrics {
+        gap: 8px !important;
+    }
+
+    .cf-feature-popup-metric {
+        padding: 9px 10px !important;
+        border-radius: 4px !important;
+    }
+
+    .cf-feature-popup-metric span {
+        font-size: 9px !important;
+    }
+
+    .cf-feature-popup-metric strong {
+        margin-top: 4px !important;
+        font-size: 11.5px !important;
+    }
+
+    .cf-feature-popup-car-line {
+        margin-top: 9px !important;
+        padding: 8px 2px !important;
+        border: 0 !important;
+        border-bottom: 1px solid #e7ecea !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+    }
+
+    .cf-feature-popup-car-line span {
+        font-size: 9px !important;
+    }
+
+    .cf-feature-popup-car-line strong {
+        margin-top: 3px !important;
+        font-size: 10.5px !important;
+        text-align: left !important;
+    }
+
+    .cf-feature-popup-details {
+        margin-top: 7px !important;
+    }
+
+    .cf-feature-popup-details > div {
+        padding: 7px 1px !important;
+        border-bottom: 1px solid #edf1ef !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-details span {
+        font-size: 9.5px !important;
+    }
+
+    .cf-feature-popup-details strong {
+        font-size: 10.5px !important;
+    }
+
+    .cf-feature-popup-color-section {
+        margin-top: 11px !important;
+        padding-top: 10px !important;
+        border-top: 1px solid #e6ece9 !important;
+    }
+
+    .cf-feature-popup-color-label {
+        margin-bottom: 7px !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-swatches {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 7px !important;
+    }
+
+    .cf-feature-popup-swatch {
+        width: 25px !important;
+        height: 25px !important;
+    }
+
+    .cf-feature-popup-actions {
+        margin-top: 12px !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 7px !important;
+    }
+
+    .cf-feature-popup-action {
+        min-height: 38px !important;
+        padding: 7px 8px !important;
+        border-radius: 4px !important;
+        font-size: 10px !important;
+    }
+
+    .cf-feature-popup-action svg {
+        width: 15px !important;
+        height: 15px !important;
+    }
+
+    .cf-feature-popup-kml {
+        min-height: 40px !important;
+        margin-top: 8px !important;
+        border-radius: 4px !important;
+        font-size: 10.5px !important;
+    }
+}
+
+
+/* tablet continua compacto */
+@media screen and (max-width:1100px) {
+    .cf-shell-v15.client-shell {
+        grid-template-columns: 68px minmax(0,1fr) !important;
+    }
+
+    .cf-shell-v15 .client-rail {
+        width: 68px !important;
+    }
+
+    .cf-shell-v15 .client-rail-link,
+    .cf-shell-v15 .client-rail-link.car-rail-tool,
+    .cf-shell-v15 .client-rail-link.client-rail-home {
+        width: 56px !important;
+    }
+
+    .cf-shell-v15 .client-rail-label {
+        display: none !important;
+    }
+
+    .cf-shell-v15 .client-rail-user-popover {
+        left: 76px !important;
+    }
+}
+
+
+
+/* =========================================================
+   MAPA CLEAN V1.3 — TIPOGRAFIA + TOPO COMPLETO
+   ========================================================= */
+
+@media screen {
+
+    /* =====================================================
+       TOPO — ocupa toda a largura, inclusive sobre o rail
+       ===================================================== */
+
+    .cf-shell-v15 .client-topbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        z-index: 1800 !important;
+        padding-left: 120px !important;
+        padding-right: 18px !important;
+        background: #082b3a !important;
+    }
+
+    .cf-shell-v15 .client-main {
+        padding-top: 50px !important;
+    }
+
+    .cf-shell-v15 .client-content-app {
+        height: calc(100vh - 50px) !important;
+    }
+
+
+    /* =====================================================
+       POPUP — tipografia mais limpa e legível
+       ===================================================== */
+
+    .cf-feature-popup,
+    .cf-gleba-popup {
+        color: #243f48 !important;
+        font-weight: 400 !important;
+    }
+
+    .cf-feature-popup-title strong,
+    .cf-gleba-popup-title strong {
+        color: #12343f !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+    }
+
+    .cf-feature-popup-title span,
+    .cf-gleba-popup-title span {
+        color: #526b73 !important;
+        font-size: 10.5px !important;
+        font-weight: 400 !important;
+    }
+
+
+    /* dados principais */
+
+    .cf-feature-popup-metric span,
+    .cf-gleba-popup-metric span {
+        color: #526a72 !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    .cf-feature-popup-metric strong {
+        margin-top: 5px !important;
+        color: #183943 !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #536b73 !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        text-transform: none !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        color: #123943 !important;
+        font-size: 25px !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* CAR consultado */
+
+    .cf-feature-popup-car-line span {
+        color: #506970 !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+    }
+
+    .cf-feature-popup-car-line strong {
+        color: #183943 !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        line-height: 1.45 !important;
+    }
+
+
+    /* município, UF, situação etc */
+
+    .cf-feature-popup-details > div {
+        min-height: 34px !important;
+        align-items: center !important;
+    }
+
+    .cf-feature-popup-details span {
+        color: #526a72 !important;
+        font-size: 10.5px !important;
+        font-weight: 400 !important;
+    }
+
+    .cf-feature-popup-details strong {
+        color: #213f48 !important;
+        font-size: 10.8px !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* cores */
+
+    .cf-feature-popup-color-label {
+        color: #405d66 !important;
+        font-size: 10.5px !important;
+        font-weight: 500 !important;
+    }
+
+
+    /* botões */
+
+    .cf-feature-popup-action,
+    .cf-gleba-popup-action,
+    .cf-feature-popup-kml {
+        font-size: 10.5px !important;
+        font-weight: 500 !important;
+    }
+
+
+    /* =====================================================
+       BARRA INFERIOR — leitura bem mais clara
+       ===================================================== */
+
+    .map-top-insight-bar {
+        min-height: 70px !important;
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item {
+        min-height: 70px !important;
+        padding: 11px 16px !important;
+        gap: 5px !important;
+    }
+
+    .map-top-insight-label {
+        color: #526970 !important;
+        font-size: 10.5px !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-item strong {
+        color: #183943 !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        line-height: 1.25 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-item .is-positive {
+        color: #238044 !important;
+    }
+
+    .map-top-insight-alert strong {
+        color: #a86608 !important;
+        font-size: 13.5px !important;
+    }
+
+
+    /* =====================================================
+       MENU — último refinamento de contraste
+       ===================================================== */
+
+    .cf-shell-v15 .client-rail-label {
+        color: #d0dde2 !important;
+        font-size: 10px !important;
+        font-weight: 400 !important;
+    }
+
+    .cf-shell-v15 .client-rail-link {
+        color: #b7cad1 !important;
+    }
+
+    .cf-shell-v15 .client-rail-link.is-active,
+    .cf-shell-v15 .client-rail-link.is-active .client-rail-label {
+        color: #70dc91 !important;
+    }
+}
+
+
+@media screen and (max-width:1100px) {
+    .cf-shell-v15 .client-topbar {
+        padding-left: 78px !important;
+    }
+}
+
+
+@media screen and (max-width:720px) {
+    .cf-shell-v15 .client-topbar {
+        height: 48px !important;
+        min-height: 48px !important;
+        padding-left: 64px !important;
+        padding-right: 7px !important;
+    }
+
+    .cf-shell-v15 .client-main {
+        padding-top: 48px !important;
+    }
+
+    .cf-shell-v15 .client-content-app {
+        height: calc(100vh - 48px) !important;
+    }
+}
+
+
+
+/* =========================================================
+   MAPA CLEAN V1.4 — popup legível + topo sem canto branco
+   ========================================================= */
+
+@media screen {
+
+    /* -----------------------------------------------------
+       faixa superior escura de ponta a ponta
+       ----------------------------------------------------- */
+    body,
+    html {
+        background: #082b3a !important;
+    }
+
+    .cf-shell-v15,
+    .cf-shell-v15 .client-main,
+    .cf-shell-v15 .client-content-app {
+        background: #082b3a !important;
+    }
+
+    .cf-shell-v15::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 54px;
+        background: #082b3a;
+        z-index: 1600;
+        pointer-events: none;
+    }
+
+    .cf-shell-v15 .client-topbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        min-height: 54px !important;
+        background: transparent !important;
+        z-index: 1700 !important;
+        box-shadow: none !important;
+    }
+
+
+    /* -----------------------------------------------------
+       popup da gleba — tipografia realmente legível
+       ----------------------------------------------------- */
+    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+        border-radius: 6px !important;
+        box-shadow: 0 16px 40px rgba(0,0,0,.24) !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content {
+        min-width: 340px !important;
+        max-width: 340px !important;
+    }
+
+    .cf-gleba-popup {
+        min-width: 340px !important;
+        color: #1e3c45 !important;
+        font-family: inherit !important;
+    }
+
+    .cf-gleba-popup-head {
+        padding: 14px 42px 12px 16px !important;
+        border-bottom: 1px solid #dfe6e4 !important;
+    }
+
+    .cf-gleba-popup-title strong {
+        color: #173a44 !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-gleba-popup-title span {
+        color: #667d85 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        line-height: 1.25 !important;
+    }
+
+    .cf-gleba-popup-body {
+        padding: 16px !important;
+    }
+
+    .cf-gleba-popup-metric:first-child span {
+        color: #6a8087 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-gleba-popup-metric:first-child strong {
+        display: block !important;
+        margin-top: 6px !important;
+        color: #163944 !important;
+        font-size: 24px !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        letter-spacing: -.02em !important;
+    }
+
+    .cf-gleba-popup-alert,
+    .cf-gleba-popup-alert.is-clear {
+        padding: 11px 12px !important;
+        margin: 0 0 14px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.45 !important;
+        color: #456a57 !important;
+        background: #f5faf6 !important;
+        border-left: 3px solid #4a9a67 !important;
+    }
+
+    .cf-gleba-popup-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .cf-gleba-popup-action {
+        min-height: 42px !important;
+        padding: 10px 12px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-gleba-popup-action svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .cf-gleba-popup-action.is-danger,
+    .cf-gleba-popup-action.is-cancel {
+        grid-column: 1 / -1 !important;
+    }
+
+    .cf-gleba-popup-action.is-primary {
+        background: #0f6467 !important;
+        color: #ffffff !important;
+        border: 1px solid #0f6467 !important;
+    }
+
+    .cf-gleba-popup-action.is-secondary {
+        background: #f7f9f8 !important;
+        color: #395660 !important;
+        border: 1px solid #d7e0de !important;
+    }
+
+    .cf-gleba-popup-action.is-danger {
+        background: #fff !important;
+        color: #b45656 !important;
+        border: 1px solid #ead1d1 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       popup do CAR / camadas — melhora geral de leitura
+       ----------------------------------------------------- */
+    .confronta-feature-leaflet-popup .leaflet-popup-content {
+        min-width: 340px !important;
+        max-width: 340px !important;
+    }
+
+    .cf-feature-popup {
+        min-width: 340px !important;
+        color: #1f3d46 !important;
+    }
+
+    .cf-feature-popup-title strong {
+        color: #173a44 !important;
+        font-size: 17px !important;
+        font-weight: 700 !important;
+    }
+
+    .cf-feature-popup-title span {
+        color: #667d85 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+
+    .cf-feature-popup-metric span,
+    .cf-feature-popup-car-line span,
+    .cf-feature-popup-details span,
+    .cf-feature-popup-color-label {
+        color: #687e85 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.25 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+
+    .cf-feature-popup-metric strong,
+    .cf-feature-popup-car-line strong,
+    .cf-feature-popup-details strong {
+        color: #1b3e48 !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        line-height: 1.35 !important;
+    }
+
+    .cf-feature-popup-action,
+    .cf-feature-popup-kml {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+
+
+    /* -----------------------------------------------------
+       barra inferior — mais contraste e letras maiores
+       ----------------------------------------------------- */
+    .map-top-insight-bar {
+        min-height: 76px !important;
+        border-radius: 6px !important;
+        box-shadow: 0 10px 24px rgba(0,0,0,.12) !important;
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item {
+        min-height: 76px !important;
+        padding: 12px 18px !important;
+    }
+
+    .map-top-insight-label {
+        color: #677d84 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-item strong,
+    .map-top-insight-value {
+        color: #173b45 !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-alert strong,
+    .map-top-insight-item .is-positive {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }
+}
+
+@media screen and (max-width: 720px) {
+    .cf-shell-v15::before {
+        height: 48px;
+    }
+
+    .cf-shell-v15 .client-topbar {
+        min-height: 48px !important;
+    }
+
+    .confronta-gleba-leaflet-popup .leaflet-popup-content,
+    .confronta-feature-leaflet-popup .leaflet-popup-content,
+    .cf-gleba-popup,
+    .cf-feature-popup {
+        min-width: 300px !important;
+        max-width: 300px !important;
+    }
+}
+
