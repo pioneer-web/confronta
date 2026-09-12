@@ -268,8 +268,7 @@
     border: 1px solid rgba(5, 34, 50, .16);
     border-radius: 50%;
 }
-.cf-feature-popup-title,
-.cf-gleba-popup-title { min-width: 0; flex: 1; }
+
 .cf-feature-popup-title strong,
 .cf-gleba-popup-title strong {
     display: block;
@@ -305,10 +304,7 @@
     border-radius: 9px;
     background: #f7faf9;
 }
-.cf-feature-popup-metric span,
-.cf-feature-popup-metric strong,
-.cf-gleba-popup-metric span,
-.cf-gleba-popup-metric strong { display: block; }
+
 .cf-feature-popup-metric span,
 .cf-gleba-popup-metric span {
     color: #82949c;

@@ -256,7 +256,7 @@
 @media (max-width: 720px) {
     .cf-feature-popup,
     .cf-gleba-popup { min-width: 250px; }
-    .cf-gleba-popup-actions { grid-template-columns: 1fr; }
+    
     .report-head h2 { font-size: 17px; }
 }
 
