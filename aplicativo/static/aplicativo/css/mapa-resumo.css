@@ -1,0 +1,213 @@
+/* =========================================================
+   CONFRONTA — MAPA / RESUMO INFERIOR
+   Área, município, situação do CAR e alertas.
+   ========================================================= */
+
+/* =========================================================
+   CONFRONTA — MAPA CLEAN V1
+   Interface leve, simples e orientada ao mapa.
+   Somente visual: não altera regras GIS ou funcionalidades.
+   ========================================================= */
+
+@media screen {
+
+
+    /* ---------- RESUMO INFERIOR ---------- */
+
+    .map-top-insight-bar {
+        bottom: 14px !important;
+        width: min(760px, calc(100% - 170px)) !important;
+        min-height: 64px !important;
+        overflow: hidden !important;
+        border: 1px solid rgba(39,65,74,.12) !important;
+        border-radius: 12px !important;
+        background: rgba(255,255,255,.96) !important;
+        box-shadow: 0 10px 30px rgba(4,24,31,.18) !important;
+        backdrop-filter: blur(8px);
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item,
+    .map-top-insight-alert {
+        min-height: 64px !important;
+        padding: 10px 15px !important;
+        color: #17343e !important;
+        background: transparent !important;
+    }
+
+    .map-top-insight-item:not(:last-child) {
+        border-right: 1px solid #e3e9e6 !important;
+    }
+
+    .map-top-insight-label {
+        color: #76878c !important;
+        font-size: 9px !important;
+        font-weight: 500 !important;
+    }
+
+    .map-top-insight-item strong {
+        color: #17343e !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+    }
+
+    .map-top-insight-item .is-positive {
+        color: #24753c !important;
+    }
+
+    .map-top-insight-alert strong {
+        color: #a76709 !important;
+    }
+
+    /* detalhes continuam acessíveis ao clicar em Alertas */
+    .map-top-insight-alert small {
+        display: none !important;
+    }
+
+    .map-top-insight-alert:hover {
+        background: #f7faf8 !important;
+    }}
+
+
+/* ---------- TABLET ---------- */
+
+@media screen and (max-width: 1100px) {
+
+    .map-top-insight-bar {
+        width: calc(100% - 100px) !important;
+    }}
+
+
+/* ---------- CELULAR ---------- */
+
+@media screen and (max-width: 720px) {
+
+    .map-top-insight-bar {
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 9px !important;
+        width: auto !important;
+        transform: none !important;
+        display: flex !important;
+        overflow-x: auto !important;
+        border-radius: 10px !important;
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item {
+        flex: 0 0 145px !important;
+        min-width: 145px !important;
+        min-height: 58px !important;
+        padding: 8px 10px !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.1
+   Topo escuro + popup enxuto + relatório editorial
+   ========================================================= */
+
+@media screen {
+
+
+    /* =====================================================
+       REDUZ ARREDONDAMENTO GERAL DO MAPA
+       ===================================================== */
+
+    .map-top-insight-bar {
+        border-radius: 6px !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.3 — TIPOGRAFIA + TOPO COMPLETO
+   ========================================================= */
+
+@media screen {
+
+
+    /* =====================================================
+       BARRA INFERIOR — leitura bem mais clara
+       ===================================================== */
+
+    .map-top-insight-bar {
+        min-height: 70px !important;
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item {
+        min-height: 70px !important;
+        padding: 11px 16px !important;
+        gap: 5px !important;
+    }
+
+    .map-top-insight-label {
+        color: #526970 !important;
+        font-size: 10.5px !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-item strong {
+        color: #183943 !important;
+        font-size: 13.5px !important;
+        font-weight: 600 !important;
+        line-height: 1.25 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-item .is-positive {
+        color: #238044 !important;
+    }
+
+    .map-top-insight-alert strong {
+        color: #a86608 !important;
+        font-size: 13.5px !important;
+    }}
+
+
+/* =========================================================
+   MAPA CLEAN V1.4 — popup legível + topo sem canto branco
+   ========================================================= */
+
+@media screen {
+
+
+    /* -----------------------------------------------------
+       barra inferior — mais contraste e letras maiores
+       ----------------------------------------------------- */
+    .map-top-insight-bar {
+        min-height: 76px !important;
+        border-radius: 6px !important;
+        box-shadow: 0 10px 24px rgba(0,0,0,.12) !important;
+    }
+
+    .map-top-insight-item,
+    button.map-top-insight-item {
+        min-height: 76px !important;
+        padding: 12px 18px !important;
+    }
+
+    .map-top-insight-label {
+        color: #677d84 !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-item strong,
+    .map-top-insight-value {
+        color: #173b45 !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
+        opacity: 1 !important;
+    }
+
+    .map-top-insight-alert strong,
+    .map-top-insight-item .is-positive {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+    }}

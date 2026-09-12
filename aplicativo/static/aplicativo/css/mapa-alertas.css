@@ -444,3 +444,30 @@
     }
 }
 
+
+
+/* =========================================================
+   ALERTA FLUTUANTE SOBRE O MAPA
+   ========================================================= */
+
+/* =========================================================
+   CONFRONTA — MAPA CLEAN V1
+   Interface leve, simples e orientada ao mapa.
+   Somente visual: não altera regras GIS ou funcionalidades.
+   ========================================================= */
+
+@media screen {
+
+
+    /* ---------- ALERTA SOBRE O MAPA ---------- */
+
+    .map-overlap-alert:not([hidden]) {
+        max-width: min(520px, calc(100% - 40px)) !important;
+        padding: 9px 13px !important;
+        border: 1px solid #efd9b7 !important;
+        border-radius: 9px !important;
+        background: rgba(255,250,240,.96) !important;
+        color: #865518 !important;
+        box-shadow: 0 7px 20px rgba(43,28,7,.12) !important;
+        font-size: 10px !important;
+    }}
