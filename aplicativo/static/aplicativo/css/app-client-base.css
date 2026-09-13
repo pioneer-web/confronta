@@ -307,7 +307,7 @@ input[type="tel"] {
 .gleba-import-row { margin-top: 9px; }
 .gleba-import-status { margin-top: 7px; color: var(--muted); font-size: 9px; line-height: 1.4; }
 
-.gleba-import-status.is-success { color: #43675a; }
+
 .gleba-list { display: grid; gap: 8px; margin-top: 10px; }
 .gleba-item {
     padding: 9px;
@@ -316,7 +316,7 @@ input[type="tel"] {
     background: #fff;
 }
 .gleba-item.has-overlap { border-color: #e5b98a; background: #fffaf4; }
-.gleba-item-top { display: grid; grid-template-columns: 14px minmax(0,1fr); gap: 7px; align-items: center; }
+
 .gleba-color-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(11,45,60,.14); }
 .gleba-color-dot.dot-white { border: 1px solid #aab8b2; }
 .gleba-name-input {
@@ -327,10 +327,10 @@ input[type="tel"] {
     font-size: 10px !important;
     font-weight: 800;
 }
-.gleba-item-details { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px; }
-.gleba-item-details strong { color: var(--floresta); font-size: 12px; }
+
+
 .gleba-origin { padding: 3px 6px; border-radius: 999px; background: #edf4f0; color: #51665d; font-size: 8px; font-weight: 800; text-transform: uppercase; }
-.gleba-item-controls { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 7px; margin-top: 7px; }
+
 .gleba-color-select {
     width: 100%;
     min-height: 29px;
@@ -497,7 +497,7 @@ input[type="tel"] {
 .source-record dd { margin: 0; color: #213c48; font-weight: 700; overflow-wrap: anywhere; }
 
 .gleba-item-controls { grid-template-columns: minmax(0,1fr) auto auto; }
-.gleba-delete-button { color: #a63838; border-color: #e6c1c1; }
+
 .gleba-delete-button:hover { color: #842626; border-color: #c88181; background: #fff6f6; }
 
 @media (max-width: 1100px) {
@@ -826,7 +826,7 @@ input[type="tel"] {
 .gleba-color-swatch[data-color="#DC2626"] { background: #DC2626; }
 .gleba-color-swatch[data-color="#F97316"] { background: #F97316; }
 .gleba-color-swatch[data-color="#A855F7"] { background: #A855F7; }
-.gleba-color-swatch.is-selected { box-shadow: 0 0 0 3px rgba(13,143,135,.28), 0 0 0 1px #0d8f87; }
+
 .gleba-method-card { width: 100%; margin-bottom: 8px; padding: 10px; display: grid; gap: 3px; text-align: left; border: 1px solid #dbe5e0; background: #fff; color: #42565d; cursor: pointer; }
 .gleba-method-card:hover { border-color: #9ccfc5; background: #f4faf8; }
 .gleba-method-card strong { color: #0d8f87; font-size: 11px; }
@@ -844,14 +844,14 @@ input[type="tel"] {
 .gleba-import-status.is-success { color: #2f7a48; }
 
 /* Relatório */
-.territorial-report-view { padding: 12px; }
+
 .report-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #e7ece9; }
 .report-head h2 { margin: 3px 0 0; color: var(--petroleo); font-size: 16px; }
 .report-section { padding: 12px 0; border-bottom: 1px solid #e7ece9; }
 .report-section h3 { margin: 0 0 8px; color: var(--petroleo); font-size: 13px; }
 .report-data { margin: 0; }
 .report-data div, .report-list > div { padding: 5px 0; display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid #f0f3f2; font-size: 9.5px; }
-.report-data dt, .report-list span { color: #6e7e84; }
+
 .report-data dd { margin: 0; text-align: right; font-weight: 700; overflow-wrap: anywhere; }
 .report-list strong { text-align: right; color: #34484f; font-size: 9px; }
 
@@ -944,9 +944,9 @@ input[type="tel"] {
 
 @media print {
     .report-map-preview { min-height: 300px !important; border-color: #aebbb6 !important; }
-    .report-map-preview svg { max-height: 360px !important; }
-    .report-map-note { color: #4d5f66 !important; }
-    .report-gleba-label { font-size: 14px; }
+    
+    
+    
 }
 
 
