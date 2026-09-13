@@ -311,15 +311,9 @@
         font-size: 10.5px !important;
     }
 
-    .cf-gleba-popup-action svg {
-        width: 16px !important;
-        height: 16px !important;
-    }
+    
 
-    .cf-gleba-popup-action.is-danger,
-    .cf-gleba-popup-action.is-cancel {
-        grid-column: 1 / -1 !important;
-    }
+    
 
 
     /* =====================================================

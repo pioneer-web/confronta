@@ -1,3 +1,1543 @@
+
+/* ===== origem: app-public-v036.css ===== */
+/* ======================================================================
+   CONFRONTA v0.3.6 — Home pública responsiva e planos dinâmicos
+   ====================================================================== */
+
+
+.dynamic-plan-choice-grid { grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); }.plan-choice-card{position:relative}.plan-choice-ribbon{position:absolute;top:-12px;right:18px;background:#e9a817;color:#13252d;border-radius:999px;padding:7px 12px;font-size:10px;font-weight:900}.app-plan-price{margin:12px 0;color:var(--petroleo);font-size:30px;font-weight:850}.app-plan-price small{font-size:12px;font-weight:500}
+
+
+/* HOME v5 - Hero visual premium CONFRONTA */
+
+
+/* Hero GIS visual v5 */
+
+
+/* HOME v7 - Hero full width premium territorial */
+
+
+@media(max-width:900px){
+ 
+ 
+}
+
+
+/* HOME V8 - hero redesign */
+
+
+@media(max-width:900px){
+ 
+ 
+ 
+}
+
+
+/* HOME V9 - Integração visual premium */
+
+
+/* faixa de benefícios integrada */
+
+
+/* soluções em continuidade visual */
+
+
+/* planos no mesmo ambiente */
+
+
+/* ======================================================================
+   HOME V10 — refinamento visual solicitado
+   Escopo: somente Home pública. Não altera regras de negócio nem Módulos 1/2.
+   ====================================================================== */
+
+
+/* Cabeçalho: logo branca, marca branca e subtítulo verde claro. */
+
+
+/* Hero: proporções equilibradas e nova imagem fornecida. */
+
+
+/* Faixa de benefícios: quatro itens com ícones, como a referência visual. */
+
+
+/* Continuidade de fundo e proporções das demais seções. */
+
+
+/* ======================================================================
+   CONFRONTA — HOME INTERNA / NAVEGAÇÃO v11
+   Referência visual: interface hero aprovada pelo proprietário.
+   Escopo: shell autenticado, tela inicial sem CAR, ajuda e conta.
+   Não altera o motor territorial, PostGIS ou regras de acesso.
+   ====================================================================== */
+:root {
+    --app-navy: #001426;
+    --app-navy-deep: #000e21;
+    --app-navy-soft: #06223a;
+    --app-search: #102d4e;
+    --app-search-border: #1a4168;
+    --app-cyan: #0c6f8d;
+    --app-green: #12d95b;
+    --app-green-soft: #83e4a7;
+    --app-white-muted: #b9cad8;
+}
+
+.client-shell {
+    grid-template-columns: 64px minmax(0, 1fr);
+    background: var(--app-navy);
+}
+
+.client-rail {
+    width: 64px;
+    background: linear-gradient(180deg, #031a2d 0%, #001426 100%);
+    border-right: 1px solid rgba(139, 184, 209, .14);
+    box-shadow: 8px 0 24px rgba(0, 7, 18, .18);
+}
+
+
+.client-rail-link.client-rail-home {
+    width: 46px;
+    min-height: 46px;
+    border-radius: 12px;
+    color: #fff;
+    background: rgba(11, 104, 137, .18);
+    border: 1px solid rgba(104, 182, 215, .14);
+}
+
+.client-rail-link.client-rail-home:hover {
+    color: #fff;
+    background: rgba(11, 112, 151, .32);
+    border-color: rgba(104, 206, 232, .28);
+}
+
+.client-rail-link.client-rail-home svg {
+    width: 23px;
+    height: 23px;
+    stroke-width: 1.8;
+}
+
+.client-main {
+    grid-column: 2;
+    background: #f3f6f8;
+}
+
+.client-topbar {
+    min-height: 68px;
+    padding: 10px 22px;
+    display: grid;
+    grid-template-columns: minmax(170px, .75fr) minmax(300px, 1.3fr) minmax(170px, .75fr);
+    align-items: center;
+    gap: 24px;
+    background: linear-gradient(180deg, #00162b 0%, #001426 100%);
+    border-bottom: 1px solid rgba(143, 190, 215, .15);
+    box-shadow: 0 8px 22px rgba(0, 10, 24, .12);
+}
+
+
+.client-global-search {
+    width: min(100%, 560px);
+    min-height: 42px;
+    justify-self: center;
+    padding: 0 8px 0 13px;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr) 30px;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--app-search-border);
+    border-radius: 12px;
+    background: linear-gradient(180deg, #122f50 0%, #0d2948 100%);
+    color: #d7e3ed;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 7px 18px rgba(0, 5, 16, .18);
+}
+
+.client-global-search > svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #9fb6ca;
+    stroke-width: 1.8;
+}
+
+.client-global-search input[type="text"] {
+    min-height: 38px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #fff;
+    box-shadow: none;
+    font-size: 13px;
+}
+
+.client-global-search input[type="text"]::placeholder { color: #9db2c4; opacity: 1; }
+.client-global-search input[type="text"]:focus { border: 0; box-shadow: none; }
+
+.client-global-search button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: #9fb6ca;
+    cursor: pointer;
+}
+
+.client-global-search button:hover { color: #fff; }
+.client-global-search button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+
+.client-global-search-disabled span { font-size: 12px; color: #b8c7d4; }
+
+
+.client-user-identity {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 11px;
+    border-bottom: 1px solid rgba(145, 181, 201, .12);
+}
+.client-user-avatar {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #0f5877;
+    color: #fff;
+}
+.client-user-avatar svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.client-user-identity strong,
+.client-user-identity span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.client-user-identity strong { color: #fff; font-size: 12px; }
+.client-user-identity span { margin-top: 3px; color: #8fa5b6; font-size: 9.5px; }
+.client-user-links { padding: 7px; display: grid; gap: 2px; }
+.client-user-links a,
+.client-user-logout-form button {
+    width: 100%;
+    min-height: 39px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #cbd9e4;
+    cursor: pointer;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+.client-user-links a:hover,
+.client-user-logout-form button:hover { background: rgba(17, 88, 119, .22); color: #fff; }
+.client-user-links svg,
+.client-user-logout-form svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.client-user-logout-form { margin: 0; padding: 7px; border-top: 1px solid rgba(145, 181, 201, .12); }
+.client-user-logout-form button { color: #dda7a7; }
+
+.client-content { padding: 14px 16px 18px; }
+.client-content-app { background: #04182a; }
+.client-content-page { min-height: calc(100vh - 68px); padding: 28px; background: #f3f6f8; }
+
+/* Tela inicial autenticada, antes da primeira consulta de CAR. */
+.client-map-welcome {
+    min-height: calc(100vh - 100px);
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 18% 18%, rgba(8, 77, 103, .24), transparent 34%),
+        linear-gradient(145deg, #00172a 0%, #001123 60%, #00182b 100%);
+    overflow: hidden;
+}
+
+
+/* Mantém a tela territorial funcionando dentro do novo shell. */
+.client-content-app .territorial-screen {
+    height: calc(100vh - 100px);
+    border-color: rgba(86, 128, 150, .26);
+    border-radius: 10px;
+    box-shadow: 0 14px 34px rgba(0, 7, 18, .20);
+}
+
+.client-content-app .new-query-box,
+.client-content-app .subscription-gate {
+    border-color: rgba(94, 132, 151, .28);
+}
+
+/* Páginas de ajuda e conta */
+.client-help-page,
+.client-account-page { max-width: 1180px; margin: 0 auto; }
+.client-page-hero { margin-bottom: 22px; }
+.client-page-kicker { display: block; margin-bottom: 7px; color: #0c8d79; font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.client-page-hero h1 { margin: 0; color: #08263a; font-size: clamp(27px, 3.3vw, 42px); letter-spacing: -.025em; }
+.client-page-hero p { max-width: 750px; margin: 9px 0 0; color: #60727d; font-size: 13px; line-height: 1.6; }
+
+.client-help-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.client-help-card {
+    min-height: 205px;
+    padding: 20px;
+    border: 1px solid #dfe7eb;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(4, 33, 50, .045);
+}
+.client-help-number { color: #0f9a74; font-size: 11px; font-weight: 900; letter-spacing: .12em; }
+.client-help-card h2 { margin: 10px 0 8px; color: #0a2b3f; font-size: 16px; }
+.client-help-card p { margin: 0; color: #657680; font-size: 11px; line-height: 1.58; }
+
+
+.client-account-layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; align-items: start; }
+.client-account-form,
+.client-account-summary { border: 1px solid #dfe7eb; border-radius: 14px; background: #fff; box-shadow: 0 10px 28px rgba(4, 33, 50, .045); }
+.client-account-form { padding: 22px; }
+.client-account-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.client-account-fields .form-field-full { grid-column: 1 / -1; }
+.client-account-actions { margin-top: 18px; display: flex; gap: 9px; flex-wrap: wrap; }
+.client-account-summary { padding: 21px; }
+.client-account-summary > span { display: block; color: #788993; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; }
+.client-account-summary > strong { display: block; margin-top: 7px; color: #0a2b3f; font-size: 23px; }
+.client-account-summary p { margin: 8px 0 0; color: #667984; font-size: 10.5px; line-height: 1.45; }
+.client-account-summary a { margin-top: 17px; min-height: 37px; padding: 8px 11px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: #0a6f80; color: #fff; font-size: 10px; font-weight: 800; }
+
+/* O botão flutuante permanece funcional, mas adota a paleta do novo shell. */
+
+
+@media (max-width: 980px) {
+    .client-topbar { grid-template-columns: auto minmax(240px, 1fr) auto; gap: 12px; padding-inline: 14px; }
+    
+    
+    .client-help-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    
+    .client-account-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+    .client-shell { grid-template-columns: 54px minmax(0, 1fr); }
+    .client-rail { width: 54px; }
+    
+    .client-rail-link.client-rail-home { width: 42px; min-height: 42px; }
+    .client-topbar { min-height: 62px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 8px 8px; gap: 7px; }
+    
+    .client-global-search { min-height: 40px; padding-left: 10px; }
+    .client-global-search input[type="text"] { font-size: 11px; }
+    
+    
+    
+    
+    
+    .client-content { padding: 8px; }
+    .client-content-page { padding: 20px 12px; }
+    .client-map-welcome { min-height: calc(100vh - 78px); padding: 5px; border-radius: 8px; }
+    
+    
+    
+    
+    
+    .client-help-grid { grid-template-columns: 1fr; }
+    .client-help-card { min-height: auto; }
+    .client-account-fields { grid-template-columns: 1fr; }
+    .client-account-fields .form-field-full { grid-column: auto; }
+    
+}
+
+/* =========================================================
+   HOME v12 — busca explícita + ajuda simplificada
+   Mantém a arquitetura e o fluxo GIS existentes.
+   ========================================================= */
+.client-global-search {
+    width: min(100%, 650px);
+    min-height: 42px;
+    justify-self: center;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.client-global-search-field {
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 13px;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--app-search-border);
+    border-radius: 11px;
+    background: linear-gradient(180deg, #122f50 0%, #0d2948 100%);
+    color: #d7e3ed;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 7px 18px rgba(0, 5, 16, .18);
+}
+
+.client-global-search-field > svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #9fb6ca;
+    stroke-width: 1.8;
+}
+
+.client-global-search-field input[type="text"] {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+    color: #fff;
+    box-shadow: none;
+    font-size: 13px;
+}
+
+.client-global-search-field input[type="text"]::placeholder {
+    color: #9db2c4;
+    opacity: 1;
+}
+
+.client-global-search-field input[type="text"]:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.client-global-search-submit {
+    min-width: 82px;
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid rgba(120, 230, 195, .28);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #0b8f91 0%, #08777f 100%);
+    color: #fff;
+    box-shadow: 0 7px 18px rgba(0, 10, 22, .18);
+    cursor: pointer;
+    font-size: 11.5px;
+    font-weight: 850;
+    letter-spacing: .01em;
+    transition: transform .15s ease, filter .15s ease, border-color .15s ease;
+}
+
+.client-global-search-submit:hover {
+    filter: brightness(1.08);
+    border-color: rgba(126, 239, 201, .45);
+}
+
+.client-global-search-submit:active { transform: translateY(1px); }
+
+.client-global-search-disabled {
+    grid-template-columns: minmax(0, 1fr);
+    opacity: .78;
+}
+
+.client-global-search-disabled .client-global-search-field {
+    text-decoration: none;
+}
+
+.client-global-search-disabled .client-global-search-field span {
+    color: #b8c7d4;
+    font-size: 12px;
+}
+
+.client-help-grid-basic {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 920px;
+}
+
+.client-help-page-basic .client-help-card {
+    min-height: 165px;
+}
+
+.client-help-page-basic .client-help-card strong {
+    color: #0a6f80;
+}
+
+.client-content-app > .message-stack {
+    position: relative;
+    z-index: 40;
+    max-width: 760px;
+    margin: 0 auto 10px;
+}
+
+@media (max-width: 980px) {
+    .client-global-search { width: 100%; }
+}
+
+@media (max-width: 720px) {
+    .client-global-search {
+        grid-template-columns: minmax(0, 1fr) 68px;
+        gap: 6px;
+        min-height: 40px;
+        padding: 0;
+    }
+    .client-global-search-field {
+        min-height: 40px;
+        padding-inline: 10px;
+        grid-template-columns: 18px minmax(0, 1fr);
+        gap: 6px;
+    }
+    .client-global-search-field > svg { width: 17px; height: 17px; }
+    .client-global-search-field input[type="text"] { min-height: 38px; font-size: 10.5px; }
+    .client-global-search-submit { min-width: 68px; min-height: 40px; padding: 0 9px; font-size: 10px; }
+    .client-global-search-disabled { grid-template-columns: minmax(0, 1fr); }
+    .client-help-grid-basic { grid-template-columns: 1fr; }
+}
+
+/* Especificidade necessária para neutralizar o antigo botão em forma de seta. */
+.client-global-search .client-global-search-submit {
+    width: auto;
+    height: auto;
+    min-width: 82px;
+    min-height: 42px;
+    padding: 0 17px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(120, 230, 195, .28);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #0b8f91 0%, #08777f 100%);
+    color: #fff;
+}
+
+@media (max-width: 720px) {
+    .client-global-search .client-global-search-submit {
+        min-width: 68px;
+        min-height: 40px;
+        padding: 0 9px;
+    }
+}
+
+/* ======================================================================
+   CONFRONTA — ÁREA DO CAR / HOME v13
+   Referência visual: navegação lateral e cartões sobre o mapa aprovados.
+   Escopo exclusivamente visual/operacional da consulta já existente.
+   ====================================================================== */
+
+/* Barra lateral fixa da consulta: camadas, localizar, relatório, glebas,
+   início e informações do imóvel. */
+.client-rail-nav.client-rail-nav-single {
+    min-height: 100%;
+    padding: 14px 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 7px;
+}
+
+.client-rail-link.car-rail-tool,
+.client-rail-link.car-rail-home {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: #f5fbff;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, transform .15s ease;
+}
+
+
+.client-rail-link.car-rail-tool:active,
+.client-rail-link.car-rail-home:active { transform: translateY(1px); }
+.client-rail-link.car-rail-tool:disabled { opacity: .34; cursor: not-allowed; }
+.client-rail-link.car-rail-tool:disabled:hover { background: transparent; border-color: transparent; }
+
+.client-rail-link.car-rail-tool svg,
+.client-rail-link.car-rail-home svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* O mapa passa a ocupar toda a área útil. Painéis são gavetas flutuantes,
+   evitando reduzir a área cartográfica quando não estão em uso. */
+.client-content-app .territorial-screen {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #001426;
+}
+
+.client-content-app .territorial-map-column {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    background: #10261f;
+}
+
+.client-content-app .territorial-map { min-height: 0; }
+
+
+/* Gaveta de camadas no estilo da referência. */
+.map-layer-drawer {
+    position: absolute;
+    z-index: 1050;
+    top: 14px;
+    left: 14px;
+    width: min(330px, calc(100% - 90px));
+    max-height: calc(100% - 28px);
+    overflow: hidden;
+    border: 1px solid rgba(73,148,183,.24);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(0,20,43,.98) 0%, rgba(0,13,31,.98) 100%);
+    color: #fff;
+    box-shadow: 0 18px 52px rgba(0,4,15,.42), inset 0 1px 0 rgba(255,255,255,.025);
+    backdrop-filter: blur(8px);
+}
+.map-layer-drawer[hidden] { display: none !important; }
+
+.map-layer-drawer-head {
+    min-height: 60px;
+    padding: 12px 13px 11px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid rgba(149,193,215,.11);
+}
+.map-layer-drawer-head > div { min-width: 0; }
+.map-layer-drawer-head span { display: block; color: #fff; font-size: 13px; font-weight: 900; letter-spacing: .02em; }
+.map-layer-drawer-head small { display: block; margin-top: 3px; color: #718da3; font-size: 8.5px; }
+.map-layer-drawer-head button {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(128,177,200,.16);
+    border-radius: 8px;
+    background: rgba(15,75,105,.18);
+    color: #9eb4c5;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+}
+.map-layer-drawer-head button:hover { color: #fff; background: rgba(15,91,128,.34); }
+
+.map-layer-drawer-list {
+    max-height: min(590px, calc(100vh - 180px));
+    overflow-y: auto;
+    padding: 8px 8px 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #1b4b67 transparent;
+}
+
+.map-layer-eye {
+    width: 100%;
+    min-height: 45px;
+    padding: 7px 9px;
+    display: grid;
+    grid-template-columns: 18px minmax(0,1fr) 28px;
+    align-items: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #dfe9f0;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s ease, color .15s ease;
+}
+.map-layer-eye:hover { background: rgba(13,67,99,.31); color: #fff; }
+.map-layer-eye .map-layer-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; font-weight: 760; }
+.map-layer-eye svg {
+    width: 20px;
+    height: 20px;
+    justify-self: center;
+    fill: none;
+    stroke: #647e91;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: stroke .15s ease, opacity .15s ease;
+}
+.map-layer-eye.is-active svg { stroke: #ffffff; }
+.map-layer-eye:not(.is-active) { color: #7890a1; }
+.map-layer-eye:not(.is-active) svg { opacity: .58; }
+
+.map-layer-swatch {
+    width: 14px;
+    height: 14px;
+    display: block;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.10), 0 0 10px rgba(0,0,0,.12);
+}
+.layer-color-car { background: #00ec58; }
+
+
+/* Gaveta lateral para relatório e glebas. Mantém o conteúdo e as rotinas
+   existentes, apenas muda sua apresentação. */
+.territorial-side-panel.territorial-tool-drawer {
+    position: absolute;
+    z-index: 1040;
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: min(430px, calc(100% - 90px));
+    height: auto;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(86,139,164,.28);
+    border-radius: 14px;
+    background: rgba(250,252,252,.985);
+    box-shadow: 0 22px 60px rgba(0,7,20,.34);
+}
+.territorial-side-panel.territorial-tool-drawer[hidden] { display: none !important; }
+
+.territorial-tool-drawer-head {
+    min-height: 57px;
+    padding: 10px 12px 10px 14px;
+    align-items: center;
+    background: linear-gradient(180deg, #041c31 0%, #021628 100%);
+    border-bottom: 1px solid rgba(137,183,206,.16);
+    color: #fff;
+}
+.territorial-tool-drawer-title { min-width: 0; }
+.territorial-tool-drawer-title span { display: block; color: #68d99a; font-size: 8px; font-weight: 900; letter-spacing: .12em; }
+.territorial-tool-drawer-title strong { display: block; max-width: 340px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; font-size: 12px; }
+.territorial-tool-close {
+    width: 31px;
+    height: 31px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(131,179,202,.18);
+    border-radius: 8px;
+    background: rgba(15,74,104,.22);
+    color: #b4c6d2;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+}
+.territorial-tool-close:hover { color: #fff; background: rgba(15,88,124,.38); }
+
+/* Ao abrir Glebas, mostra diretamente a ferramenta de projeto, sem repetir
+   o painel de informações/camadas que agora vive no mapa. */
+.territorial-tool-drawer.is-glebas-mode .car-summary-card,
+.territorial-tool-drawer.is-glebas-mode [data-side-tab="layers"],
+.territorial-tool-drawer.is-glebas-mode [data-side-panel="layers"] { display: none !important; }
+.territorial-tool-drawer.is-glebas-mode .territorial-tabs { grid-template-columns: 1fr; }
+.territorial-tool-drawer.is-glebas-mode [data-side-tab="glebas"] { display: block; }
+
+/* Faixa inferior de informações acionada pela engrenagem. */
+.map-property-summary {
+    position: absolute;
+    z-index: 1010;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    width: min(920px, calc(100% - 70px));
+    min-height: 76px;
+    padding: 10px 16px;
+    display: grid;
+    grid-template-columns: .8fr 1.25fr 1fr 1.15fr;
+    align-items: stretch;
+    border: 1px solid rgba(67,127,158,.25);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(0,19,42,.97) 0%, rgba(0,12,29,.98) 100%);
+    color: #fff;
+    box-shadow: 0 17px 45px rgba(0,6,19,.36);
+    backdrop-filter: blur(9px);
+}
+.map-property-summary[hidden] { display: none !important; }
+
+
+/* Ajustes Leaflet no padrão visual da referência. */
+
+.client-content-app .leaflet-control-zoom {
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,7,18,.28) !important;
+}
+.client-content-app .leaflet-control-zoom a {
+    width: 38px !important;
+    height: 38px !important;
+    line-height: 36px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(140,180,201,.12) !important;
+    background: #03172b !important;
+    color: #fff !important;
+    font-size: 23px !important;
+}
+.client-content-app .leaflet-control-zoom a:last-child { border-bottom: 0 !important; }
+.client-content-app .leaflet-control-zoom a:hover { background: #0b3551 !important; }
+
+/* O alerta de sobreposição permanece acima da faixa inferior. */
+.client-content-app .map-overlap-alert { top: 14px; }
+
+
+@media (max-width: 900px) {
+    .map-property-summary {
+        width: min(620px, calc(100% - 30px));
+        grid-template-columns: 1fr 1fr;
+        bottom: 12px;
+        padding: 8px;
+    }
+    
+    
+    
+    
+}
+
+@media (max-width: 720px) {
+    .client-rail-nav.client-rail-nav-single { padding: 10px 5px; gap: 5px; }
+    .client-rail-link.car-rail-tool,
+    .client-rail-link.car-rail-home { width: 40px; min-height: 40px; border-radius: 9px; }
+    .client-rail-link.car-rail-tool svg,
+    .client-rail-link.car-rail-home svg { width: 21px; height: 21px; }
+
+    .client-content-app .territorial-screen {
+        height: calc(100vh - 78px);
+        min-height: 540px;
+        border-radius: 8px;
+    }
+    .client-content-app .territorial-map-column { height: 100%; min-height: 540px; }
+
+    .map-layer-drawer { top: 8px; left: 8px; width: min(300px, calc(100% - 64px)); max-height: calc(100% - 16px); }
+    .map-layer-drawer-list { max-height: calc(100vh - 175px); }
+    .territorial-side-panel.territorial-tool-drawer { top: 8px; right: 8px; bottom: 8px; width: calc(100% - 16px); }
+
+    .map-property-summary {
+        width: calc(100% - 18px);
+        grid-template-columns: 1fr 1fr;
+        border-radius: 11px;
+    }
+    
+    
+    
+    
+}
+
+@media print {
+    .map-layer-drawer, .map-property-summary { display: none !important; }
+    .territorial-side-panel.territorial-tool-drawer {
+        position: static !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-shadow: none !important;
+        border: 0 !important;
+    }
+}
+
+
+/* ======================================================================
+   CONFRONTA — REFINOS DA ÁREA AUTENTICADA / HOME v14
+   Ajustes visuais solicitados: rail abaixo do topo, Home como mapa Leaflet,
+   resumo do CAR aberto por padrão, zoom à esquerda e rotação do mapa.
+   ====================================================================== */
+
+/* O topo passa visualmente por toda a largura. A barra lateral começa
+   somente abaixo da linha inferior do cabeçalho. */
+.client-rail {
+    inset: 68px auto 0 0;
+    height: auto;
+    z-index: 1390;
+}
+
+.client-topbar {
+    width: calc(100% + 64px);
+    margin-left: -64px;
+    padding-left: 84px;
+}
+
+/* A Casa é sempre o primeiro item da barra. */
+
+
+/* Tela inicial autenticada: usa exatamente a mesma área Leaflet da consulta,
+   sem dados territoriais, com mapa suavizado e marca central. */
+.territorial-screen-empty {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #001426;
+}
+
+.territorial-screen-empty .territorial-map-column {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.territorial-screen-empty .territorial-map {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.territorial-screen-empty .leaflet-tile-pane {
+    opacity: .60;
+    filter: saturate(.78) brightness(.68) contrast(1.02);
+}
+
+
+.empty-map-car-message {
+    position: absolute;
+    z-index: 1100;
+    left: 50%;
+    top: 22px;
+    transform: translate(-50%, -8px);
+    min-width: 250px;
+    max-width: calc(100% - 40px);
+    padding: 11px 17px;
+    border: 1px solid rgba(121,193,215,.26);
+    border-radius: 11px;
+    background: rgba(0,20,43,.94);
+    color: #f4fbff;
+    box-shadow: 0 13px 34px rgba(0,5,17,.36);
+    text-align: center;
+    font-size: 11px;
+    font-weight: 750;
+    opacity: 0;
+    transition: opacity .18s ease, transform .18s ease;
+}
+.empty-map-car-message[hidden] { display: none !important; }
+.empty-map-car-message.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* Zoom e rotação no canto superior esquerdo do mapa, conforme a referência. */
+.client-content-app .leaflet-top.leaflet-left {
+    top: 10px;
+    left: 10px;
+}
+.client-content-app .leaflet-top.leaflet-right {
+    top: 10px;
+    right: 10px;
+}
+
+/* Quando a gaveta de camadas abre, ela começa depois dos controles do mapa. */
+.map-layer-drawer {
+    left: 62px;
+    width: min(330px, calc(100% - 138px));
+}
+
+.confronta-rotation-control {
+    margin-top: 8px !important;
+    overflow: hidden;
+    border: 1px solid rgba(110,165,193,.20) !important;
+    border-radius: 9px !important;
+    background: #03172b !important;
+    box-shadow: 0 8px 18px rgba(0,7,20,.25) !important;
+}
+
+.confronta-rotation-button {
+    width: 38px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid rgba(140,180,201,.12);
+    background: #03172b;
+    color: #fff;
+    cursor: pointer;
+    font: 700 18px/1 Arial, sans-serif;
+}
+.confronta-rotation-button:last-child { border-bottom: 0; }
+.confronta-rotation-button:hover { background: #0b3551; }
+.confronta-rotation-north { color: #82e2a5; font-size: 12px; font-weight: 900; }
+
+/* A faixa inferior já nasce habilitada ao abrir um CAR; a engrenagem continua
+   sendo o controle exclusivo para ocultar/mostrar depois disso. */
+
+
+@media (max-width: 720px) {
+    .client-rail { top: 62px; }
+    .client-topbar {
+        width: calc(100% + 54px);
+        margin-left: -54px;
+        padding-left: 62px;
+    }
+    .map-layer-drawer { left: 54px; width: min(300px, calc(100% - 70px)); }
+    
+    
+    
+}
+
+/* ============================================================
+   v0.3.9 HOME v16 — cruzamentos territoriais e relatório
+   ============================================================ */
+
+
+.property-alert-item.state-atencao {
+    border-left-color: #f59e0b;
+    background: #fffaf0;
+}
+
+
+.report-restriction-summary {
+    padding: 10px 12px;
+    border: 1px solid #f0d39b;
+    border-radius: 8px;
+    background: #fffaf1;
+}
+.report-restriction-summary strong,
+.report-restriction-summary span { display: block; }
+.report-restriction-summary strong { color: #8b5600; }
+.report-restriction-summary span { margin-top: 4px; color: #5d6970; font-size: 10px; line-height: 1.45; }
+.report-analysis-list { display: grid; gap: 9px; }
+.report-analysis-card {
+    padding: 11px;
+    border: 1px solid #e0e8e4;
+    border-left: 4px solid #9aa8a2;
+    border-radius: 8px;
+    background: #fff;
+}
+.report-analysis-card.state-alerta { border-left-color: #d97706; }
+.report-analysis-card.state-atencao { border-left-color: #f59e0b; background: #fffdf7; }
+.report-analysis-card.state-ok { border-left-color: #4FA36A; }
+.report-analysis-card.state-nao_verificado { border-left-color: #9aa6aa; }
+
+
+.report-analysis-card > p { margin: 6px 0 0; color: #5b6d73; font-size: 9px; line-height: 1.45; }
+.report-caution { padding: 7px 8px; border-radius: 6px; background: #fff6df; color: #72500b !important; }
+
+
+.report-record-grid { display: grid; gap: 8px; margin-top: 8px; }
+.report-record-card {
+    margin: 0;
+    padding: 8px 9px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 5px 10px;
+    border: 1px solid #e7ece9;
+    border-radius: 7px;
+    background: #fafcfb;
+}
+.report-record-card div { min-width: 0; }
+.report-record-card dt { color: #738186; font-size: 7.5px; }
+.report-record-card dd { margin: 2px 0 0; overflow-wrap: anywhere; color: #263b43; font-size: 8.5px; font-weight: 650; }
+
+@media (max-width: 620px) {
+    
+    .report-record-card { grid-template-columns: 1fr; }
+}
+
+
+/* ======================================================================
+   v0.3.9 — RELATÓRIO A4 / LEITURA REFORÇADA / MAXIMIZAÇÃO
+   - O drawer de relatório é mais largo que o de glebas.
+   - O conteúdo é apresentado como uma folha A4 centralizada.
+   - A impressão usa mapa+glebas em A4 paisagem e texto em A4 retrato.
+   ====================================================================== */
+.territorial-tool-drawer.is-report-mode {
+    width: min(760px, calc(100% - 90px));
+    background: #e9eef1;
+}
+
+.territorial-tool-drawer.is-report-mode .territorial-side-body {
+    padding: 18px 20px 34px;
+    overflow-y: auto;
+    background: #e9eef1;
+}
+
+.territorial-tool-drawer.is-report-mode .territorial-report-view {
+    width: min(100%, 794px);
+    margin: 0 auto;
+    padding: 30px 34px 38px;
+    border: 0;
+    border-radius: 3px;
+    background: #ffffff;
+    box-shadow: 0 12px 34px rgba(7, 34, 49, .13);
+    color: #17313d;
+}
+
+.territorial-tool-drawer.is-report-maximized {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+}
+
+.territorial-tool-drawer.is-report-maximized .territorial-side-body {
+    padding-top: 24px;
+    padding-bottom: 48px;
+}
+
+.territorial-tool-drawer.is-report-maximized .territorial-report-view {
+    width: min(100%, 860px);
+    padding: 38px 46px 48px;
+}
+
+.report-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.report-maximize-button { white-space: nowrap; }
+.report-maximize-icon {
+    display: inline-block;
+    margin-right: 4px;
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* Tipografia do relatório na tela: mais escura, maior e sem opacidade visual. */
+.territorial-report-view .eyebrow { color: #328a5a; font-size: 9px; font-weight: 900; }
+.territorial-report-view .report-head {
+    align-items: center;
+    padding-bottom: 14px;
+    border-bottom-color: #d8e0e3;
+}
+.territorial-report-view .report-head h2 { color: #102f3c; font-size: 19px; line-height: 1.2; }
+.territorial-report-view .report-section { padding: 16px 0; border-bottom-color: #dfe5e7; }
+.territorial-report-view .report-section h3 { margin-bottom: 10px; color: #102f3c; font-size: 14px; }
+.territorial-report-view .report-data div,
+.territorial-report-view .report-list > div {
+    padding: 7px 0;
+    border-bottom-color: #e7ecee;
+    color: #1d3945;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.territorial-report-view .report-data dt,
+.territorial-report-view .report-list span { color: #4c636d; font-weight: 600; }
+.territorial-report-view .report-data dd,
+.territorial-report-view .report-list strong { color: #102f3c; font-size: 11px; font-weight: 800; }
+.territorial-report-view .report-map-note { color: #4f646d; font-size: 9.5px; line-height: 1.5; }
+.territorial-report-view .muted { color: #536871; }
+
+
+.territorial-report-view .report-analysis-card > p { color: #425a64; font-size: 10px; line-height: 1.55; }
+.territorial-report-view .report-record-card dt { color: #536972; font-size: 8.5px; }
+.territorial-report-view .report-record-card dd { color: #1c3945; font-size: 9.5px; font-weight: 700; }
+
+@media (max-width: 900px) {
+    .territorial-tool-drawer.is-report-mode { width: calc(100% - 16px); }
+    .territorial-tool-drawer.is-report-mode .territorial-side-body { padding: 10px; }
+    .territorial-tool-drawer.is-report-mode .territorial-report-view,
+    .territorial-tool-drawer.is-report-maximized .territorial-report-view { width: 100%; padding: 22px 20px 30px; }
+    .report-head { gap: 12px; }
+    .report-actions { justify-content: flex-start; }
+}
+
+/* Impressão profissional: primeiro mapa/glebas em A4 paisagem; depois texto A4 retrato. */
+@page {
+    size: A4 portrait;
+    margin: 13mm 14mm 14mm;
+}
+@page report-map-page {
+    size: A4 landscape;
+    margin: 10mm;
+}
+@page report-body-page {
+    size: A4 portrait;
+    margin: 13mm 14mm 14mm;
+}
+
+@media print {
+    html, body {
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #122f3b !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    /* Remove a moldura da interface e qualquer efeito translúcido/sombra. */
+    .territorial-side-panel.territorial-tool-drawer,
+    .territorial-tool-drawer.is-report-mode,
+    .territorial-tool-drawer.is-report-maximized,
+    .territorial-tool-drawer.is-report-mode .territorial-side-body,
+    .territorial-tool-drawer.is-report-mode .territorial-report-view,
+    .territorial-tool-drawer.is-report-maximized .territorial-report-view {
+        position: static !important;
+        inset: auto !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #fff !important;
+    }
+
+    .territorial-tool-drawer-head,
+    .report-head,
+    #print-current-report,
+    #toggle-report-maximize { display: none !important; }
+
+    .report-map-section {
+        page: report-map-page;
+        break-before: auto;
+        break-after: page;
+        page-break-before: auto;
+        page-break-after: always;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        background: #fff !important;
+    }
+    .report-map-section h3 {
+        margin: 0 0 4mm !important;
+        color: #102f3c !important;
+        font-size: 15pt !important;
+        font-weight: 800 !important;
+        line-height: 1.2 !important;
+    }
+    .report-map-preview {
+        width: 100% !important;
+        height: 160mm !important;
+        min-height: 160mm !important;
+        max-height: 160mm !important;
+        margin: 0 !important;
+        border: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+    .report-map-preview svg {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: none !important;
+    }
+    .report-map-note {
+        margin: 3mm 0 0 !important;
+        color: #304b56 !important;
+        font-size: 8.5pt !important;
+        line-height: 1.35 !important;
+    }
+    .report-gleba-label { font-size: 16px !important; }
+
+    .report-section:not(.report-map-section) {
+        page: report-body-page;
+        margin: 0 !important;
+        padding: 5mm 0 !important;
+        border: 0 !important;
+        border-bottom: 0 !important;
+        background: #fff !important;
+        break-inside: auto;
+        page-break-inside: auto;
+    }
+    .report-section:not(.report-map-section) + .report-section:not(.report-map-section) {
+        border-top: .25mm solid #d7dfe2 !important;
+    }
+    .report-section h3 {
+        margin: 0 0 3mm !important;
+        color: #102f3c !important;
+        font-size: 12pt !important;
+        font-weight: 800 !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Texto mais forte e maior; sem cinzas excessivamente claros. */
+    .report-data div,
+    .report-list > div {
+        padding: 1.6mm 0 !important;
+        border: 0 !important;
+        border-bottom: 0 !important;
+        color: #183642 !important;
+        font-size: 9.5pt !important;
+        line-height: 1.35 !important;
+    }
+    .report-data dt,
+    .report-list span {
+        color: #324e59 !important;
+        font-weight: 600 !important;
+    }
+    .report-data dd,
+    .report-list strong {
+        color: #0e2b37 !important;
+        font-size: 9.5pt !important;
+        font-weight: 800 !important;
+    }
+    .muted,
+    .report-map-note { opacity: 1 !important; }
+
+    .report-restriction-summary {
+        padding: 3mm 3.5mm !important;
+        border: .3mm solid #d79a2f !important;
+        border-radius: 2mm !important;
+        background: #fff !important;
+    }
+    .report-restriction-summary strong { color: #704700 !important; font-size: 10.5pt !important; }
+    .report-restriction-summary span { color: #2f4852 !important; font-size: 9pt !important; }
+
+    .report-analysis-list { gap: 3mm !important; }
+    .report-analysis-card {
+        padding: 3mm 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    .report-analysis-card + .report-analysis-card { border-top: .25mm solid #d7dfe2 !important; }
+    
+    
+    .report-analysis-card > p {
+        margin: 1.6mm 0 0 !important;
+        color: #2c4650 !important;
+        font-size: 9pt !important;
+        line-height: 1.4 !important;
+    }
+    .report-caution {
+        padding: 2.5mm !important;
+        border: 0 !important;
+        background: #fff !important;
+        color: #624700 !important;
+    }
+    
+    .report-record-grid { gap: 2.5mm !important; }
+    .report-record-card {
+        padding: 2.5mm 0 !important;
+        border: 0 !important;
+        border-top: .2mm solid #e1e6e8 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+    }
+    .report-record-card dt { color: #405b65 !important; font-size: 8pt !important; }
+    .report-record-card dd { color: #173540 !important; font-size: 8.5pt !important; font-weight: 700 !important; }
+
+    /* Evita que um bloco curto seja cortado entre duas páginas. */
+    .report-data div,
+    .report-list > div,
+    .report-restriction-summary { break-inside: avoid; page-break-inside: avoid; }
+}
+
+
+/* ===== origem: app-client-shell.css ===== */
+/* =========================================================
+   AVISOS AOS CLIENTES v0.3.9
+   Contador individual de não lidos + ajuda fechável.
+   ========================================================= */
+
+
+.client-help-page-basic {
+    position: relative;
+}
+
+.client-help-close {
+    position: absolute;
+    top: -3px;
+    right: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #cddae0;
+    border-radius: 10px;
+    background: #fff;
+    color: #24465a;
+    box-shadow: 0 6px 18px rgba(6, 37, 54, .06);
+    cursor: pointer;
+    font-size: 26px;
+    font-weight: 350;
+    line-height: 1;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.client-help-close:hover {
+    border-color: #98afb9;
+    background: #f5f8fa;
+    color: #08263a;
+}
+
+@media (max-width: 720px) {
+    .client-help-close {
+        top: -8px;
+        width: 34px;
+        height: 34px;
+        font-size: 23px;
+    }
+    .client-page-hero { padding-right: 44px; }
+}
+
+/* ==========================================================
+   v0.3.10 — HARDENING DE AUTENTICAÇÃO E CADASTRO
+   ========================================================== */
+.security-honeypot {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+
+/* ======================================================================
+   CONFRONTA — MAPA v4 / interface territorial premium
+   Moderniza a navegação e a ficha rápida sem alterar o motor GIS.
+   ====================================================================== */
+
+/* Rail: marca no topo, ferramentas no meio e conta no rodapé. */
+.client-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: visible;
+}
+.client-rail-brand {
+    width: 42px;
+    height: 42px;
+    margin: 12px auto 7px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid rgba(101, 190, 211, .17);
+    border-radius: 13px;
+    background: rgba(11, 83, 105, .20);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+.client-rail-brand img { width: 29px; height: 29px; object-fit: contain; }
+.client-rail-nav.client-rail-nav-single {
+    height: auto;
+    min-height: 0;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    padding: 9px 7px 12px;
+    gap: 6px;
+}
+
+.client-rail-link.car-rail-tool,
+.client-rail-link.car-rail-home {
+    position: relative;
+    width: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    color: #a9c0cf;
+}
+.client-rail-link.car-rail-tool::before,
+.client-rail-link.car-rail-home::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: transparent;
+}
+
+.client-rail-link.car-rail-tool.is-active::before { background: #21c979; }
+
+
+/* Tooltips claros para a barra compacta. */
+.client-rail-link[data-rail-label]::after {
+    content: attr(data-rail-label);
+    position: absolute;
+    z-index: 2300;
+    left: calc(100% + 11px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-3px);
+    padding: 7px 9px;
+    border: 1px solid rgba(94, 153, 181, .22);
+    border-radius: 8px;
+    background: #071d31;
+    color: #eef6fa;
+    box-shadow: 0 10px 28px rgba(0, 7, 20, .25);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .12s ease, transform .12s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .client-rail-link[data-rail-label]:hover::after,
+    .client-rail-link[data-rail-label]:focus-visible::after { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+.client-rail-footer {
+    position: relative;
+    flex: 0 0 auto;
+    padding: 9px 8px 14px;
+    border-top: 1px solid rgba(130, 177, 200, .10);
+}
+.client-rail-user-menu { position: relative; }
+.client-rail-user-menu > summary {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    list-style: none;
+    cursor: pointer;
+    border: 1px solid rgba(88, 180, 201, .22);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #0c526c 0%, #073b56 100%);
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 22px rgba(0,5,18,.18);
+}
+.client-rail-user-menu > summary::-webkit-details-marker { display: none; }
+.client-rail-user-menu > summary::marker { display: none; content: ''; }
+.client-rail-user-menu[open] > summary { border-color: rgba(72, 208, 143, .42); background: #0c5c73; }
+.client-rail-user-avatar { display: grid; place-items: center; }
+.client-rail-user-avatar svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.client-rail-user-status {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid #062238;
+    border-radius: 50%;
+    background: #22ce7c;
+}
+.client-rail-user-popover {
+    position: absolute;
+    z-index: 2400;
+    left: calc(100% + 12px);
+    bottom: -2px;
+    width: 286px;
+    overflow: hidden;
+    border: 1px solid rgba(95, 153, 180, .22);
+    border-radius: 14px;
+    background: #071d31;
+    color: #fff;
+    box-shadow: 0 22px 55px rgba(0, 6, 18, .38);
+}
+.client-user-identity-rail small {
+    display: block;
+    margin-top: 5px;
+    color: #5fe19a;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* Topbar mais limpa: a identidade do usuário agora mora no rail. */
+.client-topbar { grid-template-columns: minmax(150px,.65fr) minmax(320px,1.5fr) minmax(70px,.65fr); }
+
+
+/* ===== origem: mapa-compat.css ===== */
 /* Faixa de informações: cabeçalho compacto + conteúdo recolhível. */
 .map-property-summary {
     width: min(1120px, calc(100% - 54px));
@@ -38,11 +1578,6 @@
 .cf-gleba-popup-metric strong { margin-top: 3px; color: #173c4b; font-size: 10px; }
 
 
-@media (max-width: 1180px) {
-    
-    
-    
-}
 @media (max-width: 900px) {
     .map-property-summary { width: min(760px, calc(100% - 24px)); bottom: 10px; }
 
@@ -351,14 +1886,6 @@
 .gleba-list strong { font-weight: 600; }
 .territorial-tab { font-weight: 600; }
 
-@media (max-width: 1280px) {
-
-    
-
-    
-    
-    
-}
 
 @media (max-width: 900px) {
     .map-property-summary {
@@ -1719,15 +3246,6 @@
     }
 }
 
-@media (max-width: 1120px) {
-    
-
-    
-
-    
-
-
-}
 
 @media (max-width: 720px) {
     
@@ -3261,3 +4779,313 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     .current-subscription-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:480px){.current-subscription-grid{grid-template-columns:1fr}}
+
+
+/* ===== origem: modern.css ===== */
+:root {
+    --cf-petroleo: #0B2D3C;
+    --cf-petroleo-2: #123d4f;
+    --cf-floresta: #1F5A2E;
+    --cf-verde: #4FA36A;
+    --cf-claro: #A7D5B0;
+    --cf-bg: #f5f7f8;
+    --cf-surface: #ffffff;
+    --cf-border: #dfe6e9;
+    --cf-text: #17242b;
+    --cf-muted: #6b7c85;
+    --cf-shadow: 0 18px 50px rgba(11, 45, 60, .14);
+}
+
+/* Shell moderno — mantém os hooks/IDs existentes do mapa e do JavaScript. */
+.cf-client-topbar {
+    backdrop-filter: saturate(140%) blur(12px);
+    box-shadow: 0 1px 0 rgba(255,255,255,.08), 0 8px 28px rgba(6, 31, 42, .18);
+}
+.cf-global-search-field { border-radius: 14px; }
+.cf-search-submit { border-radius: 12px; font-weight: 700; }
+
+
+.cf-message-stack { z-index: 1400; }
+
+/* Login / contratação */
+.cf-auth-page {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(420px, .92fr);
+    background: #eef3f4;
+    color: var(--cf-text);
+}
+.cf-auth-visual {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(28px, 5vw, 68px);
+    background:
+        linear-gradient(135deg, rgba(11,45,60,.98), rgba(31,90,46,.82)),
+        url('../img/mapa.png') center/cover no-repeat;
+    color: #fff;
+}
+.cf-auth-visual::after {
+    content: '';
+    position: absolute;
+    inset: auto -12% -20% 22%;
+    height: 62%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(167,213,176,.26), transparent 68%);
+    pointer-events: none;
+}
+.cf-auth-brand,
+.cf-auth-mobile-brand,
+.cf-contract-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+.cf-auth-brand { position: relative; z-index: 1; width: fit-content; }
+.cf-auth-brand img { width: 44px; height: 44px; object-fit: contain; }
+.cf-auth-brand span,
+.cf-auth-mobile-brand span,
+.cf-contract-brand span { display: grid; line-height: 1.05; }
+.cf-auth-brand strong,
+.cf-auth-mobile-brand strong,
+.cf-contract-brand strong { letter-spacing: .06em; font-size: 1rem; }
+.cf-auth-brand small,
+.cf-auth-mobile-brand small,
+.cf-contract-brand small { margin-top: 4px; font-size: .72rem; opacity: .74; }
+.cf-auth-visual-copy { position: relative; z-index: 1; max-width: 650px; padding-bottom: 3vh; }
+.cf-auth-visual-copy > span,
+.cf-auth-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-size: .72rem;
+    font-weight: 800;
+}
+.cf-auth-visual-copy > span { color: #cfe9d4; }
+.cf-auth-visual-copy h1 {
+    max-width: 630px;
+    margin: 16px 0 18px;
+    color: #fff;
+    font-size: clamp(2.25rem, 4.2vw, 4.8rem);
+    line-height: .99;
+    letter-spacing: -.045em;
+}
+.cf-auth-visual-copy p { max-width: 590px; margin: 0; color: rgba(255,255,255,.78); font-size: 1.04rem; line-height: 1.7; }
+.cf-auth-form-side {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px clamp(28px, 6vw, 88px);
+    background: #fff;
+}
+.cf-auth-mobile-brand { display: none; color: var(--cf-petroleo); }
+.cf-auth-mobile-brand img,
+.cf-contract-brand img { width: 38px; height: 38px; object-fit: contain; }
+.cf-auth-card { width: min(100%, 470px); }
+.cf-auth-heading { margin-bottom: 30px; }
+.cf-auth-eyebrow { color: var(--cf-floresta); }
+.cf-auth-heading h1,
+.cf-contract-copy h1 { margin: 9px 0 10px; color: var(--cf-petroleo); font-size: clamp(2rem, 3vw, 3rem); line-height: 1.06; letter-spacing: -.035em; }
+.cf-auth-heading p,
+.cf-contract-copy p { margin: 0; color: var(--cf-muted); line-height: 1.65; }
+.cf-auth-form { display: grid; gap: 20px; }
+.cf-field { display: grid; gap: 8px; }
+.cf-field label { color: #263840; font-size: .88rem; font-weight: 700; }
+.cf-field input {
+    width: 100%;
+    min-height: 52px;
+    padding: 0 15px;
+    border: 1px solid #d7e0e4;
+    border-radius: 14px;
+    background: #fbfcfc;
+    color: var(--cf-text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.cf-field input:focus { border-color: var(--cf-verde); background: #fff; box-shadow: 0 0 0 4px rgba(79,163,106,.13); }
+.cf-password-wrap { position: relative; }
+.cf-password-wrap input { padding-right: 52px; }
+.cf-password-toggle {
+    position: absolute;
+    top: 50%; right: 7px;
+    transform: translateY(-50%);
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    border: 0; border-radius: 10px;
+    background: transparent;
+    color: #647983;
+    cursor: pointer;
+}
+.cf-password-toggle:hover { background: #edf4f0; color: var(--cf-floresta); }
+.cf-password-toggle svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.cf-auth-submit {
+    min-height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 14px;
+    padding: 0 20px;
+    background: linear-gradient(135deg, var(--cf-petroleo), #17495c);
+    color: #fff;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(11,45,60,.18);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+.cf-auth-submit:hover { transform: translateY(-1px); box-shadow: 0 16px 30px rgba(11,45,60,.23); }
+.cf-auth-footer { margin-top: 26px; padding-top: 22px; border-top: 1px solid #e6ecee; display: flex; gap: 7px; flex-wrap: wrap; color: var(--cf-muted); font-size: .92rem; }
+.cf-auth-footer a { color: var(--cf-floresta); font-weight: 800; text-decoration: none; }
+.cf-auth-alert { padding: 12px 14px; border-radius: 12px; background: #fff1f1; color: #9c2525; border: 1px solid #f0caca; font-size: .9rem; }
+
+
+.cf-contract-page { min-height: 100dvh; background: linear-gradient(180deg, #f8faf9 0%, #eef4f2 100%); color: var(--cf-text); }
+.cf-contract-header {
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(20px, 5vw, 72px);
+    border-bottom: 1px solid #e3e9e8;
+    background: rgba(255,255,255,.88);
+    backdrop-filter: blur(12px);
+}
+.cf-contract-brand { color: var(--cf-petroleo); }
+.cf-contract-login { padding: 10px 16px; border-radius: 11px; background: var(--cf-petroleo); color: #fff; font-weight: 800; text-decoration: none; }
+.cf-contract-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: clamp(54px, 8vw, 96px) 0; display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(36px, 7vw, 88px); align-items: start; }
+.cf-contract-copy { position: sticky; top: 120px; }
+.cf-contract-card { padding: clamp(24px, 4vw, 40px); border: 1px solid #e0e8e6; border-radius: 24px; background: #fff; box-shadow: var(--cf-shadow); }
+.cf-contract-mobile-login { display: none; }
+.cf-selected-plan { display: grid; gap: 5px; padding: 18px; border-radius: 16px; background: #eff7f1; border: 1px solid #d2e7d7; }
+.cf-selected-plan span { color: var(--cf-muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; }
+.cf-selected-plan strong { color: var(--cf-floresta); font-size: 1.2rem; }
+.cf-selected-plan small { color: var(--cf-muted); }
+.cf-contract-steps { display: grid; gap: 12px; margin: 24px 0; }
+.cf-contract-steps > div { display: grid; grid-template-columns: 36px 1fr; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px; background: #f7f9f9; }
+.cf-contract-steps strong { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--cf-petroleo); color: #fff; }
+.cf-contract-steps span { color: #40535c; line-height: 1.45; }
+.cf-contract-plans { margin-top: 22px; display: grid; gap: 10px; }
+.cf-contract-plans > strong { margin-bottom: 2px; color: var(--cf-petroleo); }
+.cf-contract-plans a { display: flex; justify-content: space-between; gap: 12px; padding: 13px 14px; border: 1px solid #dfe7e6; border-radius: 13px; color: var(--cf-text); text-decoration: none; }
+.cf-contract-plans a:hover { border-color: var(--cf-verde); background: #f5faf6; }
+.cf-contract-plans a span:last-child { color: var(--cf-floresta); font-weight: 800; }
+
+/* Glebas — HUD moderno e vértices circulares. */
+.gleba-color-swatch { border-radius: 50% !important; box-shadow: inset 0 0 0 1px rgba(0,0,0,.11); }
+.gleba-color-swatch.is-selected { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--cf-petroleo) !important; transform: scale(.94); }
+.gleba-create-grid { display: grid; gap: 16px; }
+
+.gleba-drawing-hud {
+    position: absolute;
+    left: 50%;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    z-index: 1200;
+    min-width: min(560px, calc(100% - 30px));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,.42);
+    border-radius: 18px;
+    background: rgba(11,45,60,.94);
+    color: #fff;
+    box-shadow: 0 18px 42px rgba(0,0,0,.22);
+    backdrop-filter: blur(14px) saturate(130%);
+}
+.gleba-drawing-hud[hidden] { display: none !important; }
+.gleba-drawing-hud-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.gleba-drawing-hud-color { width: 16px; height: 16px; flex: 0 0 auto; border-radius: 50%; border: 2px solid rgba(255,255,255,.9); background: #2563EB; }
+.gleba-drawing-hud-copy { display: grid; line-height: 1.15; }
+.gleba-drawing-hud-copy strong { color: #fff; font-size: .88rem; }
+.gleba-drawing-hud-copy span { color: rgba(255,255,255,.72); font-size: .75rem; }
+.gleba-drawing-hud-actions { display: flex; gap: 7px; }
+.gleba-hud-button { min-height: 38px; padding: 0 12px; border: 0; border-radius: 11px; background: rgba(255,255,255,.10); color: #fff; font-size: .8rem; font-weight: 800; cursor: pointer; }
+.gleba-hud-button:hover { background: rgba(255,255,255,.18); }
+.gleba-hud-button.is-primary { background: #fff; color: var(--cf-petroleo); }
+.gleba-hud-button.is-danger { color: #ffd9d9; }
+
+/* Leaflet.draw usa divIcon com quadrado por padrão. Transformamos em pontos de controle. */
+.leaflet-div-icon.leaflet-editing-icon,
+.leaflet-marker-icon.leaflet-div-icon.leaflet-editing-icon {
+    width: 14px !important;
+    height: 14px !important;
+    margin-left: -7px !important;
+    margin-top: -7px !important;
+    border: 2px solid #fff !important;
+    border-radius: 50% !important;
+    background: var(--cf-gleba-vertex, #2563EB) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.32) !important;
+}
+.leaflet-touch .leaflet-div-icon.leaflet-editing-icon,
+.leaflet-touch .leaflet-marker-icon.leaflet-div-icon.leaflet-editing-icon {
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: -9px !important;
+    margin-top: -9px !important;
+}
+
+@media (max-width: 900px) {
+    .cf-auth-page { display: block; min-height: 100dvh; background: #fff; }
+    .cf-auth-visual { display: none; }
+    .cf-auth-form-side { min-height: 100dvh; display: block; padding: max(22px, env(safe-area-inset-top)) 20px max(26px, env(safe-area-inset-bottom)); }
+    .cf-auth-mobile-brand { display: inline-flex; margin-bottom: clamp(40px, 9vh, 76px); }
+    .cf-auth-card { width: 100%; max-width: 520px; margin: 0 auto; }
+    .cf-auth-heading { margin-bottom: 24px; }
+    .cf-auth-heading h1 { font-size: 2rem; }
+    .cf-field input, .cf-auth-submit { min-height: 54px; }
+    .cf-auth-submit { width: 100%; }
+
+    .cf-contract-header { min-height: 68px; padding: 0 18px; }
+    .cf-contract-shell { width: min(100% - 32px, 620px); padding: 34px 0 56px; display: block; }
+    .cf-contract-copy { position: static; margin-bottom: 22px; }
+    .cf-contract-copy h1 { font-size: 2rem; }
+    .cf-contract-card { padding: 20px; border-radius: 20px; }
+    .cf-contract-mobile-login { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin: -4px -4px 20px; padding: 12px 14px; border-radius: 14px; background: #edf6f0; color: #40535c; font-size: .86rem; }
+    .cf-contract-mobile-login a { color: var(--cf-floresta); font-weight: 900; text-decoration: none; white-space: nowrap; }
+
+    .gleba-drawing-hud {
+        left: 12px;
+        right: 12px;
+        bottom: max(14px, env(safe-area-inset-bottom));
+        transform: none;
+        min-width: 0;
+        padding: 10px;
+        border-radius: 16px;
+        align-items: stretch;
+        flex-direction: column;
+    }
+    .gleba-drawing-hud-actions { display: grid; grid-template-columns: 1fr 1.25fr auto; }
+    .gleba-hud-button { min-height: 44px; }
+    
+}
+
+@media (max-width: 560px) {
+    .cf-auth-mobile-brand small, .cf-contract-brand small { display: none; }
+    .cf-auth-mobile-brand { margin-bottom: 44px; }
+    .cf-auth-heading p { font-size: .94rem; }
+    .cf-contract-login { padding: 9px 14px; }
+}
+
+
+.gleba-hud-button:disabled { opacity:.42; cursor:not-allowed; }
+
+/* O primeiro vértice ganha halo somente quando o polígono já pode ser concluído. */
+.leaflet-marker-icon.leaflet-editing-icon.cf-first-vertex,
+.leaflet-div-icon.leaflet-editing-icon.cf-first-vertex {
+    box-shadow: 0 0 0 5px rgba(255,255,255,.72), 0 0 0 8px color-mix(in srgb, var(--cf-gleba-vertex, #2563EB) 72%, transparent), 0 3px 10px rgba(0,0,0,.34) !important;
+}
+.gleba-drawing-hud-color { cursor: pointer; transition: transform .16s ease, box-shadow .16s ease; }
+.gleba-drawing-hud-color:hover,
+.gleba-drawing-hud-color:focus-visible { transform: scale(1.15); box-shadow: 0 0 0 3px rgba(255,255,255,.20); outline: none; }
+
+
