@@ -50,6 +50,31 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE='pt-br'; TIME_ZONE='America/Recife'; USE_I18N=True; USE_TZ=True
 STATIC_URL='/static/'; STATIC_ROOT=BASE_DIR/'staticfiles'; DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 AUTH_USER_MODEL='administracao.User'; LOGIN_URL='administracao:login'; LOGIN_REDIRECT_URL='administracao:dashboard'; LOGOUT_REDIRECT_URL='administracao:login'
+
+# -----------------------------------------------------------------------------
+# E-MAIL / RECUPERAÇÃO DE SENHA
+# -----------------------------------------------------------------------------
+EMAIL_BACKEND=os.getenv(
+    'DJANGO_EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'
+).strip()
+EMAIL_HOST=os.getenv('EMAIL_HOST','').strip()
+EMAIL_PORT=env_int('EMAIL_PORT',587)
+EMAIL_HOST_USER=os.getenv('EMAIL_HOST_USER','').strip()
+EMAIL_HOST_PASSWORD=os.getenv('EMAIL_HOST_PASSWORD','')
+EMAIL_USE_TLS=env_bool('EMAIL_USE_TLS',True)
+EMAIL_USE_SSL=env_bool('EMAIL_USE_SSL',False)
+EMAIL_TIMEOUT=env_int('EMAIL_TIMEOUT_SECONDS',20)
+DEFAULT_FROM_EMAIL=os.getenv(
+    'DEFAULT_FROM_EMAIL',
+    'CONFRONTA <nao-responda@confronta.com.br>'
+).strip()
+PASSWORD_RESET_TIMEOUT=env_int('PASSWORD_RESET_TIMEOUT',3600)
+
+if EMAIL_USE_TLS and EMAIL_USE_SSL:
+    raise ImproperlyConfigured(
+        'EMAIL_USE_TLS e EMAIL_USE_SSL não podem estar ativos ao mesmo tempo.'
+    )
 VAR_DIR=BASE_DIR/'var'; QUARANTINE_DIR=VAR_DIR/'quarantine'; EXTRACTED_DIR=VAR_DIR/'extracted'; IMPORT_INBOX_DIR=Path(os.getenv('IMPORT_INBOX_DIR', str(BASE_DIR/'import_inbox')))
 # Storage dos lotes do painel. A V3.3 usa duas áreas fisicamente independentes:
 #   - working: área canônica compartilhada por web/worker;

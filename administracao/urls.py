@@ -51,6 +51,7 @@ urlpatterns = [
     path('planos/novo/', planos.novo_plano, name='plano_novo'),
     path('planos/<int:pk>/editar/', planos.editar_plano, name='plano_editar'),
     path('planos/<int:pk>/alternar/', planos.alternar_plano, name='plano_alternar'),
+    path('planos/<int:pk>/excluir/', planos.excluir_plano, name='plano_excluir'),
     path('administradores/', administradores.lista_administradores, name='administradores'),
     path('administradores/novo/', administradores.criar_administrador, name='administrador_novo'),
     path('administradores/<int:pk>/editar/', administradores.editar_administrador, name='administrador_editar'),

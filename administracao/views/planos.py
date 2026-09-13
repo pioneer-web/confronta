@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models.deletion import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from administracao.forms import PlanoComercialForm
@@ -77,4 +78,59 @@ def alternar_plano(request, pk):
         {'nome': plano.nome, 'ativo': plano.ativo},
     )
     messages.success(request, f'Plano {"publicado" if plano.ativo else "retirado da Home"}.')
+    return redirect('administracao:planos')
+
+
+@commercial_manager_required
+def excluir_plano(request, pk):
+    plano = get_object_or_404(PlanoComercial, pk=pk)
+
+    if request.method != 'POST':
+        return redirect('administracao:planos')
+
+    possui_vinculos = (
+        plano.clientes.exists()
+        or plano.interessados.exists()
+        or plano.checkouts_asaas.exists()
+        or plano.assinaturas_asaas.exists()
+    )
+
+    if possui_vinculos:
+        messages.error(
+            request,
+            'Este plano possui clientes ou histórico financeiro e não pode ser excluído. '
+            'Use “Ocultar da Home” para impedir novas contratações sem perder o histórico.'
+        )
+        return redirect('administracao:planos')
+
+    plano_id = plano.pk
+    nome = plano.nome
+    slug = plano.slug
+
+    try:
+        plano.delete()
+    except ProtectedError:
+        messages.error(
+            request,
+            'Este plano possui histórico financeiro e não pode ser excluído. '
+            'Use “Ocultar da Home”.'
+        )
+        return redirect('administracao:planos')
+
+    registrar_auditoria(
+        request.user,
+        'PLANO_EXCLUIDO',
+        'PlanoComercial',
+        plano_id,
+        {
+            'nome': nome,
+            'slug': slug,
+        },
+    )
+
+    messages.success(
+        request,
+        f'Plano “{nome}” excluído com sucesso.'
+    )
+
     return redirect('administracao:planos')

@@ -68,3 +68,16 @@ class PlanoComercial(models.Model):
         if self.preco_anual:
             return self.preco_anual
         return (self.preco_mensal * Decimal('12')).quantize(Decimal('0.01'))
+
+    @property
+    def economia_anual(self):
+        valor_mensal_em_12 = (
+            self.preco_mensal * Decimal('12')
+        ).quantize(Decimal('0.01'))
+
+        economia = valor_mensal_em_12 - self.valor_anual_exibicao
+
+        return max(
+            economia.quantize(Decimal('0.01')),
+            Decimal('0.00'),
+        )

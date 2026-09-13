@@ -1,6 +1,9 @@
 {% extends 'aplicativo/base.html' %}
 {% load static %}
 {% block title %}Entrar — CONFRONTA{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'aplicativo/css/auth-password.css' %}?v=002">
+{% endblock %}
 {% block public_content %}
 <main class="cf-auth-page">
     <section class="cf-auth-visual" aria-hidden="true">
@@ -43,7 +46,10 @@
                 </div>
 
                 <div class="cf-field">
-                    <div class="cf-field-label-row"><label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label></div>
+                    <div class="cf-field-label-row">
+                        <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                        <a class="cf-auth-forgot" href="{% url 'aplicativo:password_reset' %}">Esqueci minha senha</a>
+                    </div>
                     <div class="cf-password-wrap">
                         {{ form.password }}
                         <button type="button" class="cf-password-toggle" data-password-toggle aria-label="Mostrar senha" title="Mostrar senha">
