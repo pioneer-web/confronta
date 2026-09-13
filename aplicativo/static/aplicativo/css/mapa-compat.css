@@ -91,10 +91,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-.client-shell strong,
-.client-shell b { font-weight: 600; }
-.client-shell button,
-.client-shell a { font-weight: 500; }
+
+
 .client-shell .eyebrow,
 .client-shell .map-summary-kicker,
 .client-shell .territorial-tool-drawer-title span { font-weight: 600; }
@@ -151,8 +149,7 @@
 
 .client-global-search-field,
 .client-global-search-field input { font-weight: 400; }
-.client-global-search-submit,
-.cf-search-submit { font-weight: 600; }
+
 
 /* Drawer e painéis: superfícies sólidas, sem blur de composição. */
 .map-layer-drawer {
@@ -1696,24 +1693,7 @@
    - camadas no canto esquerdo
    - resumo do imóvel no rodapé do mapa
    ========================================================= */
-.cf-shell-v15 {
-    grid-template-columns: 208px minmax(0, 1fr);
-}
 
-.cf-shell-v15 .client-rail {
-    inset: 72px auto 0 0;
-    height: calc(100vh - 72px);
-}
-
-
-.cf-shell-v15 .client-topbar {
-    position: relative;
-    z-index: 1800;
-}
-
-.cf-shell-v15 .client-topbar {
-    grid-template-columns: minmax(420px, 1.5fr) auto;
-}
 
 .cf-shell-v15 .client-global-search,
 .cf-shell-v15 .cf-global-search {
@@ -1750,10 +1730,7 @@
 }
 
 @media (max-width: 720px) {
-    .cf-shell-v15 .client-rail {
-        inset: 62px auto 0 0;
-        height: calc(100vh - 62px);
-    }
+    
 
     .cf-shell-v15 .client-topbar {
         min-height: 62px;
@@ -1799,9 +1776,6 @@
     background: #0a2028;
 }
 
-.cf-shell-v15 .client-topbar {
-    display: none;
-}
 
 .cf-shell-v15 .client-main {
     height: 100vh;
@@ -1998,14 +1972,6 @@
     gap: 9px;
 }
 
-.cf-shell-v15 .top-query-cluster-slim .new-query-button {
-    min-height: 38px;
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 8px;
-    font-size: 11px;
-    box-shadow: 0 4px 12px rgba(31,90,46,.13);
-}
 
 .cf-shell-v15 .top-query-cluster-slim .new-query-button > span {
     font-size: 16px;
@@ -2058,22 +2024,9 @@
     opacity: 1;
 }
 
-.cf-shell-v15 .topbar-car-search .client-global-search-submit,
-.cf-shell-v15 .topbar-car-search .cf-search-submit {
-    width: 40px;
-    height: 38px;
-    background: #fff !important;
-    color: #405d65;
-    pointer-events: auto;
-}
 
 .cf-shell-v15 .client-main {
     height: 100vh;
-}
-
-.cf-shell-v15 .client-rail {
-    inset: 54px auto 0 0;
-    height: calc(100vh - 54px);
 }
 
 
@@ -2170,10 +2123,7 @@ button.map-top-insight-item,
         padding: 5px 7px;
     }
 
-    .cf-shell-v15 .client-rail {
-        inset: 50px auto 0 0;
-        height: calc(100vh - 50px);
-    }
+    
 
 
     .cf-shell-v15 .top-query-cluster-slim {
@@ -2256,9 +2206,6 @@ button.map-top-insight-item,
     cursor: pointer !important;
 }
 
-.cf-shell-v15 .top-query-cluster-slim .new-query-button:hover {
-    background: #194a27 !important;
-}
 
 .cf-shell-v15 form.topbar-car-search,
 .cf-shell-v15 .topbar-car-search.client-global-search,

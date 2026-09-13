@@ -51,16 +51,9 @@
     border-radius: 0 4px 4px 0;
     background: transparent;
 }
-.client-rail-link.car-rail-tool:hover,
-.client-rail-link.car-rail-tool.is-active,
-.client-rail-link.car-rail-home:hover {
-    color: #fff;
-    background: rgba(11, 72, 101, .58);
-    border-color: rgba(81, 172, 201, .22);
-}
+
 .client-rail-link.car-rail-tool.is-active::before { background: #21c979; }
-.client-rail-link.car-rail-tool svg,
-.client-rail-link.car-rail-home svg { width: 22px; height: 22px; stroke-width: 1.65; }
+
 
 /* Tooltips claros para a barra compacta. */
 .client-rail-link[data-rail-label]::after {
