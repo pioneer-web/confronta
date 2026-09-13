@@ -25,8 +25,6 @@ input[type="tel"] {
 .message-stack { margin-bottom: 14px; }
 .message-stack .alert { margin-bottom: 8px; }
 
-.workspace { max-width: none; padding: 18px 20px 24px; }
-
 
 .subscription-gate {
     min-height: 260px;
@@ -87,7 +85,7 @@ input[type="tel"] {
     .plan-choice-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 700px) {
-    .workspace { padding: 14px; }
+    
     
     
     
@@ -340,7 +338,7 @@ input[type="tel"] {
 .alert-records dl div { display: grid; grid-template-columns: 1fr 1.2fr; gap: 6px; padding: 3px 0; }
 .alert-records dt { color: #75858b; }
 .alert-records dd { margin: 0; text-align: right; overflow-wrap: anywhere; }
-.show-alert-map { margin: 7px 0 0; display: flex; gap: 6px; align-items: center; color: #4e636b; font-size: 9px; }
+
 
 /* Glebas */
 

@@ -31,7 +31,7 @@
     padding: 9px 7px 12px;
     gap: 6px;
 }
-.client-rail-link.car-rail-settings { margin-top: 0; }
+
 .client-rail-link.car-rail-tool,
 .client-rail-link.car-rail-home {
     position: relative;
@@ -149,5 +149,5 @@
 
 /* Topbar mais limpa: a identidade do usuário agora mora no rail. */
 .client-topbar { grid-template-columns: minmax(150px,.65fr) minmax(320px,1.5fr) minmax(70px,.65fr); }
-.client-topbar-actions { min-width: 44px; }
+
 
