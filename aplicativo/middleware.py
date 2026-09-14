@@ -1,4 +1,9 @@
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
+from aplicativo.session_control import validar_sessao_unica_cliente
 from django.http import HttpResponse
 
 
@@ -34,3 +39,31 @@ class LimiteCorpoRequisicaoMiddleware:
     @staticmethod
     def _rota_protegida(path: str) -> bool:
         return path.startswith('/mapa/') or path == '/painel/login/'
+
+
+
+class SessaoUnicaClienteMiddleware:
+    """Garante apenas uma sessão operacional por conta de cliente."""
+
+    ROTAS_CLIENTE = ('/mapa/', '/pagamentos/')
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if (
+            request.path.startswith(self.ROTAS_CLIENTE)
+            and request.user.is_authenticated
+            and not validar_sessao_unica_cliente(request)
+        ):
+            logout(request)
+
+            messages.warning(
+                request,
+                'Sua conta foi acessada em outro dispositivo. '
+                'Faça login novamente para continuar.',
+            )
+
+            return redirect('aplicativo:login')
+
+        return self.get_response(request)

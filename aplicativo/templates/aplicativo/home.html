@@ -47,7 +47,7 @@
                 <div class="cfp-hero-copy">
                     <span class="cfp-kicker"><span></span> Inteligência territorial rural</span>
                     <h1>Consulte imóveis rurais e <em>confronte dados oficiais</em> em um só lugar.</h1>
-                    <p>Visualize o CAR e analise informações ambientais e fundiárias com dados do SICAR, PRODES, IBAMA, INCRA, ICMBio e outras bases integradas.</p>
+                    <p>Visualize o CAR e analise informações ambientais, fundiárias e de crédito rural com dados do SICAR, PRODES, IBAMA, INCRA, FUNAI, SICOR e ICMBio.</p>
 
                     <div class="cfp-hero-actions">
                         <a class="cfp-button cfp-button-primary" href="#planos">
@@ -82,7 +82,7 @@
             <div class="cfp-section-head cfp-section-head-left">
                 <span class="cfp-eyebrow">Soluções</span>
                 <h2>O que você encontra no CONFRONTA.</h2>
-                <p>Uma leitura organizada do imóvel rural, reunindo identificação, contexto ambiental, situação fundiária, crédito, recursos naturais e informações agrícolas.</p>
+                <p>Uma leitura organizada do imóvel rural, reunindo identificação, contexto ambiental, situação fundiária, crédito rural, alertas e ferramentas geoespaciais.</p>
             </div>
 
             <div class="cfp-intelligence-card">
@@ -94,16 +94,16 @@
                         <span>Identificação</span>
                         <span>Ambiental</span>
                         <span>Fundiário</span>
-                        <span>Financeiro</span>
-                        <span>Recursos naturais</span>
-                        <span>Agrícola</span>
+                        <span>Crédito rural</span>
+                        <span>Geoespacial</span>
+                        <span>Alertas</span>
                     </div>
                 </div>
                 <div class="cfp-intelligence-visual" aria-hidden="true">
                     <div class="cfp-intelligence-score">
                         <small>Inteligência territorial</small>
-                        <strong>16</strong>
-                        <span>fontes mapeadas</span>
+                        <strong>1</strong>
+                        <span>análise territorial integrada</span>
                     </div>
                     <div class="cfp-intelligence-lines">
                         <i></i><i></i><i></i><i></i>
@@ -126,7 +126,7 @@
                         <div><small>Cadastro e domínio</small><h4>Identificação</h4></div>
                     </div>
                     <div class="cfp-base-chips">
-                        <span>CAR / SICAR</span><span>SIGEF</span><span>SNCR</span><span>Dados registrais</span>
+                        <span>CAR / SICAR</span><span>Perímetro</span><span>APP</span><span>Reserva Legal</span>
                     </div>
                 </article>
 
@@ -136,7 +136,7 @@
                         <div><small>Conformidade e território</small><h4>Ambiental</h4></div>
                     </div>
                     <div class="cfp-base-chips">
-                        <span>PRODES</span><span>IBAMA</span><span>CNUC</span><span>ICMBio</span><span>Terras Indígenas</span>
+                        <span>PRODES</span><span>Embargos IBAMA</span><span>APAs / CNUC</span><span>Embargos ICMBio</span><span>Terras Indígenas / FUNAI</span>
                     </div>
                 </article>
 
@@ -146,7 +146,7 @@
                         <div><small>Ocupação e regularização</small><h4>Fundiário</h4></div>
                     </div>
                     <div class="cfp-base-chips">
-                        <span>INCRA — assentamentos e quilombolas</span>
+                        <span>Assentamentos — INCRA</span><span>Territórios Quilombolas — INCRA</span><span>Sobreposição entre CARs</span>
                     </div>
                 </article>
 
@@ -156,27 +156,27 @@
                         <div><small>Operações vinculadas ao rural</small><h4>Financeiro</h4></div>
                     </div>
                     <div class="cfp-base-chips">
-                        <span>SICOR / Crédito Rural</span>
+                        <span>SICOR — glebas de crédito rural</span>
                     </div>
                 </article>
 
                 <article class="cfp-base-group">
                     <div class="cfp-base-group-head">
                         <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5 6-11a6 6 0 1 0-12 0c0 6 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg></span>
-                        <div><small>Água e subsolo</small><h4>Recursos naturais</h4></div>
+                        <div><small>Ferramentas de mapa</small><h4>Geoespacial</h4></div>
                     </div>
                     <div class="cfp-base-chips">
-                        <span>Dados territoriais integrados</span>
+                        <span>Desenho de glebas</span><span>Medição</span><span>Exportação</span>
                     </div>
                 </article>
 
                 <article class="cfp-base-group">
                     <div class="cfp-base-group-head">
                         <span class="cfp-base-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c8 0 13-5 14-14-9 1-14 6-14 14Z"/><path d="M5 19c3-4 6-7 11-10"/></svg></span>
-                        <div><small>Risco e planejamento produtivo</small><h4>Agrícola</h4></div>
+                        <div><small>Leitura territorial</small><h4>Alertas</h4></div>
                     </div>
                     <div class="cfp-base-chips">
-                        <span>Dados agrícolas integrados</span>
+                        <span>Sobreposições territoriais</span><span>Alertas ambientais</span><span>Apoio à análise do imóvel</span>
                     </div>
                 </article>
             </div>
@@ -241,10 +241,17 @@
                     <p>Comece sua consulta ou fale com nossa equipe para conhecer a plataforma.</p>
                 </div>
                 <div class="cfp-final-actions">
-                    <a class="cfp-button cfp-button-light" href="{% url 'aplicativo:cadastro' %}">Começar agora</a>
-                    {% if contato_comercial_url %}
-                    <a class="cfp-button cfp-button-outline-light" href="{{ contato_comercial_url }}" target="_blank" rel="noopener noreferrer">Entrar em contato</a>
-                    {% endif %}
+                    <a class="cfp-button cfp-button-light"
+                       href="https://wa.me/5587933005214"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        WhatsApp: (87) 93300-5214
+                    </a>
+
+                    <a class="cfp-button cfp-button-outline-light"
+                       href="mailto:confrontagis@gmail.com">
+                        confrontagis@gmail.com
+                    </a>
                 </div>
             </div>
         </section>
@@ -261,11 +268,10 @@
                 <a href="#solucoes">Soluções</a>
                 <a href="#planos">Planos</a>
                 <a href="{% url 'aplicativo:login' %}">Entrar</a>
-                {% if contato_comercial_url %}
-                <a href="{{ contato_comercial_url }}" target="_blank" rel="noopener noreferrer">Entrar em contato</a>
-                {% else %}
-                <a href="#contato">Entrar em contato</a>
-                {% endif %}
+                <a href="https://wa.me/5587933005214"
+                   target="_blank"
+                   rel="noopener noreferrer">WhatsApp</a>
+                <a href="mailto:confrontagis@gmail.com">E-mail</a>
             </nav>
         </div>
     </footer>

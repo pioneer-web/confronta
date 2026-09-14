@@ -53,6 +53,22 @@ class PerfilCliente(models.Model):
     renovacao_automatica = models.BooleanField(default=False)
     observacoes_admin = models.TextField(blank=True)
     ativo = models.BooleanField(default=True, db_index=True)
+
+    # Controle de sessão única do cliente.
+    # O token identifica apenas a sessão ativa; não é uma credencial de login.
+    token_sessao_ativa = models.CharField(
+        max_length=64,
+        blank=True,
+        default='',
+        db_index=True,
+        editable=False,
+    )
+    sessao_ativa_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 

@@ -20,6 +20,10 @@ from aplicativo.security import (
     verificar_login,
 )
 from aplicativo.session_keys import SESSION_CAR_ATUAL
+from aplicativo.session_control import (
+    ativar_sessao_unica_cliente,
+    desativar_sessao_unica_cliente,
+)
 from billing.models import AsaasCheckout
 from billing.services.asaas import AsaasAPIError, AsaasConfigurationError
 from billing.services.checkout import criar_checkout
@@ -66,7 +70,9 @@ def login_view(request):
                 status = 429
             elif form.is_valid():
                 limpar_falhas_login(request, email, administrativo=False)
-                login(request, form.get_user())
+                usuario = form.get_user()
+                login(request, usuario)
+                ativar_sessao_unica_cliente(request, usuario)
                 request.session.pop(SESSION_LOGOUT_LOCAL, None)
                 return redirect('aplicativo:inicio')
             else:
@@ -146,6 +152,7 @@ def cadastro_view(request, modalidade=None):
                 form.add_error('email', 'Já existe uma conta cadastrada com este e-mail.')
             else:
                 login(request, user)
+                ativar_sessao_unica_cliente(request, user)
                 request.session.pop(SESSION_LOGOUT_LOCAL, None)
                 try:
                     checkout = criar_checkout(request, perfil, ciclo)
@@ -173,5 +180,6 @@ def logout_view(request):
         if acesso is not None and acesso.eh_administrador:
             request.session[SESSION_LOGOUT_LOCAL] = True
         else:
+            desativar_sessao_unica_cliente(request, request.user)
             logout(request)
     return redirect(reverse('aplicativo:login'))

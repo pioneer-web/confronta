@@ -4,8 +4,8 @@
     const mapElement = document.getElementById('map');
     if (!mapElement || typeof L === 'undefined') return;
 
-    // MÓDULO 2 — v0.3.5
-    // A Área Aplicativo utiliza somente imagem de satélite.
+    // MÓDULO 2 — v0.3.6
+    // Base híbrida: imagem de satélite + referências cartográficas.
     // maxNativeZoom limita as requisições ao nível seguro observado do serviço;
     // maxZoom permite aproximação adicional apenas por reamostragem do último tile,
     // evitando solicitar níveis sem imagem e exibir “sem mapa”.
@@ -41,6 +41,35 @@
 
     satellite.on('tileerror', function (event) {
         console.warn('CONFRONTA: falha ao carregar tile de satélite Esri.', event && event.coords ? event.coords : event);
+    });
+
+    // Referências cartográficas sobre o satélite.
+    // Ficam acima da imagem e abaixo das camadas GIS/desenhos do usuário.
+    // pointerEvents desativado garante que a camada não bloqueie desenho,
+    // edição, medição ou clique nas feições do CONFRONTA.
+    const referencePane = map.createPane('referenceLabelsPane');
+    referencePane.style.zIndex = '250';
+    referencePane.style.pointerEvents = 'none';
+
+    const referenceLabels = L.tileLayer(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        {
+            minZoom: 0,
+            maxNativeZoom: 19,
+            maxZoom: MAX_SATELLITE_ZOOM,
+            pane: 'referenceLabelsPane',
+            updateWhenIdle: true,
+            keepBuffer: 3,
+            opacity: 1,
+            attribution: 'Referências &copy; Esri, HERE, Garmin e comunidade GIS'
+        }
+    ).addTo(map);
+
+    referenceLabels.on('tileerror', function (event) {
+        console.warn(
+            'CONFRONTA: falha ao carregar nomes e referências cartográficas.',
+            event && event.coords ? event.coords : event
+        );
     });
 
 
@@ -756,6 +785,7 @@
         layers,
         perimeter,
         satellite,
+        referenceLabels,
         carCode,
         canDraw,
         maxNativeZoom: MAX_SATELLITE_NATIVE_ZOOM,
