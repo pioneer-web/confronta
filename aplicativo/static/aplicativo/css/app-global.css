@@ -681,9 +681,6 @@
     border-radius: 3px;
     box-shadow: 0 0 0 1px rgba(255,255,255,.10), 0 0 10px rgba(0,0,0,.12);
 }
-.layer-color-car { background: #00ec58; }
-
-
 /* Gaveta lateral para relatório e glebas. Mantém o conteúdo e as rotinas
    existentes, apenas muda sua apresentação. */
 .territorial-side-panel.territorial-tool-drawer {

@@ -151,6 +151,48 @@
         return normalizeHexColor((palette[key] && palette[key].color) || fallback || '#0B7567', '#0B7567');
     }
 
+
+    // A legenda usa exatamente a mesma cor da camada desenhada no mapa.
+    // palette é a única fonte de verdade para a simbologia.
+    function syncLayerSwatches() {
+        document.querySelectorAll(
+            '#map-layer-drawer [data-layer-eye]'
+        ).forEach((button) => {
+            const key = button.dataset.layerEye;
+            const swatch = button.querySelector(
+                '.map-layer-swatch'
+            );
+
+            if (!key || !swatch) return;
+
+            const style = palette[key];
+            if (!style) return;
+
+            const color = normalizeHexColor(
+                style.color,
+                '#FFFFFF'
+            );
+
+            swatch.style.backgroundColor = color;
+
+            swatch.style.borderColor = (
+                color === '#FFFFFF'
+                    ? '#61747B'
+                    : color
+            );
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            syncLayerSwatches,
+            { once: true }
+        );
+    } else {
+        syncLayerSwatches();
+    }
+
     function pointStyleFromVectorStyle(style) {
         return {
             radius: 4,
@@ -181,6 +223,7 @@
         palette[key].color = hex;
         const style = styleForKey(key);
         applyLayerStyleObject(layers[key], style);
+        syncLayerSwatches();
     }
 
     function fitLayer(key) {

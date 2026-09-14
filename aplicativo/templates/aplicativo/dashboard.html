@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=001">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=001">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=002">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=002">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=005-unified-palette">
 
 {% if pode_desenhar_glebas %}
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=004">
@@ -256,14 +256,14 @@
             </header>
             <div class="map-layer-drawer-list">
                 <button type="button" class="map-layer-eye is-active" data-layer-eye="perimetro" aria-pressed="true">
-                    <span class="map-layer-swatch layer-color-car"></span>
+                    <span class="map-layer-swatch"></span>
                     <span class="map-layer-name">Área do CAR</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
                 </button>
                 {% for chave, camada in consulta.camadas.items %}
                 {% if camada.disponivel and camada.features %}
                 <button type="button" class="map-layer-eye is-active" data-layer-eye="{{ chave }}" aria-pressed="true">
-                    <span class="map-layer-swatch layer-color-{{ chave }}"></span>
+                    <span class="map-layer-swatch"></span>
                     <span class="map-layer-name">{{ camada.label }}</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
                 </button>
@@ -273,7 +273,7 @@
                 {% for chave, camada in consulta.camadas_externas.items %}
                 {% if camada.disponivel and camada.features %}
                 <button type="button" class="map-layer-eye" data-layer-eye="ext_{{ chave }}" aria-pressed="false">
-                    <span class="map-layer-swatch layer-color-ext-{{ chave }}"></span>
+                    <span class="map-layer-swatch"></span>
                     <span class="map-layer-name">{{ camada.label }}</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
                 </button>
@@ -685,7 +685,7 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
 {% endif %}
-<script src="{% static 'aplicativo/js/mapa.js' %}?v=060-popup-safe"></script>
+<script src="{% static 'aplicativo/js/mapa.js' %}?v=063-unified-palette"></script>
 <script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
 {% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}
 <script src="{% static 'aplicativo/js/interface.js' %}?v=057-report-print"></script>
