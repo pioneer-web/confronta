@@ -5,8 +5,92 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#063f34">
-    <meta name="description" content="CONFRONTA — consulte imóveis rurais e confronte dados territoriais oficiais em uma única plataforma.">
-    <title>CONFRONTA — Inteligência Territorial Rural</title>
+
+    <title>CONFRONTA | Consulta CAR e Análise Territorial Rural</title>
+
+    <meta name="description"
+          content="Consulte CAR, sobreposições, embargos IBAMA e ICMBio, PRODES, FUNAI, INCRA, SICOR e APAs em uma plataforma de inteligência territorial rural.">
+
+    <meta name="robots"
+          content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+
+    <link rel="canonical" href="{{ seo_site_url }}/">
+
+    {% if google_site_verification %}
+    <meta name="google-site-verification"
+          content="{{ google_site_verification }}">
+    {% endif %}
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="CONFRONTA">
+    <meta property="og:title"
+          content="CONFRONTA | Consulta CAR e Análise Territorial Rural">
+    <meta property="og:description"
+          content="Inteligência territorial rural para consulta de CAR, sobreposições, embargos, PRODES, FUNAI, INCRA, SICOR e APAs.">
+    <meta property="og:url" content="{{ seo_site_url }}/">
+    <meta property="og:image"
+          content="{{ seo_site_url }}{% static 'aplicativo/img/hero.png' %}">
+    <meta property="og:image:alt"
+          content="Mapa de análise territorial da plataforma CONFRONTA">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title"
+          content="CONFRONTA | Consulta CAR e Análise Territorial Rural">
+    <meta name="twitter:description"
+          content="Consulta CAR e inteligência territorial rural em uma única plataforma.">
+    <meta name="twitter:image"
+          content="{{ seo_site_url }}{% static 'aplicativo/img/hero.png' %}">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "{{ seo_site_url }}/#organization",
+          "name": "CONFRONTA",
+          "url": "{{ seo_site_url }}/",
+          "email": "confrontagis@gmail.com",
+          "telephone": "+55-87-93300-5214"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "{{ seo_site_url }}/#website",
+          "url": "{{ seo_site_url }}/",
+          "name": "CONFRONTA",
+          "inLanguage": "pt-BR",
+          "publisher": {
+            "@id": "{{ seo_site_url }}/#organization"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "{{ seo_site_url }}/#software",
+          "name": "CONFRONTA",
+          "url": "{{ seo_site_url }}/",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "inLanguage": "pt-BR",
+          "description": "Plataforma de inteligência territorial rural para consulta de CAR, análise de sobreposições, alertas ambientais, dados fundiários e crédito rural.",
+          "publisher": {
+            "@id": "{{ seo_site_url }}/#organization"
+          }
+        }
+      ]
+    }
+    </script>
+
+    {% if google_analytics_id %}
+    <script async
+            src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ google_analytics_id|escapejs }}');
+    </script>
+    {% endif %}
     <link rel="stylesheet" href="{% static 'aplicativo/css/tailwind.css' %}?v=070">
     <link rel="stylesheet" href="{% static 'aplicativo/css/app.css' %}?v=070">
     <link rel="stylesheet" href="{% static 'aplicativo/css/home-premium.css' %}?v=070">
