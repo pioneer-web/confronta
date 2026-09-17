@@ -105,13 +105,31 @@ def _aneis_poligono(poligono):
     return [externo, *internos]
 
 
+def _parsear_xml_kml(data):
+    try:
+        return ET.fromstring(data)
+    except ET.ParseError as erro_original:
+        # Alguns sistemas geram KML em Windows-1252/ANSI
+        # mesmo declarando UTF-8 no cabeçalho.
+        try:
+            data.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                texto = data.decode('cp1252')
+                return ET.fromstring(texto.encode('utf-8'))
+            except (UnicodeDecodeError, ET.ParseError):
+                pass
+
+        raise ConsultaGeometriaErro(
+            'O arquivo KML não pôde ser interpretado.'
+        ) from erro_original
+
+
 def geometria_de_kml_bytes(data):
     if b'<!DOCTYPE' in data.upper() or b'<!ENTITY' in data.upper():
         raise ConsultaGeometriaErro('O KML contém uma declaração XML não permitida.')
-    try:
-        raiz = ET.fromstring(data)
-    except ET.ParseError as exc:
-        raise ConsultaGeometriaErro('O arquivo KML não pôde ser interpretado.') from exc
+
+    raiz = _parsear_xml_kml(data)
 
     polygons = []
     for elemento in raiz.iter():
@@ -124,29 +142,143 @@ def geometria_de_kml_bytes(data):
     if not polygons:
         raise ConsultaGeometriaErro('Nenhum polígono foi encontrado no KML.')
 
-    geometria = (
-        {'type': 'Polygon', 'coordinates': polygons[0]}
-        if len(polygons) == 1
-        else {'type': 'MultiPolygon', 'coordinates': polygons}
-    )
-
+    # Cada Polygon do KML é validado separadamente e depois unido.
+    # Isso permite KMLs com glebas duplicadas ou parcialmente sobrepostas,
+    # que não formariam um MultiPolygon válido se fossem apenas agrupadas.
     try:
-        geos = GEOSGeometry(json.dumps(geometria), srid=4326)
+        geos = None
+
+        for rings in polygons:
+            atual = GEOSGeometry(
+                json.dumps({
+                    'type': 'Polygon',
+                    'coordinates': rings,
+                }),
+                srid=4326,
+            )
+
+            if atual.empty or not atual.valid:
+                raise ConsultaGeometriaErro(
+                    'O KML contém um polígono inválido ou vazio.'
+                )
+
+            geos = atual if geos is None else geos.union(atual)
+
+    except ConsultaGeometriaErro:
+        raise
     except Exception as exc:
-        raise ConsultaGeometriaErro('A geometria do KML é inválida.') from exc
-    if geos.empty or geos.geom_type not in {'Polygon', 'MultiPolygon'} or not geos.valid:
-        raise ConsultaGeometriaErro('A gleba do KML precisa ser um polígono válido e não vazio.')
+        raise ConsultaGeometriaErro(
+            'A geometria do KML é inválida.'
+        ) from exc
+
+    if (
+        geos is None
+        or geos.empty
+        or geos.geom_type not in {'Polygon', 'MultiPolygon'}
+        or not geos.valid
+    ):
+        raise ConsultaGeometriaErro(
+            'A gleba do KML precisa ser um polígono válido e não vazio.'
+        )
+
     return json.loads(geos.geojson)
 
 
-def geometria_de_upload(uploaded_file):
+def _nome_placemark(elemento, fallback):
+    for filho in list(elemento):
+        if filho.tag.rsplit('}', 1)[-1] != 'name':
+            continue
+        nome = ' '.join((filho.text or '').split()).strip()
+        if nome:
+            return nome[:80]
+    return fallback
+
+
+def _glebas_individuais_de_kml_bytes(data):
+    raiz = _parsear_xml_kml(data)
+
+    placemarks = [
+        elemento for elemento in raiz.iter()
+        if elemento.tag.rsplit('}', 1)[-1] == 'Placemark'
+    ]
+
+    alvos = placemarks if placemarks else [raiz]
+    glebas = []
+
+    for indice_alvo, alvo in enumerate(alvos, start=1):
+        nome_base = _nome_placemark(alvo, f'Gleba {indice_alvo}')
+        indice_poligono = 0
+
+        for elemento in alvo.iter():
+            if elemento.tag.rsplit('}', 1)[-1] != 'Polygon':
+                continue
+
+            rings = _aneis_poligono(elemento)
+            if not rings:
+                continue
+
+            indice_poligono += 1
+            nome = (
+                nome_base
+                if indice_poligono == 1
+                else f'{nome_base} {indice_poligono}'
+            )
+
+            try:
+                geos = GEOSGeometry(
+                    json.dumps({
+                        'type': 'Polygon',
+                        'coordinates': rings,
+                    }),
+                    srid=4326,
+                )
+            except Exception as exc:
+                raise ConsultaGeometriaErro(
+                    f'A geometria da gleba "{nome}" é inválida.'
+                ) from exc
+
+            if geos.empty or not geos.valid:
+                raise ConsultaGeometriaErro(
+                    f'A geometria da gleba "{nome}" é inválida.'
+                )
+
+            glebas.append({
+                'type': 'Feature',
+                'properties': {
+                    'name': nome,
+                    'confronta_nome': nome,
+                },
+                'geometry': json.loads(geos.geojson),
+            })
+
+            if len(glebas) > 100:
+                raise ConsultaGeometriaErro(
+                    'O KML possui mais de 100 polígonos para uma consulta interativa.'
+                )
+
+    return glebas
+
+
+def geometria_e_glebas_de_upload(uploaded_file):
     nome = str(getattr(uploaded_file, 'name', '') or '').lower().strip()
+
     if not (nome.endswith('.kml') or nome.endswith('.kmz')):
         raise ConsultaGeometriaErro('Envie um arquivo KML ou KMZ.')
+
     data = _upload_bytes(uploaded_file)
+
     if nome.endswith('.kmz'):
         data = _kml_de_kmz(data)
-    return geometria_de_kml_bytes(data)
+
+    geometria = geometria_de_kml_bytes(data)
+    glebas = _glebas_individuais_de_kml_bytes(data)
+
+    return geometria, glebas
+
+
+def geometria_de_upload(uploaded_file):
+    geometria, _ = geometria_e_glebas_de_upload(uploaded_file)
+    return geometria
 
 
 def geometria_de_geojson_texto(texto):

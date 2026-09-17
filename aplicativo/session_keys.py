@@ -2,3 +2,4 @@
 # O CAR consultado não é exposto na URL; permanece associado à sessão autenticada.
 SESSION_CAR_ATUAL = 'aplicativo_car_atual'
 SESSION_CONSULTA_ORIGEM = 'aplicativo_consulta_origem'
+SESSION_GLEBAS_TEMPORARIAS = 'aplicativo_glebas_temporarias'

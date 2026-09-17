@@ -316,7 +316,7 @@
         const titleStrong = document.createElement('strong');
         titleStrong.textContent = meta.nome;
         const titleMeta = document.createElement('span');
-        titleMeta.textContent = meta.origem === 'importada' ? 'Polígono importado' : 'Polígono desenhado';
+        titleMeta.textContent = meta.origem === 'consulta_kml' ? 'KML da consulta' : (meta.origem === 'importada' ? 'Polígono importado' : 'Polígono desenhado');
         title.append(titleStrong, titleMeta);
         head.append(dot, title);
 
@@ -336,7 +336,7 @@
         originMetric.className = 'cf-gleba-popup-metric';
         originMetric.innerHTML = '<span>Origem</span>';
         const originValue = document.createElement('strong');
-        originValue.textContent = meta.origem === 'importada' ? 'Importada' : 'Desenhada';
+        originValue.textContent = meta.origem === 'consulta_kml' ? 'KML da consulta' : (meta.origem === 'importada' ? 'Importada' : 'Desenhada');
         originMetric.appendChild(originValue);
         metrics.append(areaMetric, originMetric);
 
@@ -854,6 +854,77 @@
         });
     }
 
+    function carregarGlebasTemporariasDaConsulta() {
+        const element = document.getElementById('glebas-temporarias-data');
+        if (!element) return 0;
+
+        let payload = null;
+
+        try {
+            payload = JSON.parse(element.textContent || 'null');
+        } catch (error) {
+            console.warn(
+                'CONFRONTA: glebas temporárias inválidas.',
+                error
+            );
+            return 0;
+        }
+
+        if (
+            !payload
+            || !Array.isArray(payload.items)
+            || !payload.items.length
+        ) {
+            return 0;
+        }
+
+        if (payload.replace === true) {
+            drawnItems.clearLayers();
+            try {
+                sessionStorage.removeItem(STORAGE_KEY);
+            } catch (error) {
+                /* noop */
+            }
+        }
+
+        const colors = [
+            '#2563EB',
+            '#0891B2',
+            '#EAB308',
+            '#F97316',
+            '#DC2626',
+            '#A855F7'
+        ];
+
+        let quantidade = 0;
+
+        payload.items.forEach((feature, index) => {
+            if (!feature || !feature.geometry) return;
+
+            const nome = feature.properties
+                && (
+                    feature.properties.confronta_nome
+                    || feature.properties.name
+                );
+
+            const added = addImportedFeature(
+                feature,
+                {
+                    nome: nome || `Gleba ${index + 1}`,
+                    cor: colors[index % colors.length],
+                    origem: 'consulta_kml',
+                    visivel: true
+                },
+                false
+            );
+
+            quantidade += added.length;
+        });
+
+        return quantidade;
+    }
+
+
     function restoreSession() {
         try {
             const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -1281,5 +1352,6 @@
 
     setSelectedColor(DEFAULT_COLOR);
     restoreSession();
+    carregarGlebasTemporariasDaConsulta();
     refresh();
 })();

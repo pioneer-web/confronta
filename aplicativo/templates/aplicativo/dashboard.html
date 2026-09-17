@@ -658,6 +658,9 @@
 </section>
 
 {{ consulta|json_script:"consulta-territorial-data" }}
+{% if glebas_temporarias %}
+{{ glebas_temporarias|json_script:"glebas-temporarias-data" }}
+{% endif %}
 {% endif %}
 {% if eh_cliente and possui_plano %}
 <div class="client-comms" id="client-comms">

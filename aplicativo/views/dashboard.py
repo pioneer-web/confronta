@@ -8,9 +8,13 @@ from aplicativo.models import AvisoCliente, LeituraAvisoCliente
 from aplicativo.permissions import cliente_required
 from aplicativo.services import ConsultaCarErro, ConsultaCarService
 from aplicativo.services.consulta_geometria import (
-    ConsultaGeometriaErro, geometria_de_geojson_texto, geometria_de_upload,
+    ConsultaGeometriaErro, geometria_de_geojson_texto, geometria_e_glebas_de_upload,
 )
-from aplicativo.session_keys import SESSION_CAR_ATUAL, SESSION_CONSULTA_ORIGEM
+from aplicativo.session_keys import (
+    SESSION_CAR_ATUAL,
+    SESSION_CONSULTA_ORIGEM,
+    SESSION_GLEBAS_TEMPORARIAS,
+)
 from aplicativo.security import (
     consumir_limite_consulta_car,
     consumir_limite_selecao_car,
@@ -44,6 +48,10 @@ def _contexto_base(request, *, form=None, consulta=None, erro_consulta=None):
         'possui_plano': acesso.possui_plano,
         'pode_desenhar_glebas': acesso.pode_desenhar_glebas,
         'consulta_origem': request.session.get(SESSION_CONSULTA_ORIGEM, 'car'),
+        'glebas_temporarias': (
+            request.session.pop(SESSION_GLEBAS_TEMPORARIAS, None)
+            if consulta else None
+        ),
         'avisos_cliente': avisos_cliente,
         'avisos_lidos': avisos_lidos,
         'avisos_nao_lidos': sum(1 for aviso in avisos_cliente if aviso.pk not in avisos_lidos),
@@ -214,9 +222,15 @@ def nova_consulta_arquivo(request):
     if not _limite_nova_consulta(request):
         return redirect('aplicativo:inicio')
     try:
-        geometria = geometria_de_upload(arquivo)
+        geometria, glebas = geometria_e_glebas_de_upload(arquivo)
         candidatos = ConsultaCarService().localizar_por_geometria(geometria)
         _registrar_car_localizado(request, candidatos, origem='arquivo')
+
+        request.session[SESSION_GLEBAS_TEMPORARIAS] = {
+            'replace': True,
+            'items': glebas,
+        }
+        request.session.modified = True
     except (ConsultaCarErro, ConsultaGeometriaErro) as exc:
         messages.error(request, str(exc))
     return redirect('aplicativo:inicio')

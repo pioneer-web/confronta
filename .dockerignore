@@ -7,3 +7,4 @@ var
 staticfiles
 *.zip
 import_inbox/*
+node_modules/
