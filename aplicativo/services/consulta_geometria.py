@@ -61,16 +61,31 @@ def _coordenadas(texto):
             continue
         if not (-180 <= lon <= 180 and -90 <= lat <= 90):
             raise ConsultaGeometriaErro('O KML possui coordenadas fora dos limites de latitude/longitude.')
-        pontos.append([lon, lat])
+        ponto = [lon, lat]
+
+        # Remove vértices consecutivos duplicados.
+        # Alguns sistemas geram o ponto de fechamento duas vezes no KML.
+        if not pontos or pontos[-1] != ponto:
+            pontos.append(ponto)
+
         if len(pontos) > MAX_VERTICES:
-            raise ConsultaGeometriaErro('A geometria possui vértices demais para uma consulta interativa.')
+            raise ConsultaGeometriaErro(
+                'A geometria possui vértices demais para uma consulta interativa.'
+            )
 
     if len(pontos) < 3:
         raise ConsultaGeometriaErro('O KML não possui um polígono válido.')
+
+    # Mantém exatamente um vértice de fechamento.
+    while len(pontos) > 1 and pontos[-1] == pontos[-2]:
+        pontos.pop()
+
     if pontos[0] != pontos[-1]:
         pontos.append(pontos[0])
+
     if len(pontos) < 4:
         raise ConsultaGeometriaErro('O KML não possui um anel poligonal válido.')
+
     return pontos
 
 
