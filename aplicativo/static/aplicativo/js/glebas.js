@@ -1122,14 +1122,46 @@
 
     // ---------- Importação ----------
     function parseCoordinatesText(text) {
-        const coordinates = String(text || '').trim().split(/\s+/).map((tuple) => {
+        const raw = String(text || '').trim().split(/\s+/).map((tuple) => {
             const parts = tuple.split(',').map(Number);
             return [parts[0], parts[1]];
         }).filter((coord) => Number.isFinite(coord[0]) && Number.isFinite(coord[1]));
-        if (coordinates.length < 3) throw new Error('Polígono KML inválido.');
+
+        const coordinates = [];
+
+        raw.forEach((coord) => {
+            const previous = coordinates[coordinates.length - 1];
+
+            // Remove vértices consecutivos duplicados.
+            if (
+                !previous
+                || previous[0] !== coord[0]
+                || previous[1] !== coord[1]
+            ) {
+                coordinates.push(coord);
+            }
+        });
+
+        if (coordinates.length < 3) {
+            throw new Error('Polígono KML inválido.');
+        }
+
+        // Mantém exatamente um ponto de fechamento.
+        while (
+            coordinates.length > 1
+            && coordinates[coordinates.length - 1][0] === coordinates[coordinates.length - 2][0]
+            && coordinates[coordinates.length - 1][1] === coordinates[coordinates.length - 2][1]
+        ) {
+            coordinates.pop();
+        }
+
         const first = coordinates[0];
         const last = coordinates[coordinates.length - 1];
-        if (first[0] !== last[0] || first[1] !== last[1]) coordinates.push(first.slice());
+
+        if (first[0] !== last[0] || first[1] !== last[1]) {
+            coordinates.push(first.slice());
+        }
+
         return coordinates;
     }
     function firstCoordinates(boundaryNode) {
