@@ -173,3 +173,118 @@ class AsaasWebhookTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'CONFRONTA está confirmando sua assinatura')
         self.assertNotContains(response, 'webhook')
+
+
+    def test_checkout_anual_libera_um_ano_sem_renovacao(self):
+        self.checkout.ciclo = AsaasCheckout.Ciclo.YEARLY
+        self.checkout.valor = '598.80'
+        self.checkout.save(
+            update_fields=['ciclo', 'valor', 'atualizado_em']
+        )
+
+        payload = {
+            'id': 'evt_anual_paid',
+            'event': 'CHECKOUT_PAID',
+            'checkout': {
+                'id': 'chk_001',
+                'customer': 'cus_anual',
+                'status': 'PAID',
+            },
+        }
+
+        self._enviar(payload)
+        processar_evento(
+            EventoWebhookAsaas.objects.get(
+                event_id='evt_anual_paid'
+            )
+        )
+
+        assinatura = AssinaturaAsaas.objects.get(
+            perfil=self.perfil,
+            atual=True,
+        )
+
+        self.perfil.refresh_from_db()
+
+        self.assertEqual(
+            assinatura.ciclo,
+            AsaasCheckout.Ciclo.YEARLY,
+        )
+        self.assertIsNone(assinatura.asaas_subscription_id)
+        self.assertIsNone(assinatura.proximo_vencimento)
+        self.assertFalse(self.perfil.renovacao_automatica)
+        self.assertEqual(
+            self.perfil.fim_acesso,
+            assinatura.acesso_ate,
+        )
+
+        dias = (
+            assinatura.acesso_ate - timezone.localdate()
+        ).days
+        self.assertIn(dias, {365, 366})
+
+    def test_pagamento_anual_a_vista_nao_estende_novamente_acesso(self):
+        self.checkout.ciclo = AsaasCheckout.Ciclo.YEARLY
+        self.checkout.valor = '598.80'
+        self.checkout.save(
+            update_fields=['ciclo', 'valor', 'atualizado_em']
+        )
+
+        paid = {
+            'id': 'evt_anual_avista_checkout',
+            'event': 'CHECKOUT_PAID',
+            'checkout': {
+                'id': 'chk_001',
+                'customer': 'cus_anual_avista',
+                'status': 'PAID',
+            },
+        }
+
+        self._enviar(paid)
+        processar_evento(
+            EventoWebhookAsaas.objects.get(
+                event_id='evt_anual_avista_checkout'
+            )
+        )
+
+        assinatura = AssinaturaAsaas.objects.get(
+            perfil=self.perfil,
+            atual=True,
+        )
+
+        acesso_original = assinatura.acesso_ate
+
+        payment = {
+            'id': 'evt_anual_avista_payment',
+            'event': 'PAYMENT_CONFIRMED',
+            'payment': {
+                'id': 'pay_anual_avista',
+                'customer': 'cus_anual_avista',
+                'billingType': 'CREDIT_CARD',
+                'value': 598.80,
+                'dueDate': str(timezone.localdate()),
+                'status': 'CONFIRMED',
+            },
+        }
+
+        self._enviar(payment)
+        processar_evento(
+            EventoWebhookAsaas.objects.get(
+                event_id='evt_anual_avista_payment'
+            )
+        )
+
+        assinatura.refresh_from_db()
+        self.perfil.refresh_from_db()
+
+        self.assertEqual(
+            assinatura.acesso_ate,
+            acesso_original,
+        )
+        self.assertEqual(
+            self.perfil.fim_acesso,
+            acesso_original,
+        )
+        self.assertFalse(
+            self.perfil.renovacao_automatica
+        )

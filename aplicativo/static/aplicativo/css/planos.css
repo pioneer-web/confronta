@@ -166,19 +166,6 @@
     font-size: 14px;
     line-height: 1.55;
 }
-
-.cf-plan-saving {
-    display: inline-flex;
-    width: fit-content;
-    margin-top: 12px;
-    padding: 7px 10px;
-    border-radius: 9px;
-    background: #edf8f3;
-    color: #187251;
-    font-size: 12px;
-    font-weight: 800;
-}
-
 .cf-plan-divider {
     height: 1px;
     margin: 25px 0;

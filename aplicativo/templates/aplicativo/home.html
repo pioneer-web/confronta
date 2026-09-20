@@ -311,7 +311,7 @@
                         {% include 'aplicativo/partials/preco_anual.html' with plano=plano_confronta variante='card' %}
                     </div>
                             <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
-                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_anual' %}">Assinar anual — até 6x</a>
+                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_anual' %}">Assinar anual — até {{ plano_confronta.quantidade_parcelas_anual }}x</a>
                 </article>
             </div>
             {% else %}<div class="cfp-empty-plans">O plano está sendo configurado.</div>{% endif %}
