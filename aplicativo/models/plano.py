@@ -47,7 +47,16 @@ class PlanoComercial(models.Model):
 
     @staticmethod
     def _linhas(texto):
-        return [linha.strip() for linha in (texto or '').splitlines() if linha.strip()]
+        normalizado = (
+            (texto or '')
+            .replace('\\r\\n', '\n')
+            .replace('\\n', '\n')
+        )
+        return [
+            linha.strip()
+            for linha in normalizado.splitlines()
+            if linha.strip()
+        ]
 
     @property
     def lista_recursos(self):

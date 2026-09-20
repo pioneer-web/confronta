@@ -1,92 +1,283 @@
 {% extends 'aplicativo/base.html' %}
-{% block title %}Minha assinatura — CONFRONTA{% endblock %}
+{% load static %}
+
+{% block title %}Planos — CONFRONTA{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'aplicativo/css/planos.css' %}?v=001">
+{% endblock %}
+
+{% block client_topbar_query %}{% endblock %}
+{% block client_topbar_context %}{% endblock %}
+{% block client_content_class %}plans-page-content{% endblock %}
+
 {% block content %}
-<section class="page-head plans-head">
-    <div>
-        <span class="eyebrow">Assinatura</span>
-        <h1>CONFRONTA</h1>
-        {% if perfil_cliente %}<p>Escolha a cobrança mensal ou anual. As funcionalidades são as mesmas nas duas modalidades.</p>{% else %}<p>Sua conta administrativa já possui acesso operacional e não precisa contratar.</p>{% endif %}
-    </div>
-    <a class="button button-secondary" href="{% url 'aplicativo:inicio' %}">Voltar ao aplicativo</a>
-</section>
+<div class="cf-plans-page">
 
-{% if perfil_cliente %}
-    {% if assinatura_asaas %}
-    <section class="current-subscription-card" id="current-subscription-card-v062" aria-label="Resumo da assinatura atual">
-        <div class="current-subscription-head">
-            <div>
-                <span class="eyebrow">Plano atual</span>
-                <h2>{{ assinatura_asaas.plano.nome }} {{ assinatura_asaas.get_ciclo_display }}</h2>
-                <p>Sua contratação e a vigência do acesso em um único lugar.</p>
+    {% if perfil_cliente %}
+
+        {% if assinatura_asaas %}
+        <section class="cf-current-plan">
+            <div class="cf-current-plan__header">
+                <div>
+                    <span class="cf-kicker">SUA ASSINATURA</span>
+                    <h1>{{ assinatura_asaas.plano.nome }} {{ assinatura_asaas.get_ciclo_display }}</h1>
+                    <p>Acompanhe os dados e a situação atual da sua assinatura.</p>
+                </div>
+
+                <span class="cf-status
+                    {% if assinatura_asaas.status == 'ACTIVE' %}cf-status--success
+                    {% elif assinatura_asaas.status == 'PAST_DUE' %}cf-status--warning
+                    {% else %}cf-status--neutral{% endif %}">
+                    {{ assinatura_asaas.get_status_display }}
+                </span>
             </div>
-            <span class="current-subscription-status {% if assinatura_asaas.status == 'ACTIVE' %}is-active{% elif assinatura_asaas.status == 'PAST_DUE' %}is-warning{% endif %}">
-                {{ assinatura_asaas.get_status_display }}
-            </span>
-        </div>
-        <div class="current-subscription-grid">
-            <div><span>Modalidade</span><strong>{{ assinatura_asaas.get_ciclo_display }}</strong></div>
-            <div><span>Data da contratação</span><strong>{{ assinatura_asaas.iniciado_em|date:'d/m/Y' }}</strong></div>
-            <div><span>Valor contratado</span><strong>R$ {{ assinatura_asaas.valor|floatformat:2 }}</strong></div>
-            <div><span>Próximo vencimento</span><strong>{% if assinatura_asaas.proximo_vencimento %}{{ assinatura_asaas.proximo_vencimento|date:'d/m/Y' }}{% else %}—{% endif %}</strong></div>
-            <div><span>Acesso liberado até</span><strong>{% if assinatura_asaas.acesso_ate %}{{ assinatura_asaas.acesso_ate|date:'d/m/Y' }}{% else %}Conforme assinatura ativa{% endif %}</strong></div>
-            <div><span>Renovação automática</span><strong>{% if assinatura_asaas.cancelamento_solicitado %}Cancelada{% else %}Ativa{% endif %}</strong></div>
-        </div>
-        {% if assinatura_asaas.status == 'PAST_DUE' %}
-        <div class="current-subscription-warning"><strong>Pagamento em atraso.</strong> O período de carência está sendo aplicado.</div>
+
+            <div class="cf-current-plan__grid">
+                <div>
+                    <span>Modalidade</span>
+                    <strong>{{ assinatura_asaas.get_ciclo_display }}</strong>
+                </div>
+                <div>
+                    <span>Contratação</span>
+                    <strong>{{ assinatura_asaas.iniciado_em|date:'d/m/Y' }}</strong>
+                </div>
+                <div>
+                    <span>Valor</span>
+                    <strong>R$ {{ assinatura_asaas.valor|floatformat:2 }}</strong>
+                </div>
+                <div>
+                    <span>Próximo vencimento</span>
+                    <strong>
+                        {% if assinatura_asaas.proximo_vencimento %}
+                            {{ assinatura_asaas.proximo_vencimento|date:'d/m/Y' }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+                </div>
+            </div>
+        </section>
         {% endif %}
-    </section>
-    {% endif %}
 
-    {% if not acesso_aplicativo.possui_plano and not assinatura_asaas %}
-    <div class="plan-pending-note" style="margin-bottom:22px">
-        <strong>Sua conta já está criada.</strong>
-        O acesso ao CONFRONTA será liberado após a confirmação do pagamento.
-        Escolha uma modalidade abaixo para continuar.
-    </div>
-    {% endif %}
 
-    {% if plano_confronta %}
-    <div class="plan-choice-grid dynamic-plan-choice-grid">
-        <article class="plan-choice-card">
-            <span class="eyebrow">Mensal</span>
-            <h2>CONFRONTA Mensal</h2>
-            <div class="app-plan-price">R$ {{ plano_confronta.preco_mensal|floatformat:2 }}<small>/mês</small></div>
-            <p>Flexibilidade para começar e cancelar a renovação quando quiser.</p>
-            <ul>{% for recurso in plano_confronta.lista_recursos %}<li>✓ {{ recurso }}</li>{% endfor %}</ul>
-            <form method="post" action="{% url 'billing:iniciar_checkout' %}">{% csrf_token %}<input type="hidden" name="ciclo" value="MONTHLY"><button class="button button-secondary button-block" type="submit" {% if assinatura_asaas.status == 'ACTIVE' or assinatura_asaas.status == 'PENDING' or assinatura_asaas.status == 'PAST_DUE' %}disabled{% endif %}>{% if acesso_aplicativo.possui_plano %}Assinar R$ {{ plano_confronta.preco_mensal|floatformat:2 }}/mês{% else %}Continuar para pagamento — R$ {{ plano_confronta.preco_mensal|floatformat:2 }}/mês{% endif %}</button></form>
-        </article>
+        <header class="cf-plans-hero">
+            <span class="cf-kicker">ASSINATURA CONFRONTA</span>
 
-        <article class="plan-choice-card plan-choice-total">
-            <span class="plan-choice-ribbon">Melhor custo-benefício</span>
-            <span class="eyebrow">Anual</span>
-            <h2>CONFRONTA Anual</h2>
-            <div class="app-plan-price">R$ {{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}<small>/mês</small></div>
-            <p>R$ {{ plano_confronta.valor_anual_exibicao|floatformat:2 }} cobrados anualmente. Economize R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano.</p>
-            <ul>{% for recurso in plano_confronta.lista_recursos %}<li>✓ {{ recurso }}</li>{% endfor %}</ul>
-            <form method="post" action="{% url 'billing:iniciar_checkout' %}">{% csrf_token %}<input type="hidden" name="ciclo" value="YEARLY"><button class="button button-primary button-block" type="submit" {% if assinatura_asaas.status == 'ACTIVE' or assinatura_asaas.status == 'PENDING' or assinatura_asaas.status == 'PAST_DUE' %}disabled{% endif %}>{% if acesso_aplicativo.possui_plano %}Assinar R$ {{ plano_confronta.valor_anual_exibicao|floatformat:2 }}/ano{% else %}Continuar para pagamento — R$ {{ plano_confronta.valor_anual_exibicao|floatformat:2 }}/ano{% endif %}</button></form>
-        </article>
-    </div>
-    {% else %}<div class="plan-pending-note">O plano CONFRONTA está temporariamente indisponível.</div>{% endif %}
+            {% if acesso_aplicativo.possui_plano %}
+                <h1>Gerencie seu plano</h1>
+                <p>
+                    Consulte sua assinatura, pagamentos e opções disponíveis.
+                </p>
+            {% else %}
+                <h1>Escolha o plano ideal para você</h1>
+                <p>
+                    Tenha acesso completo às ferramentas de inteligência territorial
+                    do CONFRONTA.
+                </p>
+            {% endif %}
+        </header>
 
-    {% if assinatura_asaas and assinatura_asaas.asaas_subscription_id and not assinatura_asaas.cancelamento_solicitado and assinatura_asaas.status != 'CANCELED' %}
-    <div class="plan-pending-note" style="margin-top:22px">
-        <strong>Renovação automática ativa.</strong> Ao cancelar, novas cobranças são interrompidas; o CONFRONTA mantém o acesso até o fim do período já pago.
-        <form method="post" action="{% url 'billing:cancelar_assinatura' %}" style="margin-top:12px" onsubmit="return confirm('Cancelar a renovação automática desta assinatura?');">{% csrf_token %}<button class="button button-secondary" type="submit">Cancelar renovação</button></form>
-    </div>
-    {% endif %}
 
-    {% if pagamentos_asaas %}
-    <div class="plan-pending-note" style="margin-top:22px;background:#fff;border-color:#dfe7e6;color:#36505a">
-        <strong>Últimas cobranças</strong>
-        <div style="overflow:auto;margin-top:10px">
-            <table style="width:100%;border-collapse:collapse">
-                <thead><tr><th style="text-align:left;padding:8px">Vencimento</th><th style="text-align:left;padding:8px">Valor</th><th style="text-align:left;padding:8px">Status</th></tr></thead>
-                <tbody>{% for pagamento in pagamentos_asaas %}<tr><td style="padding:8px">{{ pagamento.vencimento|date:'d/m/Y'|default:'—' }}</td><td style="padding:8px">R$ {{ pagamento.valor|floatformat:2 }}</td><td style="padding:8px">{{ pagamento.status|default:'—' }}</td></tr>{% endfor %}</tbody>
-            </table>
+        {% if not acesso_aplicativo.possui_plano and not assinatura_asaas %}
+        <section class="cf-account-ready">
+            <div class="cf-account-ready__icon">✓</div>
+            <div>
+                <strong>Conta criada com sucesso</strong>
+                <p>
+                    Escolha uma modalidade abaixo. Seu acesso será liberado
+                    automaticamente após a confirmação do pagamento.
+                </p>
+            </div>
+        </section>
+        {% endif %}
+
+
+        {% if plano_confronta %}
+        <section class="cf-plan-grid">
+
+            <article class="cf-plan-card">
+                <div class="cf-plan-card__top">
+                    <span class="cf-plan-label">MENSAL</span>
+                    <h2>CONFRONTA Mensal</h2>
+
+                    <div class="cf-plan-price">
+                        <span>R$</span>
+                        <strong>{{ plano_confronta.preco_mensal|floatformat:2 }}</strong>
+                        <small>/mês</small>
+                    </div>
+
+                    <p class="cf-plan-description">
+                        Flexibilidade para começar agora e cancelar a renovação quando quiser.
+                    </p>
+                </div>
+
+                <div class="cf-plan-divider"></div>
+
+                <div class="cf-benefits">
+                    <strong class="cf-benefits__title">Tudo que você precisa</strong>
+
+                    <ul>
+                        {% for recurso in plano_confronta.lista_recursos %}
+                        <li>
+                            <span class="cf-benefit-check">✓</span>
+                            <span>{{ recurso }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <form method="post" action="{% url 'billing:iniciar_checkout' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="ciclo" value="MONTHLY">
+
+                    <button
+                        class="cf-plan-button cf-plan-button--secondary"
+                        type="submit"
+                        {% if assinatura_asaas.status == 'ACTIVE' or assinatura_asaas.status == 'PENDING' or assinatura_asaas.status == 'PAST_DUE' %}disabled{% endif %}
+                    >
+                        {% if acesso_aplicativo.possui_plano %}
+                            Assinar plano mensal
+                        {% else %}
+                            Continuar com plano mensal
+                        {% endif %}
+                        <span>→</span>
+                    </button>
+                </form>
+            </article>
+
+
+            <article class="cf-plan-card cf-plan-card--featured">
+                <span class="cf-plan-badge">Melhor custo-benefício</span>
+
+                <div class="cf-plan-card__top">
+                    <span class="cf-plan-label">ANUAL</span>
+                    <h2>CONFRONTA Anual</h2>
+
+                    <div class="cf-plan-price">
+                        <span>R$</span>
+                        <strong>{{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}</strong>
+                        <small>/mês</small>
+                    </div>
+
+                    <p class="cf-plan-description">
+                        R$ {{ plano_confronta.valor_anual_exibicao|floatformat:2 }}
+                        cobrados anualmente.
+                    </p>
+
+                    {% if plano_confronta.economia_anual %}
+                    <div class="cf-plan-saving">
+                        Economize R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="cf-plan-divider"></div>
+
+                <div class="cf-benefits">
+                    <strong class="cf-benefits__title">Tudo do plano mensal</strong>
+
+                    <ul>
+                        {% for recurso in plano_confronta.lista_recursos %}
+                        <li>
+                            <span class="cf-benefit-check">✓</span>
+                            <span>{{ recurso }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <form method="post" action="{% url 'billing:iniciar_checkout' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="ciclo" value="YEARLY">
+
+                    <button
+                        class="cf-plan-button cf-plan-button--primary"
+                        type="submit"
+                        {% if assinatura_asaas.status == 'ACTIVE' or assinatura_asaas.status == 'PENDING' or assinatura_asaas.status == 'PAST_DUE' %}disabled{% endif %}
+                    >
+                        {% if acesso_aplicativo.possui_plano %}
+                            Assinar plano anual
+                        {% else %}
+                            Continuar com plano anual
+                        {% endif %}
+                        <span>→</span>
+                    </button>
+                </form>
+            </article>
+
+        </section>
+        {% else %}
+        <div class="cf-plans-empty">
+            O plano CONFRONTA está temporariamente indisponível.
         </div>
-    </div>
+        {% endif %}
+
+
+        {% if assinatura_asaas and assinatura_asaas.asaas_subscription_id and not assinatura_asaas.cancelamento_solicitado and assinatura_asaas.status != 'CANCELED' %}
+        <section class="cf-renewal-card">
+            <div>
+                <strong>Renovação automática ativa</strong>
+                <p>
+                    Ao cancelar, novas cobranças serão interrompidas.
+                    O acesso continuará disponível até o fim do período já pago.
+                </p>
+            </div>
+
+            <form
+                method="post"
+                action="{% url 'billing:cancelar_assinatura' %}"
+                onsubmit="return confirm('Cancelar a renovação automática desta assinatura?');"
+            >
+                {% csrf_token %}
+                <button class="cf-cancel-button" type="submit">
+                    Cancelar renovação
+                </button>
+            </form>
+        </section>
+        {% endif %}
+
+
+        {% if pagamentos_asaas %}
+        <section class="cf-payments-card">
+            <div class="cf-section-title">
+                <div>
+                    <span class="cf-kicker">HISTÓRICO</span>
+                    <h2>Últimas cobranças</h2>
+                </div>
+            </div>
+
+            <div class="cf-table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Vencimento</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for pagamento in pagamentos_asaas %}
+                        <tr>
+                            <td>{{ pagamento.vencimento|date:'d/m/Y'|default:'—' }}</td>
+                            <td>R$ {{ pagamento.valor|floatformat:2 }}</td>
+                            <td>{{ pagamento.status|default:'—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+    {% else %}
+
+    <section class="cf-plans-empty">
+        Nenhuma contratação é necessária para esta conta administrativa.
+    </section>
+
     {% endif %}
-{% else %}
-<div class="plan-pending-note">Nenhuma contratação é necessária para esta conta administrativa.</div>
-{% endif %}
+
+</div>
 {% endblock %}

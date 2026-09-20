@@ -1,0 +1,511 @@
+/* ============================================================
+   CONFRONTA — Planos
+   ============================================================ */
+
+.client-topbar {
+    display: none !important;
+}
+
+.plans-page-content {
+    padding-top: 0 !important;
+}
+
+.cf-plans-page {
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 54px 0 70px;
+    color: #193b47;
+}
+
+.cf-plans-hero {
+    max-width: 760px;
+    margin-bottom: 28px;
+}
+
+.cf-kicker,
+.cf-plan-label {
+    display: block;
+    margin-bottom: 9px;
+    color: #17845e;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .13em;
+}
+
+.cf-plans-hero h1 {
+    margin: 0 0 10px;
+    color: #173e4b;
+    font-size: clamp(30px, 3vw, 42px);
+    line-height: 1.12;
+    font-weight: 800;
+    letter-spacing: -.035em;
+}
+
+.cf-plans-hero p {
+    max-width: 650px;
+    margin: 0;
+    color: #667d86;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.cf-account-ready {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    margin-bottom: 28px;
+    border: 1px solid #cfe7dd;
+    border-radius: 16px;
+    background: #f4faf7;
+}
+
+.cf-account-ready__icon {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 50%;
+    background: #dff4e9;
+    color: #128158;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.cf-account-ready strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #204651;
+    font-size: 14px;
+}
+
+.cf-account-ready p {
+    margin: 0;
+    color: #617780;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.cf-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.cf-plan-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100%;
+    padding: 31px;
+    overflow: hidden;
+    border: 1px solid #dbe6e7;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 14px 40px rgba(14, 51, 62, .07);
+}
+
+.cf-plan-card--featured {
+    border: 2px solid #1c775d;
+    box-shadow: 0 18px 48px rgba(18, 89, 67, .12);
+}
+
+.cf-plan-badge {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: #e9a913;
+    color: #183a45;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.cf-plan-card h2 {
+    margin: 0 0 20px;
+    color: #173e4b;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.cf-plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    margin-bottom: 12px;
+    color: #153b47;
+}
+
+.cf-plan-price > span {
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.cf-plan-price strong {
+    font-size: clamp(38px, 4vw, 50px);
+    line-height: 1;
+    font-weight: 850;
+    letter-spacing: -.055em;
+}
+
+.cf-plan-price small {
+    color: #607780;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cf-plan-description {
+    min-height: 44px;
+    margin: 0;
+    color: #687e86;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.cf-plan-saving {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 12px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    background: #edf8f3;
+    color: #187251;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.cf-plan-divider {
+    height: 1px;
+    margin: 25px 0;
+    background: #e8eeee;
+}
+
+.cf-benefits {
+    flex: 1;
+}
+
+.cf-benefits__title {
+    display: block;
+    margin-bottom: 15px;
+    color: #274b56;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.cf-benefits ul {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cf-benefits li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #4d6871;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.cf-benefit-check {
+    display: grid;
+    flex: 0 0 21px;
+    width: 21px;
+    height: 21px;
+    margin-top: -1px;
+    place-items: center;
+    border-radius: 50%;
+    background: #e7f5ef;
+    color: #15815b;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.cf-plan-card form {
+    margin-top: 29px;
+}
+
+.cf-plan-button {
+    display: flex;
+    width: 100%;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        transform .16s ease,
+        box-shadow .16s ease,
+        background .16s ease;
+}
+
+.cf-plan-button:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.cf-plan-button--secondary {
+    border: 1px solid #bfd0d3;
+    background: #fff;
+    color: #1b4653;
+}
+
+.cf-plan-button--secondary:hover {
+    border-color: #8aadb3;
+    background: #f7fbfb;
+}
+
+.cf-plan-button--primary {
+    border: 1px solid #123e4a;
+    background: #123e4a;
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(12, 61, 73, .14);
+}
+
+.cf-plan-button--primary:hover {
+    background: #0d3440;
+}
+
+.cf-plan-button:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.cf-current-plan,
+.cf-payments-card {
+    margin-bottom: 30px;
+    padding: 26px;
+    border: 1px solid #dce7e8;
+    border-radius: 20px;
+    background: #fff;
+}
+
+.cf-current-plan__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+
+.cf-current-plan__header h1,
+.cf-section-title h2 {
+    margin: 0 0 6px;
+    color: #193f4b;
+    font-size: 23px;
+}
+
+.cf-current-plan__header p {
+    margin: 0;
+    color: #6d8188;
+    font-size: 13px;
+}
+
+.cf-current-plan__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid #e4ebec;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.cf-current-plan__grid > div {
+    padding: 16px;
+    background: #f8fafa;
+    border-right: 1px solid #e4ebec;
+}
+
+.cf-current-plan__grid > div:last-child {
+    border-right: 0;
+}
+
+.cf-current-plan__grid span {
+    display: block;
+    margin-bottom: 4px;
+    color: #7c8e94;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.cf-current-plan__grid strong {
+    color: #294b55;
+    font-size: 13px;
+}
+
+.cf-status {
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.cf-status--success {
+    background: #e5f6ed;
+    color: #187653;
+}
+
+.cf-status--warning {
+    background: #fff5dd;
+    color: #946518;
+}
+
+.cf-status--neutral {
+    background: #edf2f3;
+    color: #587077;
+}
+
+.cf-renewal-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    margin-top: 25px;
+    padding: 20px 22px;
+    border: 1px solid #dce6e7;
+    border-radius: 16px;
+    background: #fff;
+}
+
+.cf-renewal-card strong {
+    color: #274b55;
+    font-size: 14px;
+}
+
+.cf-renewal-card p {
+    max-width: 700px;
+    margin: 5px 0 0;
+    color: #71848b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.cf-cancel-button {
+    padding: 10px 14px;
+    border: 1px solid #d3dddd;
+    border-radius: 9px;
+    background: #fff;
+    color: #7a4242;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cf-payments-card {
+    margin-top: 25px;
+}
+
+.cf-table-wrap {
+    margin-top: 18px;
+    overflow-x: auto;
+}
+
+.cf-table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cf-table-wrap th,
+.cf-table-wrap td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #e8eeee;
+    text-align: left;
+    color: #506b73;
+    font-size: 12px;
+}
+
+.cf-table-wrap th {
+    color: #7b8d93;
+    font-size: 10px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.cf-plans-empty {
+    padding: 24px;
+    border: 1px solid #dce6e7;
+    border-radius: 16px;
+    background: #fff;
+    color: #60757c;
+}
+
+@media (max-width: 900px) {
+    .cf-plan-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cf-current-plan__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cf-current-plan__grid > div:nth-child(2) {
+        border-right: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .cf-plans-page {
+        width: min(100% - 28px, 1180px);
+        padding: 28px 0 45px;
+    }
+
+    .cf-plan-card {
+        padding: 23px 20px;
+        border-radius: 18px;
+    }
+
+    .cf-plan-badge {
+        position: static;
+        display: inline-flex;
+        width: fit-content;
+        margin-bottom: 17px;
+    }
+
+    .cf-current-plan__header,
+    .cf-renewal-card {
+        flex-direction: column;
+    }
+
+    .cf-current-plan__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cf-current-plan__grid > div {
+        border-right: 0;
+        border-bottom: 1px solid #e4ebec;
+    }
+
+    .cf-current-plan__grid > div:last-child {
+        border-bottom: 0;
+    }
+}
+
+/* ============================================================
+   Correção de rolagem — página de planos
+   O shell principal do mapa usa overflow:hidden.
+   Nesta página precisamos de rolagem vertical normal.
+   ============================================================ */
+
+.cf-shell-v15 .client-main {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+.plans-page-content {
+    min-height: 100vh;
+    overflow: visible !important;
+}
+
+.cf-plans-page {
+    padding-bottom: 90px;
+}
