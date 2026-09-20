@@ -424,8 +424,6 @@
 .cfp-plan-head h3 { margin: 7px 0 6px; color: #123b34; font-size: 31px; font-weight: 720; letter-spacing: -.035em; }
 .cfp-plan-head p { min-height: 48px; margin: 0; color: #71807c; font-size: 13px; line-height: 1.55; }
 
-
-
 .cfp-plan-features { margin: 0 0 29px; padding: 20px 0 0; display: grid; gap: 11px; border-top: 1px solid #edf1ef; list-style: none; flex: 1; }
 .cfp-plan-features li { display: flex; gap: 9px; color: #425d55; font-size: 13px; line-height: 1.38; }
 .cfp-plan-features li > span { color: #159057; font-weight: 800; }
@@ -590,5 +588,3 @@
         animation-iteration-count: 1 !important;
     }
 }
-
-/* CONFRONTA — parcelamento do plano anual */
