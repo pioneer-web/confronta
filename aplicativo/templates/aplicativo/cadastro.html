@@ -34,8 +34,7 @@
             <div class="cf-selected-plan">
                 <span>Modalidade selecionada</span>
                 {% if ciclo == 'YEARLY' %}
-                    <strong>CONFRONTA Anual — R$ {{ plano_selecionado.mensal_equivalente_anual|floatformat:2 }}/mês</strong>
-                    <small>R$ {{ plano_selecionado.valor_anual_exibicao|floatformat:2 }} cobrados anualmente · economia de R$ {{ plano_selecionado.economia_anual|floatformat:2 }}/ano</small>
+                    {% include 'aplicativo/partials/preco_anual.html' with plano=plano_selecionado variante='compact' %}
                 {% else %}
                     <strong>CONFRONTA Mensal — R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês</strong>
                     <small>Cobrança recorrente mensal</small>
@@ -91,7 +90,10 @@
                 {% if ciclo == 'YEARLY' %}
                     <a href="{% url 'aplicativo:cadastro_mensal' %}"><span>Mensal — R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês</span><span>Selecionar →</span></a>
                 {% else %}
-                    <a href="{% url 'aplicativo:cadastro_anual' %}"><span>Anual — R$ {{ plano_selecionado.mensal_equivalente_anual|floatformat:2 }}/mês</span><span>Selecionar →</span></a>
+                    <a href="{% url 'aplicativo:cadastro_anual' %}">
+                        {% include 'aplicativo/partials/preco_anual.html' with plano=plano_selecionado variante='inline' %}
+                        <span>Selecionar →</span>
+                    </a>
                 {% endif %}
             </div>
             <div class="cf-contract-existing-login">

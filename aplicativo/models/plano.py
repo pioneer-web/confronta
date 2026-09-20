@@ -4,6 +4,9 @@ from django.db import models
 
 
 class PlanoComercial(models.Model):
+    # Fonte única da quantidade máxima de parcelas do plano anual.
+    PARCELAS_ANUAL = 6
+
     class NivelAcesso(models.TextChoices):
         BASICO = 'BASICO', 'Básico'
         TOTAL = 'TOTAL', 'Total'
@@ -77,6 +80,17 @@ class PlanoComercial(models.Model):
         if self.preco_anual:
             return self.preco_anual
         return (self.preco_mensal * Decimal('12')).quantize(Decimal('0.01'))
+
+
+    @property
+    def quantidade_parcelas_anual(self):
+        return self.PARCELAS_ANUAL
+
+    @property
+    def valor_parcela_anual(self):
+        return (
+            self.valor_anual_exibicao / Decimal(str(self.PARCELAS_ANUAL))
+        ).quantize(Decimal('0.01'))
 
     @property
     def economia_anual(self):

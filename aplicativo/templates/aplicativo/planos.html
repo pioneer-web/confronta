@@ -154,23 +154,7 @@
                     <span class="cf-plan-label">ANUAL</span>
                     <h2>CONFRONTA Anual</h2>
 
-                    <div class="cf-plan-price">
-                        <span>R$</span>
-                        <strong>{{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}</strong>
-                        <small>/mês</small>
-                    </div>
-
-                    <p class="cf-plan-description">
-                        R$ {{ plano_confronta.valor_anual_exibicao|floatformat:2 }}
-                        cobrados anualmente.
-                    </p>
-
-                    {% if plano_confronta.economia_anual %}
-                    <div class="cf-plan-saving">
-                        Economize R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano
-                    </div>
-                    {% endif %}
-                </div>
+                    {% include 'aplicativo/partials/preco_anual.html' with plano=plano_confronta variante='card' %}
 
                 <div class="cf-plan-divider"></div>
 

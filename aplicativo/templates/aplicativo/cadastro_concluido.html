@@ -57,7 +57,7 @@
                 <span>Valor</span>
                 <strong>
                     {% if ciclo == 'YEARLY' %}
-                        R$ {{ plano_selecionado.valor_anual_exibicao|floatformat:2 }}/ano
+                        {% include 'aplicativo/partials/preco_anual.html' with plano=plano_selecionado variante='summary' %}
                     {% else %}
                         R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês
                     {% endif %}
@@ -80,16 +80,7 @@
                 <h2>Finalize sua assinatura</h2>
 
                 {% if ciclo == 'YEARLY' %}
-                <p>
-                    Plano anual equivalente a
-                    <strong>
-                        R$ {{ plano_selecionado.mensal_equivalente_anual|floatformat:2 }}/mês
-                    </strong>,
-                    com cobrança anual de
-                    <strong>
-                        R$ {{ plano_selecionado.valor_anual_exibicao|floatformat:2 }}
-                    </strong>.
-                </p>
+                {% include 'aplicativo/partials/preco_anual.html' with plano=plano_selecionado variante='compact' %}
                 {% else %}
                 <p>
                     Assinatura mensal de

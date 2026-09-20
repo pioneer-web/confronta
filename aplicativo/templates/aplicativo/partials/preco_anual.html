@@ -1,0 +1,30 @@
+{% if plano %}
+<span class="cf-annual-price cf-annual-price--{{ variante|default:'card' }}">
+    <span class="cf-annual-price__total">
+        <strong>R$ {{ plano.valor_anual_exibicao|floatformat:2 }}</strong>
+        <small>/ano</small>
+    </span>
+
+    <span class="cf-annual-price__installment">
+        <small>PARCELE NO CARTÃO</small>
+        <strong>
+            {{ plano.quantidade_parcelas_anual }}x de
+            R$ {{ plano.valor_parcela_anual|floatformat:2 }}
+        </strong>
+        <span>sem alterar o valor total do plano</span>
+    </span>
+
+    <span class="cf-annual-price__equivalent">
+        Equivale a
+        <strong>
+            R$ {{ plano.mensal_equivalente_anual|floatformat:2 }}/mês
+        </strong>
+    </span>
+
+    {% if plano.economia_anual %}
+    <span class="cf-annual-price__saving">
+        Economia de R$ {{ plano.economia_anual|floatformat:2 }} por ano
+    </span>
+    {% endif %}
+</span>
+{% endif %}

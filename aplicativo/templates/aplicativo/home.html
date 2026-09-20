@@ -93,7 +93,8 @@
     {% endif %}
     <link rel="stylesheet" href="{% static 'aplicativo/css/tailwind.css' %}?v=070">
     <link rel="stylesheet" href="{% static 'aplicativo/css/app.css' %}?v=070">
-    <link rel="stylesheet" href="{% static 'aplicativo/css/home-premium.css' %}?v=070">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/home-premium.css' %}?v=071">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/preco-anual.css' %}?v=001">
 </head>
 <body class="cfp-home">
     <header class="cfp-header" data-home-header>
@@ -285,7 +286,7 @@
                 <span class="cfp-eyebrow">Preço de lançamento</span>
                 <h2>Um CONFRONTA. Duas formas de assinar.</h2>
                 {% if plano_confronta %}
-                <p>Mesmas funcionalidades no mensal e no anual. No anual, você economiza R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano.</p>
+                <p>Mesmas funcionalidades no mensal e no anual. No anual, você economiza R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano e pode pagar em até {{ plano_confronta.quantidade_parcelas_anual }}x no cartão.</p>
                 {% else %}
                 <p>Mesmas funcionalidades no mensal e no anual.</p>
                 {% endif %}
@@ -307,11 +308,10 @@
                     <span class="cfp-plan-label">Melhor custo-benefício</span>
                     <div class="cfp-plan-head">
                         <span>Anual</span>
-                        <h3>R$ {{ plano_confronta.mensal_equivalente_anual|floatformat:2 }}/mês</h3>
-                        <p>R$ {{ plano_confronta.valor_anual_exibicao|floatformat:2 }} cobrados anualmente. Economia de R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano.</p>
+                        {% include 'aplicativo/partials/preco_anual.html' with plano=plano_confronta variante='card' %}
                     </div>
                             <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
-                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_anual' %}">Assinar anual</a>
+                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_anual' %}">Assinar anual — até 6x</a>
                 </article>
             </div>
             {% else %}<div class="cfp-empty-plans">O plano está sendo configurado.</div>{% endif %}

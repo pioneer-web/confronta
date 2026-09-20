@@ -145,21 +145,39 @@ def criar_checkout(request, perfil, ciclo):
 
     payload = {
         'billingTypes': ['CREDIT_CARD'],
-        'chargeTypes': ['RECURRENT'],
         'minutesToExpire': minutos,
         'externalReference': f'confronta:{checkout.referencia}',
         'callback': callbacks,
         'items': [{
-            'name': 'CONFRONTA Mensal' if ciclo == AsaasCheckout.Ciclo.MONTHLY else 'CONFRONTA Anual',
-            'description': 'Assinatura de acesso ao CONFRONTA — Inteligência Territorial',
+            'name': (
+                'CONFRONTA Mensal'
+                if ciclo == AsaasCheckout.Ciclo.MONTHLY
+                else 'CONFRONTA Anual'
+            ),
+            'description': (
+                'Assinatura mensal do CONFRONTA — Inteligência Territorial'
+                if ciclo == AsaasCheckout.Ciclo.MONTHLY
+                else 'Acesso anual ao CONFRONTA — Inteligência Territorial'
+            ),
             'quantity': 1,
             'value': float(valor),
         }],
-        'subscription': {
-            'cycle': ciclo,
-            'nextDueDate': agora.strftime('%Y-%m-%d %H:%M:%S'),
-        },
     }
+
+    if ciclo == AsaasCheckout.Ciclo.MONTHLY:
+        # Plano mensal: assinatura com renovação automática.
+        payload['chargeTypes'] = ['RECURRENT']
+        payload['subscription'] = {
+            'cycle': AsaasCheckout.Ciclo.MONTHLY,
+            'nextDueDate': agora.strftime('%Y-%m-%d %H:%M:%S'),
+        }
+    else:
+        # Plano anual: compra anual, à vista ou parcelada no cartão.
+        # Não cria assinatura YEARLY no Asaas e não renova automaticamente.
+        payload['chargeTypes'] = ['DETACHED', 'INSTALLMENT']
+        payload['installment'] = {
+            'maxInstallmentCount': PlanoComercial.PARCELAS_ANUAL,
+        }
 
     # Não enviamos `customerData` nesta V1. O Asaas exige o conjunto cadastral
     # completo quando esse objeto é informado (incluindo CPF/CNPJ e endereço).

@@ -87,8 +87,29 @@ def _ativar_checkout(event_type, payload):
             atual.encerrado_em = atual.encerrado_em or timezone.now()
             atual.save(update_fields=['atual', 'encerrado_em', 'atualizado_em'])
 
-        subscription_data = data.get('subscription') or {}
-        primeira_cobranca = _to_date(subscription_data.get('nextDueDate')) or timezone.localdate()
+        eh_anual_parcelado = checkout.ciclo == AsaasCheckout.Ciclo.YEARLY
+
+        if eh_anual_parcelado:
+            # O anual é uma compra com vigência de 12 meses.
+            # Não existe assinatura recorrente YEARLY no Asaas.
+            inicio_vigencia = timezone.localdate()
+            proximo_vencimento = None
+            acesso_ate = _add_cycle(
+                inicio_vigencia,
+                AsaasCheckout.Ciclo.YEARLY,
+            )
+        else:
+            subscription_data = data.get('subscription') or {}
+            primeira_cobranca = (
+                _to_date(subscription_data.get('nextDueDate'))
+                or timezone.localdate()
+            )
+            proximo_vencimento = primeira_cobranca
+            acesso_ate = _add_cycle(
+                primeira_cobranca,
+                AsaasCheckout.Ciclo.MONTHLY,
+            )
+
         assinatura, _ = AssinaturaAsaas.objects.update_or_create(
             checkout_origem=checkout,
             defaults={
@@ -99,8 +120,8 @@ def _ativar_checkout(event_type, payload):
                 'asaas_customer_id': customer_id,
                 'status': AssinaturaAsaas.Status.ACTIVE,
                 'atual': True,
-                'proximo_vencimento': primeira_cobranca,
-                'acesso_ate': _add_cycle(primeira_cobranca, checkout.ciclo),
+                'proximo_vencimento': proximo_vencimento,
+                'acesso_ate': acesso_ate,
                 'ultimo_payload': data,
             },
         )
@@ -112,7 +133,7 @@ def _ativar_checkout(event_type, payload):
         perfil.plano_desejado = None
         perfil.inicio_acesso = perfil.inicio_acesso or timezone.localdate()
         perfil.fim_acesso = assinatura.acesso_ate
-        perfil.renovacao_automatica = True
+        perfil.renovacao_automatica = not eh_anual_parcelado
         perfil.ativo = True
         perfil.save(update_fields=[
             'plano_comercial', 'plano', 'plano_desejado_comercial', 'plano_desejado',
@@ -203,17 +224,49 @@ def _sincronizar_pagamento(event_type, payload):
     perfil = assinatura.perfil
     due_date = pagamento.vencimento or assinatura.proximo_vencimento or timezone.localdate()
 
+    eh_anual_parcelado = bool(
+        assinatura.ciclo == AsaasCheckout.Ciclo.YEARLY
+        and not assinatura.asaas_subscription_id
+        and data.get('installment')
+    )
+
     if event_type in {'PAYMENT_CONFIRMED', 'PAYMENT_RECEIVED'}:
         assinatura.status = AssinaturaAsaas.Status.ACTIVE
-        assinatura.acesso_ate = _add_cycle(due_date, assinatura.ciclo)
-        perfil.fim_acesso = assinatura.acesso_ate
-        perfil.ativo = True
-        perfil.renovacao_automatica = not assinatura.cancelamento_solicitado
-        perfil.save(update_fields=['fim_acesso', 'ativo', 'renovacao_automatica', 'atualizado_em'])
+
+        if eh_anual_parcelado:
+            # Cada parcela possui seu próprio evento no Asaas.
+            # Confirmar uma parcela não renova nem estende a vigência anual.
+            perfil.ativo = True
+            perfil.renovacao_automatica = False
+            perfil.save(
+                update_fields=[
+                    'ativo',
+                    'renovacao_automatica',
+                    'atualizado_em',
+                ]
+            )
+        else:
+            assinatura.acesso_ate = _add_cycle(due_date, assinatura.ciclo)
+            perfil.fim_acesso = assinatura.acesso_ate
+            perfil.ativo = True
+            perfil.renovacao_automatica = not assinatura.cancelamento_solicitado
+            perfil.save(
+                update_fields=[
+                    'fim_acesso',
+                    'ativo',
+                    'renovacao_automatica',
+                    'atualizado_em',
+                ]
+            )
+
     elif event_type in {'PAYMENT_OVERDUE', 'PAYMENT_CREDIT_CARD_CAPTURE_REFUSED'}:
-        assinatura.status = AssinaturaAsaas.Status.PAST_DUE
-        perfil.fim_acesso = max(perfil.fim_acesso or due_date, _grace_until(due_date))
-        perfil.save(update_fields=['fim_acesso', 'atualizado_em'])
+        if not eh_anual_parcelado:
+            assinatura.status = AssinaturaAsaas.Status.PAST_DUE
+            perfil.fim_acesso = max(
+                perfil.fim_acesso or due_date,
+                _grace_until(due_date),
+            )
+            perfil.save(update_fields=['fim_acesso', 'atualizado_em'])
     elif event_type in {'PAYMENT_REFUNDED', 'PAYMENT_CHARGEBACK_REQUESTED', 'PAYMENT_REPROVED_BY_RISK_ANALYSIS'}:
         assinatura.status = AssinaturaAsaas.Status.SUSPENDED
         perfil.fim_acesso = timezone.localdate() - timedelta(days=1)
