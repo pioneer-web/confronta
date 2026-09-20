@@ -4,6 +4,7 @@ from django.urls import path, reverse_lazy
 from aplicativo.views import (
     ajuda_view,
     conta_view,
+    cadastro_concluido_view,
     cadastro_view,
     chat_enviar,
     chat_estado,
@@ -60,6 +61,11 @@ urlpatterns = [
         name='password_reset_complete',
     ),
     path('cadastro/', cadastro_view, name='cadastro'),
+    path(
+        'cadastro/concluido/',
+        cadastro_concluido_view,
+        name='cadastro_concluido',
+    ),
     path('cadastro/mensal/', cadastro_view, {'modalidade': 'mensal'}, name='cadastro_mensal'),
     path('cadastro/anual/', cadastro_view, {'modalidade': 'anual'}, name='cadastro_anual'),
     path('logout/', logout_view, name='logout'),

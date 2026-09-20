@@ -1,0 +1,127 @@
+{% extends 'aplicativo/base.html' %}
+{% load static %}
+
+{% block title %}Cadastro realizado — CONFRONTA{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet"
+      href="{% static 'aplicativo/css/cadastro-concluido.css' %}?v=001">
+{% endblock %}
+
+{% block client_topbar_query %}{% endblock %}
+
+{% block content %}
+<div class="cf-registration-success">
+
+    <section class="cf-registration-success-card">
+
+        <div class="cf-registration-success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M5 12.5 9.2 17 19 7"/>
+            </svg>
+        </div>
+
+        <div class="cf-registration-success-heading">
+            <span>CONFRONTA</span>
+            <h1>Cadastro realizado com sucesso</h1>
+            <p>
+                Sua conta foi criada e você já está conectado.
+                Para liberar o acesso ao sistema, falta apenas concluir o pagamento.
+            </p>
+        </div>
+
+        <div class="cf-registration-summary">
+            <div class="cf-registration-summary-item">
+                <span>Nome</span>
+                <strong>{{ user.get_full_name|default:user.email }}</strong>
+            </div>
+
+            <div class="cf-registration-summary-item">
+                <span>E-mail</span>
+                <strong>{{ user.email }}</strong>
+            </div>
+
+            {% if plano_selecionado %}
+            <div class="cf-registration-summary-item">
+                <span>Plano escolhido</span>
+                <strong>
+                    {% if ciclo == 'YEARLY' %}
+                        CONFRONTA Anual
+                    {% else %}
+                        CONFRONTA Mensal
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="cf-registration-summary-item">
+                <span>Valor</span>
+                <strong>
+                    {% if ciclo == 'YEARLY' %}
+                        R$ {{ plano_selecionado.valor_anual_exibicao|floatformat:2 }}/ano
+                    {% else %}
+                        R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês
+                    {% endif %}
+                </strong>
+            </div>
+            {% endif %}
+
+            <div class="cf-registration-summary-item">
+                <span>Status</span>
+                <strong class="cf-registration-status">
+                    Aguardando pagamento
+                </strong>
+            </div>
+        </div>
+
+        {% if plano_selecionado %}
+        <section class="cf-registration-payment">
+            <div class="cf-registration-payment-copy">
+                <span>Próximo passo</span>
+                <h2>Finalize sua assinatura</h2>
+
+                {% if ciclo == 'YEARLY' %}
+                <p>
+                    Plano anual equivalente a
+                    <strong>
+                        R$ {{ plano_selecionado.mensal_equivalente_anual|floatformat:2 }}/mês
+                    </strong>,
+                    com cobrança anual de
+                    <strong>
+                        R$ {{ plano_selecionado.valor_anual_exibicao|floatformat:2 }}
+                    </strong>.
+                </p>
+                {% else %}
+                <p>
+                    Assinatura mensal de
+                    <strong>
+                        R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês
+                    </strong>.
+                </p>
+                {% endif %}
+
+                <small>
+                    Você será direcionado ao ambiente seguro do Asaas.
+                    O acesso ao CONFRONTA será liberado automaticamente após a confirmação do pagamento.
+                </small>
+            </div>
+
+            <form method="post"
+                  action="{% url 'billing:iniciar_checkout' %}"
+                  class="cf-registration-payment-action">
+                {% csrf_token %}
+                <input type="hidden" name="ciclo" value="{{ ciclo }}">
+
+                <button type="submit">
+                    Continuar para o pagamento
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 12h14M14 7l5 5-5 5"/>
+                    </svg>
+                </button>
+            </form>
+        </section>
+        {% endif %}
+
+    </section>
+
+</div>
+{% endblock %}

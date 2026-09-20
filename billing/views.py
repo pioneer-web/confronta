@@ -33,7 +33,14 @@ def iniciar_checkout(request):
     try:
         checkout = criar_checkout(request, perfil, ciclo)
     except (AsaasConfigurationError, AsaasAPIError, RuntimeError, ValueError) as exc:
-        messages.error(request, 'Não foi possível iniciar o pagamento agora. Tente novamente em alguns instantes.')
+        messages.error(
+            request,
+            'Não foi possível iniciar o pagamento agora. Tente novamente em alguns instantes.'
+        )
+
+        if perfil.plano == PerfilCliente.Plano.SEM_PLANO:
+            return redirect('aplicativo:cadastro_concluido')
+
         return redirect('aplicativo:planos')
 
     return redirect(checkout.checkout_url)

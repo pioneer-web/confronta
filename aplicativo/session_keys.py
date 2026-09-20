@@ -3,3 +3,4 @@
 SESSION_CAR_ATUAL = 'aplicativo_car_atual'
 SESSION_CONSULTA_ORIGEM = 'aplicativo_consulta_origem'
 SESSION_GLEBAS_TEMPORARIAS = 'aplicativo_glebas_temporarias'
+SESSION_CICLO_CONTRATACAO = 'aplicativo_ciclo_contratacao'

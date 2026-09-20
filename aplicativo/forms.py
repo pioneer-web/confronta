@@ -18,6 +18,20 @@ class ClienteLoginForm(forms.Form):
         self.request = request
         self.user_cache = None
 
+    def clean_telefone(self):
+        telefone = ' '.join(
+            str(self.cleaned_data.get('telefone') or '').split()
+        )
+        digitos = ''.join(
+            caractere for caractere in telefone
+            if caractere.isdigit()
+        )
+        if len(digitos) < 10:
+            raise forms.ValidationError(
+                'Informe um telefone válido.'
+            )
+        return telefone
+
     def clean(self):
         cleaned = super().clean()
         email = cleaned.get('email')
@@ -61,6 +75,7 @@ class CadastroClienteForm(forms.Form):
             'placeholder': '(00) 00000-0000',
         }),
     )
+
     password1 = forms.CharField(
         label='Senha',
         widget=forms.PasswordInput(attrs={
@@ -87,13 +102,6 @@ class CadastroClienteForm(forms.Form):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError('Já existe uma conta cadastrada com este e-mail.')
         return email
-
-    def clean_telefone(self):
-        telefone = ' '.join(str(self.cleaned_data.get('telefone') or '').split())
-        digitos = ''.join(c for c in telefone if c.isdigit())
-        if len(digitos) < 8:
-            raise forms.ValidationError('Informe um telefone válido.')
-        return telefone
 
     def clean(self):
         cleaned = super().clean()

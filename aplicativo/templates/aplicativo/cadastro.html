@@ -15,11 +15,11 @@
     <section class="cf-contract-shell">
         <div class="cf-contract-copy">
             <span class="cf-auth-eyebrow">Assinatura online</span>
-            <h1>Crie sua conta e conclua o pagamento no Asaas.</h1>
-            <p>Seu cadastro nasce sem acesso pago. O CONFRONTA libera automaticamente o plano somente após a confirmação financeira enviada pelo Asaas.</p>
+            <h1>Crie sua conta. Depois, finalize o pagamento no Asaas.</h1>
+            <p>Agora pedimos apenas os dados da sua conta. CPF, endereço e dados de pagamento serão informados diretamente no Checkout seguro do Asaas. O acesso é liberado somente após a confirmação do pagamento.</p>
             <div class="cf-contract-steps">
-                <div><strong>1</strong><span>Crie sua conta no CONFRONTA.</span></div>
-                <div><strong>2</strong><span>Informe os dados de pagamento no Checkout seguro do Asaas.</span></div>
+                <div><strong>1</strong><span>Crie sua conta com nome, e-mail e senha.</span></div>
+                <div><strong>2</strong><span>Informe CPF, endereço e cartão no Checkout seguro do Asaas.</span></div>
                 <div><strong>3</strong><span>Pagamento confirmado: o acesso é liberado automaticamente.</span></div>
             </div>
         </div>
@@ -34,8 +34,8 @@
             <div class="cf-selected-plan">
                 <span>Modalidade selecionada</span>
                 {% if ciclo == 'YEARLY' %}
-                    <strong>CONFRONTA Anual — R$ 49,90/mês</strong>
-                    <small>R$ {{ plano_selecionado.preco_anual|floatformat:2 }} cobrados anualmente · economia de R$ 216,00/ano</small>
+                    <strong>CONFRONTA Anual — R$ {{ plano_selecionado.mensal_equivalente_anual|floatformat:2 }}/mês</strong>
+                    <small>R$ {{ plano_selecionado.valor_anual_exibicao|floatformat:2 }} cobrados anualmente · economia de R$ {{ plano_selecionado.economia_anual|floatformat:2 }}/ano</small>
                 {% else %}
                     <strong>CONFRONTA Mensal — R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês</strong>
                     <small>Cobrança recorrente mensal</small>
@@ -51,7 +51,14 @@
 
                 <div class="cf-field"><label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>{{ form.nome }}{% for error in form.nome.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
                 <div class="cf-field"><label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>{{ form.email }}{% for error in form.email.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
-                <div class="cf-field"><label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>{{ form.telefone }}{% for error in form.telefone.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+                <div class="cf-field">
+                    <label for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }}</label>
+                    {{ form.telefone }}
+                    {% for error in form.telefone.errors %}
+                    <span class="field-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
                 <div class="cf-field">
                     <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
                     <div class="cf-password-wrap">
@@ -76,15 +83,15 @@
                     {% for error in form.password2.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
                 </div>
 
-                <button class="cf-auth-submit" type="submit">Criar conta e ir para o pagamento</button>
+                <button class="cf-auth-submit" type="submit">Realizar cadastro</button>
             </form>
 
             <div class="cf-contract-plans">
                 <strong>Prefere outra modalidade?</strong>
                 {% if ciclo == 'YEARLY' %}
-                    <a href="{% url 'aplicativo:cadastro_mensal' %}"><span>Mensal — R$ 67,90/mês</span><span>Selecionar →</span></a>
+                    <a href="{% url 'aplicativo:cadastro_mensal' %}"><span>Mensal — R$ {{ plano_selecionado.preco_mensal|floatformat:2 }}/mês</span><span>Selecionar →</span></a>
                 {% else %}
-                    <a href="{% url 'aplicativo:cadastro_anual' %}"><span>Anual — R$ 49,90/mês</span><span>Selecionar →</span></a>
+                    <a href="{% url 'aplicativo:cadastro_anual' %}"><span>Anual — R$ {{ plano_selecionado.mensal_equivalente_anual|floatformat:2 }}/mês</span><span>Selecionar →</span></a>
                 {% endif %}
             </div>
             <div class="cf-contract-existing-login">

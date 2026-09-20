@@ -1,0 +1,225 @@
+/* Tela exclusiva de confirmação de cadastro */
+
+.client-topbar{
+    display:none !important;
+}
+
+.client-content{
+    padding-top:0;
+}
+
+.cf-registration-success{
+    width:100%;
+    max-width:1000px;
+    margin:0 auto;
+    padding:48px 28px 64px;
+}
+
+.cf-registration-success-card{
+    background:#ffffff;
+    border:1px solid #dce7e5;
+    border-radius:22px;
+    padding:42px;
+    box-shadow:0 18px 50px rgba(6,45,57,.10);
+}
+
+.cf-registration-success-icon{
+    width:58px;
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#e8f7ef;
+    margin-bottom:22px;
+}
+
+.cf-registration-success-icon svg{
+    width:30px;
+    height:30px;
+    fill:none;
+    stroke:#168153;
+    stroke-width:2.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+.cf-registration-success-heading{
+    max-width:720px;
+}
+
+.cf-registration-success-heading > span{
+    display:block;
+    margin-bottom:8px;
+    color:#168153;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.12em;
+}
+
+.cf-registration-success-heading h1{
+    margin:0;
+    color:#123642;
+    font-size:32px;
+    line-height:1.15;
+    font-weight:800;
+}
+
+.cf-registration-success-heading p{
+    margin:12px 0 0;
+    color:#5e737a;
+    font-size:16px;
+    line-height:1.65;
+}
+
+.cf-registration-summary{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:1px;
+    overflow:hidden;
+    margin-top:32px;
+    border:1px solid #dce7e5;
+    border-radius:14px;
+    background:#dce7e5;
+}
+
+.cf-registration-summary-item{
+    min-height:88px;
+    padding:18px 20px;
+    background:#f8fbfa;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+}
+
+.cf-registration-summary-item span{
+    color:#718389;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+
+.cf-registration-summary-item strong{
+    color:#193d48;
+    font-size:15px;
+    font-weight:750;
+    overflow-wrap:anywhere;
+}
+
+.cf-registration-status{
+    color:#946417 !important;
+}
+
+.cf-registration-payment{
+    margin-top:28px;
+    padding:28px;
+    border-radius:16px;
+    background:#f3f8f7;
+    border:1px solid #d6e4e1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:32px;
+}
+
+.cf-registration-payment-copy{
+    max-width:620px;
+}
+
+.cf-registration-payment-copy > span{
+    color:#168153;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+}
+
+.cf-registration-payment-copy h2{
+    margin:5px 0 8px;
+    color:#123642;
+    font-size:22px;
+    font-weight:800;
+}
+
+.cf-registration-payment-copy p{
+    margin:0 0 8px;
+    color:#405a63;
+    font-size:15px;
+    line-height:1.55;
+}
+
+.cf-registration-payment-copy small{
+    display:block;
+    color:#72858b;
+    font-size:12px;
+    line-height:1.55;
+}
+
+.cf-registration-payment-action{
+    flex:0 0 auto;
+}
+
+.cf-registration-payment-action button{
+    min-width:260px;
+    height:52px;
+    border:0;
+    border-radius:10px;
+    padding:0 22px;
+    background:#123d4b;
+    color:#fff;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-size:14px;
+    font-weight:800;
+    transition:.18s ease;
+}
+
+.cf-registration-payment-action button:hover{
+    background:#0c5362;
+    transform:translateY(-1px);
+}
+
+.cf-registration-payment-action svg{
+    width:19px;
+    height:19px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+@media (max-width:760px){
+    .cf-registration-success{
+        padding:24px 14px 40px;
+    }
+
+    .cf-registration-success-card{
+        padding:26px 20px;
+        border-radius:16px;
+    }
+
+    .cf-registration-success-heading h1{
+        font-size:25px;
+    }
+
+    .cf-registration-summary{
+        grid-template-columns:1fr;
+    }
+
+    .cf-registration-payment{
+        flex-direction:column;
+        align-items:stretch;
+        padding:22px;
+    }
+
+    .cf-registration-payment-action button{
+        width:100%;
+        min-width:0;
+    }
+}

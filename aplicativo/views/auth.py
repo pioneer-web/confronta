@@ -11,7 +11,7 @@ from administracao.models import User
 from aplicativo.access import resolver_acesso_aplicativo
 from aplicativo.forms import CadastroClienteForm, ClienteLoginForm
 from aplicativo.models import PerfilCliente, PlanoComercial
-from aplicativo.permissions import SESSION_LOGOUT_LOCAL
+from aplicativo.permissions import SESSION_LOGOUT_LOCAL, cliente_required
 from aplicativo.security import (
     limpar_falhas_login,
     minutos_para_mensagem,
@@ -19,14 +19,12 @@ from aplicativo.security import (
     registrar_sinal_bot,
     verificar_login,
 )
-from aplicativo.session_keys import SESSION_CAR_ATUAL
+from aplicativo.session_keys import SESSION_CAR_ATUAL, SESSION_CICLO_CONTRATACAO
 from aplicativo.session_control import (
     ativar_sessao_unica_cliente,
     desativar_sessao_unica_cliente,
 )
 from billing.models import AsaasCheckout
-from billing.services.asaas import AsaasAPIError, AsaasConfigurationError
-from billing.services.checkout import criar_checkout
 
 
 HONEYPOT_FIELD = '_contact_website'
@@ -154,15 +152,14 @@ def cadastro_view(request, modalidade=None):
                 login(request, user)
                 ativar_sessao_unica_cliente(request, user)
                 request.session.pop(SESSION_LOGOUT_LOCAL, None)
-                try:
-                    checkout = criar_checkout(request, perfil, ciclo)
-                except (AsaasConfigurationError, AsaasAPIError, RuntimeError, ValueError):
-                    messages.error(
-                        request,
-                        'Sua conta foi criada normalmente, mas não foi possível iniciar o pagamento agora. Tente novamente em alguns instantes.',
-                    )
-                    return redirect('aplicativo:planos')
-                return redirect(checkout.checkout_url)
+
+                # Guarda somente a modalidade escolhida.
+                # O Checkout será criado apenas quando o cliente confirmar
+                # explicitamente que deseja continuar para o pagamento.
+                request.session[SESSION_CICLO_CONTRATACAO] = ciclo
+                request.session.modified = True
+
+                return redirect('aplicativo:cadastro_concluido')
 
     return render(request, 'aplicativo/cadastro.html', {
         'form': form,
@@ -171,6 +168,51 @@ def cadastro_view(request, modalidade=None):
         'modalidade': modalidade,
         'honeypot_field': HONEYPOT_FIELD,
     }, status=status)
+
+
+
+@cliente_required
+@never_cache
+def cadastro_concluido_view(request):
+    acesso = request.acesso_aplicativo
+
+    if acesso.eh_administrador:
+        return redirect('aplicativo:inicio')
+
+    perfil = request.user.perfil_cliente
+
+    if perfil.possui_plano:
+        return redirect('aplicativo:inicio')
+
+    ciclo = request.session.get(SESSION_CICLO_CONTRATACAO)
+
+    if ciclo not in {
+        AsaasCheckout.Ciclo.MONTHLY,
+        AsaasCheckout.Ciclo.YEARLY,
+    }:
+        return redirect('aplicativo:planos')
+
+    plano = (
+        perfil.plano_desejado_comercial
+        or PlanoComercial.objects.filter(
+            slug='confronta',
+            ativo=True,
+        ).first()
+    )
+
+    if plano is None:
+        return redirect('aplicativo:planos')
+
+    return render(
+        request,
+        'aplicativo/cadastro_concluido.html',
+        {
+            'acesso_aplicativo': acesso,
+            'perfil_cliente': perfil,
+            'plano_selecionado': plano,
+            'ciclo': ciclo,
+        },
+    )
 
 
 def logout_view(request):
