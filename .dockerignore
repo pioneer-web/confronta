@@ -9,4 +9,5 @@ var
 staticfiles
 *.zip
 import_inbox/*
+manage_batches/
 node_modules/

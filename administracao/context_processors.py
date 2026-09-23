@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from administracao.source_catalog import SOURCE_PROFILES
 
 
@@ -16,6 +18,10 @@ def administracao_context(request):
         'can_manage_commercial': bool(is_superadmin or is_admin_total),
         'can_manage_admins': is_superadmin,
         'can_manage_tables': bool(autenticado and getattr(user, 'can_manage_tables', False)),
+        'manage_web_url': (
+            getattr(settings, 'CONFRONTA_WEB_URL', '').rstrip('/')
+            if settings.ROOT_URLCONF == 'config.manage_urls' else ''
+        ),
     }
 
 

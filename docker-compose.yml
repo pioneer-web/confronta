@@ -19,6 +19,7 @@ services:
       retries: 20
 
   web:
+    image: ${CONFRONTA_APP_IMAGE:-confronta-app:local}
     build: .
     restart: unless-stopped
     env_file:
@@ -41,6 +42,32 @@ services:
     ports:
       - "8000:8000"
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+  manage:
+    image: ${CONFRONTA_APP_IMAGE:-confronta-app:local}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_ROOT_URLCONF: config.manage_urls
+      DJANGO_RUN_MIGRATIONS: "false"
+      DJANGO_BOOTSTRAP_SUPERADMIN: "false"
+      CONFRONTA_WEB_URL: "${CONFRONTA_WEB_URL:-http://localhost:8000}"
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - manage_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    ports:
+      - "8001:8001"
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8001"]
 
   worker:
     build: .

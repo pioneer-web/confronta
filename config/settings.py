@@ -38,7 +38,8 @@ MIDDLEWARE = [
     'aplicativo.middleware.SessaoUnicaClienteMiddleware',
     'aplicativo.middleware.LimiteCorpoRequisicaoMiddleware',
 ]
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = os.getenv('DJANGO_ROOT_URLCONF', 'config.urls')
+CONFRONTA_WEB_URL = os.getenv('CONFRONTA_WEB_URL', '').strip()
 TEMPLATES = [{'BACKEND':'django.template.backends.django.DjangoTemplates','DIRS':[BASE_DIR/'templates'],'APP_DIRS':True,'OPTIONS':{'context_processors':['django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages','administracao.context_processors.administracao_context']}}]
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'

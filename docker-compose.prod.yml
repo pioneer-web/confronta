@@ -21,6 +21,7 @@ services:
       retries: 20
 
   web:
+    image: ${CONFRONTA_APP_IMAGE:-confronta-app:local}
     build:
       context: .
       dockerfile: Dockerfile
@@ -63,6 +64,34 @@ services:
       - "1000"
       - --max-requests-jitter
       - "100"
+
+  manage:
+    image: ${CONFRONTA_APP_IMAGE:-confronta-app:local}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_ENV: production
+      DJANGO_DEBUG: "false"
+      DJANGO_ROOT_URLCONF: config.manage_urls
+      DJANGO_RUN_MIGRATIONS: "false"
+      DJANGO_BOOTSTRAP_SUPERADMIN: "false"
+      CONFRONTA_WEB_URL: "${CONFRONTA_WEB_URL:-https://confronta.com.br}"
+      BATCH_STORAGE_DIR: /app/manage_batches
+      BATCH_RECOVERY_DIR: /app/import_inbox/.manage_batches/recovery
+      BATCH_LEGACY_STORAGE_DIR: /app/manage_batches_legacy
+      IMPORT_INBOX_DIR: /app/import_inbox
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - confronta_var:/app/var
+      - ./manage_batches:/app/manage_batches
+      - manage_batches:/app/manage_batches_legacy
+      - ./import_inbox:/app/import_inbox
+    expose:
+      - "8001"
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8001", "--workers", "2", "--timeout", "180"]
 
   worker:
     build:
@@ -146,6 +175,7 @@ services:
     restart: unless-stopped
     depends_on:
       - web
+      - manage
     volumes:
       - staticfiles:/app/staticfiles:ro
     expose:
