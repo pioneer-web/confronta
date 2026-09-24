@@ -1,0 +1,10 @@
+{% extends "errors/base_error.html" %}
+{% block title %}Confronta | Acesso não autorizado{% endblock %}
+{% block code %}403{% endblock %}
+{% block heading %}Acesso não autorizado{% endblock %}
+{% block message %}Sua conta não possui permissão para acessar esta área do Confronta.{% endblock %}
+{% block tips %}
+<li>Verifique se está conectado com a conta correta.</li>
+<li>Algumas áreas são restritas a administradores.</li>
+<li>Se acredita que deveria ter acesso, entre em contato com o suporte.</li>
+{% endblock %}

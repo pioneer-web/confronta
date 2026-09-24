@@ -1,0 +1,247 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Confronta{% endblock %}</title>
+  <style>
+    :root {
+      --bg: #071a12;
+      --bg2: #0c2418;
+      --card: rgba(10, 28, 20, 0.88);
+      --line: rgba(82, 255, 163, 0.12);
+      --primary: #2eea84;
+      --primary-dark: #1fc96d;
+      --text: #ecfff4;
+      --muted: #b8d8c5;
+      --soft: #8ab39a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(46,234,132,0.08), transparent 30%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.12);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .brand img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    .wrap {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 760px;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 22px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.30);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .icon {
+      width: 94px;
+      height: 94px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(46,234,132,0.30);
+      box-shadow: 0 0 0 14px rgba(46,234,132,0.05);
+      color: var(--primary);
+      font-size: 34px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 40px;
+      line-height: 1.1;
+    }
+
+    p.lead {
+      margin: 0 auto 24px;
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 150px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: .2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #062112;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border-color: rgba(255,255,255,0.14);
+    }
+
+    .info-box {
+      text-align: left;
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 22px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .info-box h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .info-box ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--soft);
+      line-height: 1.7;
+    }
+
+    .back {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .back a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    @media (max-width: 640px) {
+      .card { padding: 28px 20px; }
+      h1 { font-size: 30px; }
+      p.lead { font-size: 16px; }
+      .topbar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/" class="brand">
+      <img src="{% static 'aplicativo/img/logo-branca.png' %}" alt="Confronta">
+      <span>Confronta</span>
+    </a>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="inner">
+        <div class="icon">{% block code %}!{% endblock %}</div>
+        <h1>{% block heading %}Ocorreu um problema{% endblock %}</h1>
+        <p class="lead">
+          {% block message %}
+          Não foi possível concluir esta solicitação no momento.
+          {% endblock %}
+        </p>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="/">Ir para o início</a>
+          <a class="btn btn-secondary" href="javascript:history.back()">Voltar</a>
+        </div>
+
+        <div class="info-box">
+          <h3>O que você pode fazer agora?</h3>
+          <ul>
+            {% block tips %}
+            <li>Revise o endereço acessado.</li>
+            <li>Tente novamente em instantes.</li>
+            <li>Se o problema persistir, entre em contato com o suporte.</li>
+            {% endblock %}
+          </ul>
+        </div>
+
+        <div class="back">
+          <a href="javascript:history.back()">← Voltar para a página anterior</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
