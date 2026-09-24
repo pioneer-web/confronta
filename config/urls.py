@@ -19,5 +19,4 @@ urlpatterns = [
     path('', home_publica, name='public_root'),
     path('mapa/', include('aplicativo.urls')),
     path('pagamentos/', include('billing.urls')),
-    path('painel/', include('administracao.urls')),
 ]
