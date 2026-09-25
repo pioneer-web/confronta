@@ -21,10 +21,12 @@ from aplicativo.views import (
     nova_consulta_geometria,
     planos_view,
 )
+from aplicativo.views.cars_visiveis import cars_visiveis
 
 app_name = 'aplicativo'
 
 urlpatterns = [
+    path('api/cars-visiveis/', cars_visiveis, name='cars_visiveis'),
     path('login/', login_view, name='login'),
 
     # Recuperação de senha por e-mail.

@@ -3,7 +3,7 @@
 {% block title %}CONFRONTA — Área do Cliente{% endblock %}
 {% block client_content_class %}client-content-app{% endblock %}
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-ux.css' %}?v=001">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-ux.css' %}?v=004-car-ocr-result-state">
 {% if possui_plano %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-rotate-map@0.3.2/leaflet.css">
 
@@ -14,7 +14,7 @@
 {# Overrides visuais do mapa — sempre carregados por último #}
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-base.css' %}?v=008">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=001">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=001">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=007-popup-alert-summary">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=002">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=005-unified-palette">
 
@@ -152,7 +152,30 @@
                 {% csrf_token %}
                 <label for="modal-car">Código do CAR</label>
                 <input id="modal-car" name="car" type="text" maxlength="120" autocomplete="off" placeholder="PE-0000000-00000000000000000000000000000000" required>
-                <button type="submit">Consultar imóvel</button>
+                <div class="car-image-ocr-divider"><span>ou</span></div>
+                <section class="car-image-ocr" aria-labelledby="car-image-ocr-title">
+                    <strong id="car-image-ocr-title">Ler CAR da imagem</strong>
+                    <div class="car-image-ocr-dropzone" id="car-image-ocr-dropzone" tabindex="0" role="button" aria-label="Cole ou arraste uma imagem com o código CAR">
+                        <span>Cole uma captura com Ctrl+V</span>
+                        <span>ou arraste uma imagem aqui</span>
+                        <label class="car-image-ocr-select" for="car-image-ocr-file">Selecionar imagem</label>
+                        <input id="car-image-ocr-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" tabindex="-1">
+                    </div>
+                    <div class="car-image-ocr-workspace" id="car-image-ocr-workspace" hidden>
+                        <div class="car-image-ocr-preview-wrap" id="car-image-ocr-preview-wrap">
+                            <canvas id="car-image-ocr-preview" aria-label="Pré-visualização da imagem; arraste para marcar a área de recorte"></canvas>
+                            <div class="car-image-ocr-selection" id="car-image-ocr-selection" hidden></div>
+                        </div>
+                        <small class="car-image-ocr-hint" id="car-image-ocr-hint">Arraste sobre a imagem para marcar a área de recorte.</small>
+                        <div class="car-image-ocr-actions">
+                            <button type="button" id="car-image-ocr-full-image">Usar imagem inteira</button>
+                            <button type="button" id="car-image-ocr-run">Executar OCR</button>
+                        </div>
+                    </div>
+                    <p class="car-image-ocr-status" id="car-image-ocr-status" role="status" aria-live="polite" hidden></p>
+                    <div class="car-image-ocr-results" id="car-image-ocr-results" hidden></div>
+                </section>
+                <button type="submit">Consultar CAR</button>
             </form>
         </div>
 
@@ -258,6 +281,11 @@
                 <button type="button" class="map-layer-eye is-active" data-layer-eye="perimetro" aria-pressed="true">
                     <span class="map-layer-swatch"></span>
                     <span class="map-layer-name">Área do CAR</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
+                </button>
+                <button type="button" class="map-layer-eye is-active" data-layer-eye="cars_contextuais" aria-pressed="true">
+                    <span class="map-layer-swatch"></span>
+                    <span class="map-layer-name">CARs na área visível</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
                 </button>
                 {% for chave, camada in consulta.camadas.items %}
@@ -676,6 +704,9 @@
 {% if possui_plano %}
 <div id="app-config"
      data-can-draw="{% if pode_desenhar_glebas %}1{% else %}0{% endif %}"
+     data-cars-url="{% url 'aplicativo:cars_visiveis' %}"
+     data-car-export-url="{% url 'aplicativo:exportar_car_kml' %}"
+     data-layer-export-url="{% url 'aplicativo:exportar_camada_kml' 'CAMADA_PLACEHOLDER' %}"
      data-car="{% if consulta %}{{ consulta.imovel.cod_imovel }}{% endif %}"
      data-user-id="{{ request.user.pk|default:'' }}"></div>
 {% endif %}
@@ -688,8 +719,9 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
 {% endif %}
-<script src="{% static 'aplicativo/js/mapa.js' %}?v=064-hybrid-labels"></script>
+<script src="{% static 'aplicativo/js/mapa.js' %}?v=071-layer-popup-labels"></script>
 <script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
+<script src="{% static 'aplicativo/js/car-ocr.js' %}?v=003-reset-preview-crop"></script>
 {% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}
 <script src="{% static 'aplicativo/js/interface.js' %}?v=057-report-print"></script>
 {% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=058-kml-import-poligonos"></script>{% endif %}

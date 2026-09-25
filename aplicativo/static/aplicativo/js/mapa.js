@@ -11,6 +11,7 @@
     // evitando solicitar níveis sem imagem e exibir “sem mapa”.
     const MAX_SATELLITE_NATIVE_ZOOM = 17;
     const MAX_SATELLITE_ZOOM = 19;
+    const fullscreenTarget = mapElement.closest('.client-shell') || mapElement;
 
     const map = L.map(mapElement, {
         zoomControl: true,
@@ -26,6 +27,38 @@
     if (map.zoomControl && typeof map.zoomControl.setPosition === 'function') {
         map.zoomControl.setPosition('topleft');
     }
+
+    const fullscreenControl = L.control({ position: 'topleft' });
+    let fullscreenButton = null;
+    fullscreenControl.onAdd = function () {
+        const button = L.DomUtil.create('button', 'leaflet-control-fullscreen', this._container);
+        button.type = 'button';
+        button.title = 'Tela cheia do mapa';
+        button.setAttribute('aria-label', 'Colocar mapa em tela cheia');
+        button.textContent = '⛶';
+        fullscreenButton = button;
+        L.DomEvent.disableClickPropagation(button);
+        L.DomEvent.on(button, 'click', async function () {
+            try {
+                if (document.fullscreenElement === fullscreenTarget) await document.exitFullscreen();
+                else if (!document.fullscreenElement && fullscreenTarget.requestFullscreen) await fullscreenTarget.requestFullscreen();
+            } catch (error) {
+                // A API pode ser bloqueada pelo navegador; o mapa permanece utilizável.
+            }
+        });
+        return button;
+    };
+    fullscreenControl.addTo(map);
+    document.addEventListener('fullscreenchange', function () {
+        const active = document.fullscreenElement === fullscreenTarget;
+        if (fullscreenButton) {
+            fullscreenButton.textContent = active ? '⤢' : '⛶';
+            fullscreenButton.title = active ? 'Sair da tela cheia' : 'Tela cheia do mapa';
+            fullscreenButton.setAttribute('aria-label', active ? 'Sair da tela cheia do mapa' : 'Colocar mapa em tela cheia');
+            fullscreenButton.classList.toggle('is-fullscreen', active);
+        }
+        window.setTimeout(() => map.invalidateSize(), 80);
+    });
 
     const satellite = L.tileLayer(
         'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -132,10 +165,10 @@
     let activeFullFeaturePreview = null;
 
     const palette = {
-        perimetro: { color: '#FFFFFF', weight: 2.5, fillOpacity: 0.07, opacity: 1, fillColor: '#54d38a' },
+        perimetro: { color: '#FFFFFF', weight: 4.4, fillOpacity: 0.02, opacity: 1, fillColor: '#FFFFFF' },
         app: { color: '#2b83cf', weight: 2.4, fillOpacity: 0.22, opacity: 0.98 },
-        reserva_legal: { color: '#1b7a35', weight: 2.3, fillOpacity: 0.26, opacity: 0.98 },
-        vegetacao_nativa: { color: '#22a35f', weight: 2.3, fillOpacity: 0.24, opacity: 0.98 },
+        reserva_legal: { color: '#16823B', weight: 2.7, fillColor: '#259E46', fillOpacity: 0.34, opacity: 1 },
+        vegetacao_nativa: { color: '#0DA663', weight: 2.7, fillColor: '#32C878', fillOpacity: 0.30, opacity: 1 },
         area_consolidada: { color: '#d19a24', weight: 2.25, fillOpacity: 0.22, opacity: 0.98 },
         area_pousio: { color: '#b67a18', weight: 2.2, fillOpacity: 0.20, opacity: 0.97 },
         hidrografia: { color: '#0f8fd6', weight: 2.45, fillOpacity: 0.24, opacity: 0.98 },
@@ -268,7 +301,7 @@
         const custom = featureLayer && featureLayer._confrontaCustomColor ? normalizeHexColor(featureLayer._confrontaCustomColor, style.color) : style.color;
         style.color = custom;
         if (!('fillColor' in style) || !style.fillColor) style.fillColor = custom;
-        else style.fillColor = custom;
+        else if (layerKey !== 'perimetro') style.fillColor = custom;
         if (emphasize) {
             style.weight = Number(style.weight || 2) + 0.45;
             style.fillOpacity = Math.min(0.42, Number(style.fillOpacity || 0.2) + 0.08);
@@ -432,7 +465,120 @@
         window.setTimeout(() => URL.revokeObjectURL(url), 0);
     }
 
+    function appendCardAction(card, text, className, onClick) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = className;
+        button.textContent = text;
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onClick();
+        });
+        card.appendChild(button);
+        return button;
+    }
+
+    function appendCarDetails(card, rows) {
+        const details = document.createElement('div');
+        details.className = 'cf-context-car-popup-details';
+        rows.forEach(([label, value]) => {
+            const row = document.createElement('div');
+            row.className = 'cf-context-car-popup-row';
+            const name = document.createElement('strong');
+            name.textContent = label;
+            const content = document.createElement('span');
+            content.textContent = value || 'Não informada';
+            row.append(name, content);
+            details.appendChild(row);
+        });
+        card.appendChild(details);
+    }
+
+    function startWorkingWithCar(code) {
+        const form = document.querySelector('form.topbar-car-search');
+        const input = form && form.querySelector('input[name="car"]');
+        if (!form || !input || !code) return;
+        input.value = code;
+        form.requestSubmit();
+    }
+
+    function layerKmlUrl(key) {
+        const template = configElement?.dataset.layerExportUrl;
+        return template ? template.replace('CAMADA_PLACEHOLDER', encodeURIComponent(key)) : null;
+    }
+
     function buildTerritorialPopup(feature, label, color, kind, layerData, layerKey, featureLayer) {
+        if (layerKey === 'ext_outros_car') {
+            const props = feature?.properties || {};
+            const card = document.createElement('section');
+            card.className = 'cf-context-car-popup';
+            const heading = document.createElement('div');
+            heading.className = 'cf-context-car-popup-heading';
+            heading.textContent = 'CAR sobreposto';
+            card.appendChild(heading);
+            const overlapArea = Number(props.area_sobreposta_ha);
+            appendCarDetails(card, [
+                ['Código CAR', props.cod_imovel],
+                ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Área', props.area_total_ha != null && Number.isFinite(Number(props.area_total_ha))
+                    ? `${Number(props.area_total_ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha` : 'Não informada'],
+                ['Situação do CAR', props.situacao_car || props.condicao],
+                ...(Number.isFinite(overlapArea) && props.area_sobreposta_ha != null
+                    ? [['Área de interseção', `${overlapArea.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha`]] : [])
+            ]);
+            appendCardAction(card, 'Trabalhar no CAR', 'cf-context-car-popup-action', () => startWorkingWithCar(props.cod_imovel));
+            appendCardAction(card, 'Baixar CAR em KML', 'cf-context-car-popup-action is-secondary', () => {
+                const fullFeature = {
+                    ...feature,
+                    geometry: props._confronta_full_geometry || feature.geometry
+                };
+                downloadFeatureKml(fullFeature, props.cod_imovel || 'CAR-sobreposto');
+            });
+            return card;
+        }
+
+        if (layerKey !== 'perimetro' && !layerKey.startsWith('ext_')) {
+            const selectedArea = selectedAreaHa(feature, layerData);
+            const internalLayerNames = {
+                app: 'APP',
+                reserva_legal: 'Reserva Legal',
+                vegetacao_nativa: 'Vegetação Nativa',
+                area_consolidada: 'Área Consolidada',
+                area_pousio: 'Área de Pousio',
+                hidrografia: 'Hidrografia',
+                servidao_administrativa: 'Servidão Administrativa',
+                uso_restrito: 'Área de Uso Restrito'
+            };
+            const card = document.createElement('section');
+            card.className = 'cf-context-car-popup cf-layer-feature-popup';
+            const heading = document.createElement('div');
+            heading.className = 'cf-context-car-popup-heading';
+            heading.textContent = internalLayerNames[layerKey] || String(label || '').trim() || humanizeKey(layerKey);
+            card.appendChild(heading);
+            const totalArea = Number(consulta?.imovel?.area_total_ha);
+            appendCarDetails(card, [
+                ['Código CAR', consulta?.imovel?.cod_imovel || carCode],
+                ['Área total do CAR', Number.isFinite(totalArea)
+                    ? `${totalArea.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`
+                    : 'Não informada'],
+                ['Área da camada selecionada', selectedArea !== null
+                    ? `${selectedArea.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`
+                    : 'Não informada']
+            ]);
+            appendCardAction(card, 'Baixar camada em KML', 'cf-context-car-popup-action', () => {
+                const url = layerKmlUrl(layerKey);
+                if (url) window.location.assign(url);
+            });
+            appendCardAction(card, 'Baixar CAR em KML', 'cf-context-car-popup-action is-secondary', () => {
+                const url = configElement?.dataset.carExportUrl;
+                if (url) window.location.assign(url);
+            });
+            return card;
+        }
+
+        if (layerKey === 'perimetro') return buildWorkingCarPopup(consulta?.imovel || {}, consulta?.alertas);
+
         const root = document.createElement('section');
         root.className = 'cf-feature-popup';
         const isOtherCar = layerKey === 'ext_outros_car';
@@ -460,9 +606,11 @@
         const areaMetric = document.createElement('div');
         areaMetric.className = 'cf-feature-popup-metric';
         const areaLabel = document.createElement('span');
-        areaLabel.textContent = 'Área selecionada';
+        areaLabel.textContent = isOtherCar ? 'Área de interseção' : 'Área selecionada';
         const areaValue = document.createElement('strong');
-        const area = selectedAreaHa(feature, layerData);
+        const overlapArea = Number(feature?.properties?.area_sobreposta_ha);
+        const area = isOtherCar && feature?.properties?.area_sobreposta_ha != null && Number.isFinite(overlapArea)
+            ? overlapArea : selectedAreaHa(feature, layerData);
         areaValue.textContent = area === null ? 'Geometria disponível' : `${area.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`;
         areaMetric.append(areaLabel, areaValue);
 
@@ -551,13 +699,18 @@
         full.type = 'button';
         full.className = 'cf-feature-popup-action is-secondary';
         full.innerHTML = isOtherCar
-            ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M8 21H3v-5"></path></svg><span>Mostrar CAR completo</span>'
+            ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M8 21H3v-5"></path></svg><span>Enquadrar CAR completo</span>'
             : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M8 21H3v-5"></path></svg><span>Mostrar área completa</span>';
         full.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            if (featureLayer) featureLayer._confrontaFullPreviewOpen = true;
-            showFullFeaturePreview(featureLayer, layerKey, feature);
+            if (isOtherCar && featureLayer && typeof featureLayer.getBounds === 'function') {
+                const bounds = featureLayer.getBounds();
+                if (bounds.isValid()) map.fitBounds(bounds, { padding: [22, 22], maxZoom: MAX_SATELLITE_ZOOM, animate: false });
+            } else {
+                if (featureLayer) featureLayer._confrontaFullPreviewOpen = true;
+                showFullFeaturePreview(featureLayer, layerKey, feature);
+            }
         });
 
         const hide = document.createElement('button');
@@ -590,6 +743,46 @@
         return root;
     }
 
+    function buildWorkingCarPopup(imovel, alertas) {
+        const popup = document.createElement('section');
+        popup.className = 'cf-context-car-popup cf-working-car-popup';
+        const heading = document.createElement('div');
+        heading.className = 'cf-context-car-popup-heading';
+        heading.textContent = 'CAR em trabalho';
+        popup.appendChild(heading);
+
+        const details = document.createElement('div');
+        details.className = 'cf-context-car-popup-details';
+        const area = Number(imovel.area_total_ha);
+        const rows = [
+            ['Código CAR', imovel.cod_imovel],
+            ['Município / UF', [imovel.municipio, imovel.uf].filter(Boolean).join(' / ')],
+            ['Área', imovel.area_total_ha != null && Number.isFinite(area)
+                ? `${area.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha` : 'Não informada'],
+            ['Situação do CAR', imovel.situacao_apresentacao]
+        ];
+        const alertCount = Number(alertas?.resumo?.quantidade) || 0;
+        rows.push(['Alertas', alertCount > 0
+            ? `${alertCount} identificado${alertCount === 1 ? '' : 's'}`
+            : 'Nenhum alerta identificado']);
+        rows.forEach(([label, value]) => {
+            const row = document.createElement('div');
+            row.className = 'cf-context-car-popup-row';
+            const name = document.createElement('strong');
+            name.textContent = label;
+            const content = document.createElement('span');
+            content.textContent = value || 'Não informado';
+            row.append(name, content);
+            details.appendChild(row);
+        });
+        popup.appendChild(details);
+        appendCardAction(popup, 'Baixar CAR em KML', 'cf-context-car-popup-action', () => {
+            const url = configElement?.dataset.carExportUrl;
+            if (url) window.location.assign(url);
+        });
+        return popup;
+    }
+
     let consulta = null;
     if (rawData) {
         try {
@@ -612,7 +805,17 @@
 
     function addGeoJsonLayer(key, layerData, visibleByDefault) {
         if (!layerData || !layerData.disponivel || !Array.isArray(layerData.features) || !layerData.features.length) return;
-        const group = L.geoJSON({ type: 'FeatureCollection', features: layerData.features }, {
+        // O resultado analítico conserva a interseção; apenas a feição desenhada usa o imóvel inteiro.
+        const displayFeatures = key === 'ext_outros_car'
+            ? layerData.features.map((feature) => ({
+                ...feature,
+                geometry: feature.properties?._confronta_full_geometry || feature.geometry
+            }))
+            : layerData.features;
+        const group = L.geoJSON({ type: 'FeatureCollection', features: displayFeatures }, {
+            pane: key === 'ext_outros_car'
+                ? 'overlappingCarsPane'
+                : (key.startsWith('ext_') ? 'overlayPane' : 'workingCarLayersPane'),
             style: function () {
                 return styleForKey(key);
             },
@@ -637,7 +840,9 @@
             keepInView: true,
             autoPanPaddingTopLeft: [24, 24],
             autoPanPaddingBottomRight: [24, 92],
-                    className: 'confronta-feature-leaflet-popup'
+                    className: !key.startsWith('ext_')
+                        ? 'confronta-feature-leaflet-popup confronta-context-car-popup'
+                        : 'confronta-feature-leaflet-popup'
                 });
             }
         });
@@ -646,41 +851,32 @@
         if (visibleByDefault) group.addTo(map);
     }
 
+    const overlappingCarsPane = map.createPane('overlappingCarsPane');
+    overlappingCarsPane.style.zIndex = '410';
+    const workingCarLayersPane = map.createPane('workingCarLayersPane');
+    workingCarLayersPane.style.zIndex = '461';
+    const selectedCarPane = map.createPane('selectedCarPane');
+    selectedCarPane.style.zIndex = '460';
+    selectedCarPane.classList.add('confronta-selected-car-pane');
+
     if (consulta && consulta.imovel && consulta.imovel.geometry) {
         perimeter = L.geoJSON({
             type: 'Feature',
             properties: { car: consulta.imovel.cod_imovel },
             geometry: consulta.imovel.geometry
         }, {
+            pane: 'selectedCarPane',
             style: styleForKey('perimetro'),
             onEachFeature: function (feature, layer) {
-                const carFeature = {
-                    type: 'Feature',
-                    properties: {
-                        municipio: consulta.imovel.municipio || '',
-                        uf: consulta.imovel.uf || '',
-                        situacao: consulta.imovel.situacao_apresentacao || ''
-                    },
-                    geometry: feature.geometry
-                };
                 applyStyleToFeatureLayer(layer, 'perimetro', false);
-                layer.bindPopup(() => buildTerritorialPopup(
-                    carFeature,
-                    'Perímetro do CAR',
-                    currentLayerColor('perimetro', '#FFFFFF'),
-                    'Imóvel consultado',
-                    { total_area_ha: consulta.imovel.area_total_ha, features: [carFeature] },
-                    'perimetro',
-                    layer
-                ), {
-                    maxWidth: 360,
-                    minWidth: 270,
+                layer.bindPopup(() => buildWorkingCarPopup(consulta.imovel, consulta.alertas), {
+                    maxWidth: 330,
                     closeButton: true,
                     autoPan: true,
             keepInView: true,
             autoPanPaddingTopLeft: [24, 24],
             autoPanPaddingBottomRight: [24, 92],
-                    className: 'confronta-feature-leaflet-popup'
+                    className: 'confronta-context-car-popup confronta-working-car-popup'
                 });
             }
         }).addTo(map);
@@ -697,7 +893,136 @@
         enquadrarCar();
     }
 
+    const visibleLayers = new Map();
+    if (perimeter) visibleLayers.set('perimetro', true);
+
+    // Perímetros contextuais independentes das camadas da consulta atual.
+    // O pane abaixo dos overlays preserva os desenhos e o CAR pesquisado em destaque.
+    if (configElement && configElement.dataset.carsUrl) {
+        const contextPane = map.createPane('carsContextuaisPane');
+        contextPane.style.zIndex = '380';
+        const contextLayer = L.geoJSON(null, {
+            pane: 'carsContextuaisPane',
+            style: { color: '#36A970', weight: 2, opacity: 0.94, fillColor: '#63C88D', fillOpacity: 0.14 },
+            onEachFeature: function (feature, layer) {
+                const props = feature.properties || {};
+                layer.bindPopup(function () {
+                    const popup = document.createElement('section');
+                    popup.className = 'cf-context-car-popup';
+                    const heading = document.createElement('div');
+                    heading.className = 'cf-context-car-popup-heading';
+                    heading.textContent = 'CAR na área visível';
+                    popup.appendChild(heading);
+                    appendCarDetails(popup, [
+                        ['Código CAR', props.cod_imovel],
+                        ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                        ['Área', Number.isFinite(Number(props.area_total_ha)) && props.area_total_ha !== null
+                            ? `${Number(props.area_total_ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha` : 'Não informada'],
+                        ['Situação do CAR', props.situacao_car]
+                    ]);
+                    appendCardAction(popup, 'Trabalhar no CAR', 'cf-context-car-popup-action', () => startWorkingWithCar(props.cod_imovel));
+                    appendCardAction(popup, 'Baixar CAR em KML', 'cf-context-car-popup-action is-secondary', () => {
+                        downloadFeatureKml(feature, props.cod_imovel || 'CAR-contextual');
+                    });
+                    return popup;
+                }, {
+                    className: 'confronta-context-car-popup',
+                    maxWidth: 330,
+                    autoPan: true,
+                    autoPanPaddingTopLeft: [24, 24],
+                    autoPanPaddingBottomRight: [24, 92]
+                });
+            }
+        }).addTo(map);
+        layers.cars_contextuais = contextLayer;
+        visibleLayers.set('cars_contextuais', true);
+        let timer = null;
+        let controller = null;
+        let lastKey = null;
+        let pendingKey = null;
+        let generation = 0;
+
+        function viewport() {
+            const zoom = map.getZoom();
+            if (zoom < 12 || zoom > 19) return null;
+            const bounds = map.getBounds();
+            const values = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+            const maxSpan = 360 * 12 / (2 ** zoom);
+            if (!values.every(Number.isFinite) || values[0] < -180 || values[2] > 180 ||
+                values[1] < -90 || values[3] > 90 || values[0] >= values[2] || values[1] >= values[3] ||
+                values[2] - values[0] > maxSpan ||
+                values[3] - values[1] > maxSpan) return null;
+            return { key: [zoom, ...values].join(','), zoom, values };
+        }
+
+        function abortPending() {
+            generation += 1;
+            window.clearTimeout(timer);
+            timer = null;
+            if (controller) controller.abort();
+            controller = null;
+            pendingKey = null;
+        }
+
+        function scheduleContext() {
+            const current = viewport();
+            if (!current) {
+                abortPending();
+                lastKey = null;
+                contextLayer.clearLayers();
+                return;
+            }
+            if (current.key === lastKey || current.key === pendingKey) return;
+            abortPending();
+            const version = generation;
+            pendingKey = current.key;
+            timer = window.setTimeout(async function () {
+                timer = null;
+                controller = new AbortController();
+                const params = new URLSearchParams({
+                    zoom: String(current.zoom), west: String(current.values[0]),
+                    south: String(current.values[1]), east: String(current.values[2]),
+                    north: String(current.values[3])
+                });
+                try {
+                    const response = await fetch(`${configElement.dataset.carsUrl}?${params}`, {
+                        signal: controller.signal, credentials: 'same-origin'
+                    });
+                    if (!response.ok) return;
+                    const data = await response.json();
+                    if (version !== generation || viewport()?.key !== current.key || !Array.isArray(data.features)) return;
+                    contextLayer.clearLayers();
+                    contextLayer.addData({ type: 'FeatureCollection', features: data.features });
+                    if (!visibleLayers.get('cars_contextuais')) map.removeLayer(contextLayer);
+                    if (perimeter && map.hasLayer(perimeter)) perimeter.bringToFront();
+                    lastKey = current.key;
+                } catch (error) {
+                    // A consulta contextual é opcional; o restante do mapa permanece disponível.
+                } finally {
+                    if (version === generation) {
+                        controller = null;
+                        pendingKey = null;
+                    }
+                }
+            }, 250);
+        }
+
+        map.on('movestart zoomstart', abortPending);
+        map.on('moveend zoomend', scheduleContext);
+        scheduleContext();
+    }
+
     function setLayerVisible(key, visible) {
+        if (key === 'cars_contextuais') {
+            const contextual = layers.cars_contextuais;
+            visibleLayers.set(key, Boolean(visible));
+            if (contextual) {
+                if (visible && !map.hasLayer(contextual)) contextual.addTo(map);
+                else if (!visible && map.hasLayer(contextual)) map.removeLayer(contextual);
+            }
+            if (perimeter && map.hasLayer(perimeter)) perimeter.bringToFront();
+            return;
+        }
         const layer = layers[key];
         if (!layer) return;
         if (visible) {
@@ -705,6 +1030,8 @@
         } else if (map.hasLayer(layer)) {
             map.removeLayer(layer);
         }
+        visibleLayers.set(key, Boolean(visible));
+        if (key !== 'perimetro' && perimeter && map.hasLayer(perimeter)) perimeter.bringToFront();
 
         document.querySelectorAll(`.layer-toggle[data-layer="${CSS.escape(key)}"]`).forEach((toggle) => {
             if (!toggle.disabled) toggle.checked = visible;

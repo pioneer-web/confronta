@@ -48,6 +48,7 @@ class RepositorioTerritorial:
     LIMITE_EXPORTACAO_POR_CAMADA = 10000
     LIMITE_INTERSECOES_EXTERNAS = 2000
     LIMITE_OUTROS_CARS = 1000
+    LIMITE_CARS_VISIVEIS = 750
 
     CAMADAS_SICAR = {
         'app': {
@@ -402,6 +403,63 @@ class RepositorioTerritorial:
             'data_importacao': self._serializar(row[11]),
             'geometry': geometry,
         }
+
+    def buscar_cars_no_bbox(self, west, south, east, north, *, car_excluido='', limite=LIMITE_CARS_VISIVEIS):
+        """Perímetros SICAR no viewport; usa GiST antes da interseção exata.
+
+        A limitação ocorre antes da serialização das geometrias. O resultado
+        devolve apenas atributos públicos e pode ser consumido por outro
+        transporte cartográfico no futuro.
+        """
+        if not self._camada_ativa(self.DATASET_IMOVEIS, self.TABELA_IMOVEIS):
+            return {'quantidade': 0, 'truncada': False, 'features': []}
+
+        srid = self._table_srid(self.SCHEMA_SICAR, self.TABELA_IMOVEIS)
+        if not srid:
+            raise CamadaIndisponivel('A base operacional do SICAR não possui SRID válido.')
+
+        limite = min(self.LIMITE_CARS_VISIVEIS, max(1, int(limite)))
+        query = sql.SQL(
+            "WITH entrada AS ("
+            "  SELECT CASE WHEN {srid} = 4326 THEN ST_MakeEnvelope(%s, %s, %s, %s, 4326) "
+            "    ELSE ST_Transform(ST_MakeEnvelope(%s, %s, %s, %s, 4326), {srid}) END AS geom"
+            "), candidatos AS MATERIALIZED ("
+            "  SELECT i.cod_imovel, i.municipio, i.uf, i.area_total_ha, i.situacao_car, i.geometry "
+            "  FROM {tabela} i CROSS JOIN entrada e "
+            "  WHERE i.geometry IS NOT NULL AND NOT ST_IsEmpty(i.geometry) "
+            "    AND i.geometry && e.geom "
+            "    AND ST_Intersects(ST_MakeValid(i.geometry), e.geom) "
+            "    AND (%s = '' OR upper(trim(i.cod_imovel)) <> %s) "
+            "  LIMIT %s"
+            ") "
+            "SELECT cod_imovel, municipio, uf, area_total_ha, situacao_car, "
+            "  ST_AsGeoJSON(ST_Force2D(ST_Transform("
+            "    ST_CollectionExtract(ST_MakeValid(geometry), 3), 4326)), 6) "
+            "FROM candidatos"
+        ).format(srid=sql.Literal(srid), tabela=sql.Identifier(self.SCHEMA_SICAR, self.TABELA_IMOVEIS))
+        car_excluido = (car_excluido or '').strip().upper()
+        params = [west, south, east, north] * 2 + [car_excluido, car_excluido, limite + 1]
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+        truncada = len(rows) > limite
+        features = []
+        for car, municipio, uf, area, situacao, geojson in rows[:limite]:
+            if not geojson:
+                continue
+            features.append({
+                'type': 'Feature',
+                'properties': {
+                    'cod_imovel': car,
+                    'municipio': municipio or '',
+                    'uf': uf or '',
+                    'area_total_ha': self._numero(area),
+                    'situacao_car': situacao or '',
+                },
+                'geometry': json.loads(geojson),
+            })
+        return {'quantidade': len(features), 'truncada': truncada, 'features': features}
 
     def buscar_cars_por_ponto(self, latitude, longitude, *, limite=20):
         """Localiza CARs que contêm/intersectam um ponto WGS84.

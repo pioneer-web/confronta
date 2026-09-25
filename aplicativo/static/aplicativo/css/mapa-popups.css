@@ -764,3 +764,212 @@
         min-width: 300px !important;
         max-width: 300px !important;
     }}
+
+/* CARs visíveis no viewport: popup próprio, sem modificar os cards da consulta. */
+.confronta-selected-car-pane path {
+    filter: drop-shadow(0 1px 2px rgba(4, 22, 25, .9));
+}
+
+.confronta-context-car-popup .leaflet-popup-content-wrapper {
+    overflow: hidden;
+    border: 1px solid rgba(126, 218, 177, .34) !important;
+    border-radius: 0 !important;
+    background: #103a43 !important;
+    color: #effbf5 !important;
+    box-shadow: 0 18px 42px rgba(4, 23, 32, .4) !important;
+}
+
+.confronta-context-car-popup .leaflet-popup-content {
+    width: 290px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+
+.confronta-context-car-popup .leaflet-popup-tip {
+    background: #103a43 !important;
+    border-radius: 0 !important;
+}
+
+.confronta-context-car-popup .leaflet-popup-content-wrapper,
+.confronta-context-car-popup .leaflet-popup-content,
+.confronta-context-car-popup .cf-context-car-popup,
+.confronta-feature-leaflet-popup .leaflet-popup-content-wrapper,
+.confronta-feature-leaflet-popup .leaflet-popup-content,
+.confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+    border-radius: 0 !important;
+}
+
+.confronta-context-car-popup .leaflet-popup-close-button {
+    top: 10px !important;
+    right: 10px !important;
+    color: #d1eee0 !important;
+}
+
+.cf-context-car-popup {
+    padding: 20px 20px 18px;
+    color: #effbf5 !important;
+    font-family: inherit;
+    background: #103a43 !important;
+}
+
+.cf-context-car-popup-heading {
+    margin: 0 22px 17px 0;
+    color: #89deb2 !important;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.cf-context-car-popup-details {
+    display: grid;
+    gap: 13px;
+}
+
+.cf-context-car-popup-row {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.cf-context-car-popup-row strong {
+    color: #a7c9bd !important;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.cf-context-car-popup-row span {
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.cf-context-car-popup-action {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 20px;
+    padding: 10px 16px;
+    border: 1px solid #a1edbc;
+    border-radius: 0;
+    background: #89deb2;
+    color: #103a43;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.cf-context-car-popup-action.is-secondary {
+    margin-top: 9px;
+    border-color: rgba(137, 222, 178, .58);
+    background: transparent;
+    color: #effbf5;
+}
+
+.cf-context-car-popup-action.is-secondary:hover,
+.cf-context-car-popup-action.is-secondary:focus-visible {
+    background: rgba(137, 222, 178, .14);
+}
+
+.cf-context-car-popup-action:hover,
+.cf-context-car-popup-action:focus-visible {
+    background: #b1f2cb;
+}
+
+.cf-context-car-popup-action:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.leaflet-control-fullscreen {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    background: #fff;
+    color: #173b45;
+    font: 700 20px/30px Arial, sans-serif;
+    text-align: center;
+    cursor: pointer;
+}
+
+.leaflet-control-fullscreen:hover,
+.leaflet-control-fullscreen:focus-visible {
+    background: #eef6f2;
+}
+
+.client-shell:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    grid-template-columns: 104px minmax(0, 1fr) !important;
+    background: #102b31 !important;
+}
+
+.client-shell:fullscreen .client-topbar {
+    display: none !important;
+}
+
+.client-shell:fullscreen .client-main,
+.client-shell:fullscreen .client-content-app {
+    height: 100vh !important;
+    min-height: 0 !important;
+}
+
+.client-shell:fullscreen .territorial-screen {
+    height: 100vh !important;
+    min-height: 100vh !important;
+}
+
+.client-shell:fullscreen .territorial-map-column,
+.client-shell:fullscreen #map {
+    height: 100% !important;
+    min-height: 0 !important;
+}
+
+.client-shell:fullscreen .leaflet-control-fullscreen {
+    width: 30px;
+    height: 30px;
+}
+
+/* O resumo do CAR compartilha o sistema visual petróleo dos popups. */
+.client-content-app .map-top-insight-bar {
+    border: 1px solid rgba(126, 218, 177, .28) !important;
+    border-radius: 0 !important;
+    background: rgba(16, 58, 67, .97) !important;
+    box-shadow: 0 18px 42px rgba(4, 23, 32, .38) !important;
+    backdrop-filter: blur(10px);
+}
+
+.client-content-app .map-top-insight-item,
+.client-content-app button.map-top-insight-item,
+.client-content-app .map-top-insight-alert {
+    color: #effbf5 !important;
+    background: transparent !important;
+}
+
+.client-content-app .map-top-insight-item:not(:last-child) {
+    border-right: 1px solid rgba(194, 226, 213, .18) !important;
+}
+
+.client-content-app .map-top-insight-label {
+    color: #a7c9bd !important;
+}
+
+.client-content-app .map-top-insight-item strong,
+.client-content-app .map-top-insight-item .is-positive,
+.client-content-app .map-top-insight-alert strong {
+    color: #f2fbf7 !important;
+}
+
+.client-content-app .map-top-insight-alert:hover {
+    background: rgba(255, 255, 255, .06) !important;
+}
+
+/* Mensagens de sobreposição permanecem nos dados/fluxos internos, sem faixa fixa no mapa. */
+.client-content-app .map-overlap-alert {
+    display: none !important;
+}
