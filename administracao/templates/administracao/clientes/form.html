@@ -12,27 +12,29 @@
 </div>
 <form method="post" class="commercial-editor">{% csrf_token %}
     <div class="editor-main">
-        <div class="editor-field editor-title"><label>{{ form.nome.label }}</label>{{ form.nome }}{{ form.nome.errors }}</div>
-        <div class="editor-field"><label>{{ form.sobrenome.label }}</label>{{ form.sobrenome }}{{ form.sobrenome.errors }}</div>
-        <div class="editor-field"><label>{{ form.email.label }}</label>{{ form.email }}{{ form.email.errors }}</div>
-        <div class="editor-field"><label>{{ form.telefone.label }}</label>{{ form.telefone }}{{ form.telefone.errors }}</div>
-        <div class="editor-field"><label>{{ form.observacoes_admin.label }}</label>{{ form.observacoes_admin }}{{ form.observacoes_admin.errors }}<span class="helptext">Uso interno. Estas observações não aparecem para o cliente.</span></div>
-        <div class="editor-side-card" style="margin-top:18px">
-            <h3>Segurança da conta</h3>
-            <p class="helptext" style="display:block;margin-bottom:12px">Somente Superadministrador e Administrador Total podem alterar dados e redefinir a senha de clientes. A senha atual nunca é exibida.</p>
-            <div class="editor-field"><label>{{ form.nova_senha1.label }}</label>{{ form.nova_senha1 }}{{ form.nova_senha1.errors }}{% if form.nova_senha1.help_text %}<span class="helptext">{{ form.nova_senha1.help_text }}</span>{% endif %}</div>
-            <div class="editor-field"><label>{{ form.nova_senha2.label }}</label>{{ form.nova_senha2 }}{{ form.nova_senha2.errors }}</div>
-        </div>
-    </div>
-    <aside class="editor-side">
-        <div class="editor-side-card"><h3>Acesso e assinatura</h3>
+        <section class="editor-side-card editor-section"><h3>Dados do cliente</h3>
+            <div class="editor-field"><label>{{ form.nome.label }}</label>{{ form.nome }}{{ form.nome.errors }}</div>
+            <div class="editor-field"><label>{{ form.sobrenome.label }}</label>{{ form.sobrenome }}{{ form.sobrenome.errors }}</div>
+            <div class="editor-field"><label>{{ form.email.label }}</label>{{ form.email }}{{ form.email.errors }}</div>
+            <div class="editor-field"><label>{{ form.telefone.label }}</label>{{ form.telefone }}{{ form.telefone.errors }}</div>
+        </section>
+        <section class="editor-side-card editor-section"><h3>Acesso e plano</h3>
             <div class="editor-field"><label>{{ form.plano_comercial.label }}</label>{{ form.plano_comercial }}{{ form.plano_comercial.errors }}</div>
             <div class="editor-field"><label>{{ form.inicio_acesso.label }}</label>{{ form.inicio_acesso }}{{ form.inicio_acesso.errors }}</div>
-            <div class="editor-field"><label>{{ form.fim_acesso.label }}</label>{{ form.fim_acesso }}{{ form.fim_acesso.errors }}<span class="helptext">Deixe em branco para não limitar por data.</span></div>
-            <div class="editor-field">{{ form.ativo }} <label style="display:inline">{{ form.ativo.label }}</label></div>
-            <div class="editor-field">{{ form.renovacao_automatica }} <label style="display:inline">{{ form.renovacao_automatica.label }}</label></div>
-        </div>
+            <div class="editor-field"><label>{{ form.fim_acesso.label }}</label>{{ form.fim_acesso }}{{ form.fim_acesso.errors }}</div>
+            <div class="editor-field">{{ form.ativo }} <label style="display:inline">{{ form.ativo.label }}</label>{{ form.ativo.errors }}</div>
+            <div class="editor-field">{{ form.renovacao_automatica }} <label style="display:inline">{{ form.renovacao_automatica.label }}</label>{{ form.renovacao_automatica.errors }}</div>
+        </section>
+        <section class="editor-side-card editor-section" id="seguranca-conta"><h3>Segurança da conta</h3>
+            {% if conta_google %}<p class="text-secondary small">Conta conectada ao Google.</p>{% endif %}
+            <p class="helptext">Preencha apenas se desejar redefinir a senha deste cliente.</p>
+            <div class="editor-field"><label>{{ form.nova_senha1.label }}</label>{{ form.nova_senha1 }}{{ form.nova_senha1.errors }}</div>
+            <div class="editor-field"><label>{{ form.nova_senha2.label }}</label>{{ form.nova_senha2 }}{{ form.nova_senha2.errors }}</div>
+        </section>
+        <section class="editor-side-card editor-section"><h3>Administração</h3>
+            <div class="editor-field"><label>{{ form.observacoes_admin.label }}</label>{{ form.observacoes_admin }}{{ form.observacoes_admin.errors }}<span class="helptext">Uso interno; não aparece para o cliente.</span></div>
+        </section>
         <div class="editor-side-card"><div class="editor-actions"><button class="button button-primary" type="submit">Salvar alterações</button><a class="button button-secondary" href="{% url 'administracao:clientes' %}">Cancelar</a></div></div>
-    </aside>
+    </div>
 </form>
 {% endblock %}

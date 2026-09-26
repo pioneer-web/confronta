@@ -42,7 +42,7 @@ MIDDLEWARE = [
 ]
 ROOT_URLCONF = os.getenv('DJANGO_ROOT_URLCONF', 'config.urls')
 CONFRONTA_WEB_URL = os.getenv('CONFRONTA_WEB_URL', '').strip()
-TEMPLATES = [{'BACKEND':'django.template.backends.django.DjangoTemplates','DIRS':[BASE_DIR/'templates'],'APP_DIRS':True,'OPTIONS':{'context_processors':['django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages','administracao.context_processors.administracao_context','aplicativo.context_processors.google_oauth']}}]
+TEMPLATES = [{'BACKEND':'django.template.backends.django.DjangoTemplates','DIRS':[BASE_DIR/'templates'],'APP_DIRS':True,'OPTIONS':{'context_processors':['django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages','administracao.context_processors.administracao_context','aplicativo.context_processors.google_oauth','aplicativo.context_processors.cobertura_comercial']}}]
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 DATABASES = {'default': {'ENGINE':'django.contrib.gis.db.backends.postgis','NAME':os.getenv('POSTGRES_DB','dbconfronta'),'USER':os.getenv('POSTGRES_USER','confronta'),'PASSWORD':os.getenv('POSTGRES_PASSWORD','confronta'),'HOST':os.getenv('POSTGRES_HOST','db'),'PORT':os.getenv('POSTGRES_PORT','5432'),'CONN_MAX_AGE':60}}
@@ -128,7 +128,28 @@ for p in (QUARANTINE_DIR, EXTRACTED_DIR, IMPORT_INBOX_DIR, BATCH_STORAGE_DIR, BA
 
 # SICAR: importação exclusivamente manual. O estado/UF é informado no painel e
 # o pipeline continua usando staging, validação, comparação e promoção segura.
-MAX_UPLOAD_SIZE_BYTES=env_int('MAX_UPLOAD_SIZE_BYTES',0); MAX_ZIP_ENTRIES=env_int('MAX_ZIP_ENTRIES',10000); MAX_ZIP_EXPANSION_RATIO=env_int('MAX_ZIP_EXPANSION_RATIO',200); MAX_ZIP_UNCOMPRESSED_BYTES=env_int('MAX_ZIP_UNCOMPRESSED_BYTES',0)
+MAX_UPLOAD_SIZE_BYTES=env_int('MAX_UPLOAD_SIZE_BYTES',0)
+MAX_BATCH_UPLOAD_TOTAL_BYTES=env_int('MAX_BATCH_UPLOAD_TOTAL_BYTES',4*1024**3)
+MAX_BATCH_UPLOAD_FILES=env_int('MAX_BATCH_UPLOAD_FILES',20)
+MIN_FREE_DISK_BYTES=env_int('MIN_FREE_DISK_BYTES',10*1024**3)
+MAX_ZIP_ENTRIES=env_int('MAX_ZIP_ENTRIES',10000)
+MAX_ZIP_EXPANSION_RATIO=env_int('MAX_ZIP_EXPANSION_RATIO',200)
+MAX_ZIP_UNCOMPRESSED_BYTES=env_int('MAX_ZIP_UNCOMPRESSED_BYTES',0)
+if min(MAX_UPLOAD_SIZE_BYTES, MAX_BATCH_UPLOAD_TOTAL_BYTES, MAX_BATCH_UPLOAD_FILES,
+       MIN_FREE_DISK_BYTES, MAX_ZIP_ENTRIES, MAX_ZIP_EXPANSION_RATIO,
+       MAX_ZIP_UNCOMPRESSED_BYTES) < 0:
+    raise ImproperlyConfigured('Os limites de upload e ZIP não podem ser negativos.')
+if MAX_BATCH_UPLOAD_TOTAL_BYTES == 0 or MAX_BATCH_UPLOAD_FILES == 0:
+    raise ImproperlyConfigured('MAX_BATCH_UPLOAD_TOTAL_BYTES e MAX_BATCH_UPLOAD_FILES devem ser positivos.')
+if DJANGO_ENV == 'production':
+    if MAX_UPLOAD_SIZE_BYTES <= 0:
+        raise ImproperlyConfigured('MAX_UPLOAD_SIZE_BYTES deve ser positivo em produção.')
+    if MAX_UPLOAD_SIZE_BYTES > 2 * 1024**3:
+        raise ImproperlyConfigured('MAX_UPLOAD_SIZE_BYTES não pode exceder 2 GiB com os limites estáticos atuais do Nginx.')
+    if MAX_ZIP_ENTRIES <= 0 or MAX_ZIP_EXPANSION_RATIO <= 0 or MAX_ZIP_UNCOMPRESSED_BYTES <= 0:
+        raise ImproperlyConfigured('Os três limites ZIP devem ser positivos em produção.')
+    if MIN_FREE_DISK_BYTES <= 0:
+        raise ImproperlyConfigured('MIN_FREE_DISK_BYTES deve ser positivo em produção.')
 STRICT_GEOMETRY_VALIDATION=env_bool('STRICT_GEOMETRY_VALIDATION',True); AUTO_REPAIR_INVALID_GEOMETRIES=env_bool('AUTO_REPAIR_INVALID_GEOMETRIES',True)
 ANTIVIRUS_ENABLED=env_bool('ANTIVIRUS_ENABLED',False); REQUIRE_ANTIVIRUS=env_bool('REQUIRE_ANTIVIRUS',False); ANTIVIRUS_COMMAND=os.getenv('ANTIVIRUS_COMMAND','clamscan --no-summary')
 FILE_UPLOAD_MAX_MEMORY_SIZE=5*1024*1024; DATA_UPLOAD_MAX_MEMORY_SIZE=None
@@ -136,6 +157,7 @@ SECURE_CONTENT_TYPE_NOSNIFF=True; X_FRAME_OPTIONS='DENY'; SESSION_COOKIE_HTTPONL
 SESSION_COOKIE_NAME='manage_confronta_sessionid'; CSRF_COOKIE_NAME='manage_confronta_csrftoken'
 SECURE_COOKIES=env_bool('DJANGO_SECURE_COOKIES',False); SESSION_COOKIE_SECURE=SECURE_COOKIES; CSRF_COOKIE_SECURE=SECURE_COOKIES; SESSION_COOKIE_SAMESITE='Lax'; CSRF_COOKIE_SAMESITE='Lax'
 TRUST_PROXY_HEADERS=env_bool('DJANGO_TRUST_PROXY_HEADERS',False); SECURE_SSL_REDIRECT=env_bool('DJANGO_SECURE_SSL_REDIRECT',False); SECURE_HSTS_SECONDS=env_int('DJANGO_SECURE_HSTS_SECONDS',0)
+ADMIN_LOGIN_FAILURE_LIMIT=env_int('ADMIN_LOGIN_FAILURE_LIMIT',5); ADMIN_LOGIN_FAILURE_WINDOW_SECONDS=env_int('ADMIN_LOGIN_FAILURE_WINDOW_SECONDS',300)
 if TRUST_PROXY_HEADERS: SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO','https')
 if not DEBUG:
     if SECRET_KEY == 'unsafe-local-key-change-me' or len(SECRET_KEY) < 50:

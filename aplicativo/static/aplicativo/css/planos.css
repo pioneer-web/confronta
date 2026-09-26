@@ -95,6 +95,19 @@
     align-items: stretch;
 }
 
+.cf-plans-page .cf-coverage-note {
+    width: 100%;
+    margin: 0 0 24px;
+    padding: 17px 20px;
+    border: 1px solid #dce9e1;
+    border-radius: 15px;
+    background: #f1f7f3;
+    color: #244b3b;
+}
+
+.cf-plans-page .cf-coverage-note__title { color: #1c6847; }
+.cf-plans-page .cf-coverage-note p { color: #52695e; }
+
 .cf-plan-card {
     position: relative;
     display: flex;

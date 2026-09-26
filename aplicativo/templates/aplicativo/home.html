@@ -9,7 +9,7 @@
     <title>CONFRONTA | Consulta CAR e Análise Territorial Rural</title>
 
     <meta name="description"
-          content="Consulte CAR e informações ambientais, fundiárias e de crédito rural de imóveis rurais em um único mapa com o CONFRONTA.">
+          content="Consulte CAR e informações ambientais, fundiárias e de crédito rural em um único mapa. Disponível para imóveis rurais na Região Nordeste.">
 
     <meta name="robots"
           content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
@@ -90,7 +90,8 @@
         {"@type":"Question","name":"O que é possível consultar no CONFRONTA?","acceptedAnswer":{"@type":"Answer","text":"É possível consultar informações disponíveis de CAR, sobreposições, bases ambientais, fundiárias, crédito rural e ferramentas geoespaciais."}},
         {"@type":"Question","name":"Preciso pagar antes de criar uma conta?","acceptedAnswer":{"@type":"Answer","text":"Não. Você pode criar sua conta primeiro. A contratação de um plano é feita posteriormente para liberar os recursos disponíveis no plano."}},
         {"@type":"Question","name":"O CONFRONTA substitui documentos oficiais?","acceptedAnswer":{"@type":"Answer","text":"Não. As informações do CONFRONTA apoiam a análise e não substituem documentos oficiais."}},
-        {"@type":"Question","name":"Posso consultar dados de CAR no mapa?","acceptedAnswer":{"@type":"Answer","text":"Sim. O CONFRONTA permite consultar dados relacionados ao CAR e visualizar informações disponíveis no mapa. A disponibilidade depende das bases integradas."}}
+        {"@type":"Question","name":"Posso consultar dados de CAR no mapa?","acceptedAnswer":{"@type":"Answer","text":"Sim. O CONFRONTA permite consultar dados relacionados ao CAR e visualizar informações disponíveis no mapa. A disponibilidade depende das bases integradas."}},
+        {"@type":"Question","name":"{{ cobertura_comercial.pergunta_faq|escapejs }}","acceptedAnswer":{"@type":"Answer","text":"{{ cobertura_comercial.resposta_faq|escapejs }}"}}
       ]
     }
     </script>
@@ -174,6 +175,10 @@
                         </a>
                         {% endif %}
                         <a class="cfp-button cfp-button-ghost" href="#como-funciona">Ver como funciona</a>
+                    </div>
+                    <div class="cfp-coverage-hero">
+                        <span>Cobertura atual · {{ cobertura_comercial.regiao }}</span>
+                        <small>Atualmente disponível para imóveis rurais em {{ cobertura_comercial.siglas }}.</small>
                     </div>
                     {% if not user.is_authenticated %}<small class="cfp-hero-note">Cadastre-se gratuitamente e conheça a plataforma.</small>{% endif %}
 
@@ -341,6 +346,7 @@
             </div>
 
             {% if plano_confronta %}
+            {% include 'aplicativo/partials/cobertura.html' %}
             <div class="cfp-plan-grid">
                 <article class="cfp-plan-card">
                     <div class="cfp-plan-head">
@@ -393,6 +399,7 @@
                 <details><summary>Preciso pagar antes de criar uma conta?</summary><p>Não. Você pode criar sua conta primeiro. A contratação de um plano é feita posteriormente para liberar os recursos disponíveis no plano.</p></details>
                 <details><summary>O CONFRONTA substitui documentos oficiais?</summary><p>Não. As informações do CONFRONTA apoiam a análise e não substituem documentos oficiais.</p></details>
                 <details><summary>Posso consultar dados de CAR no mapa?</summary><p>Sim. O CONFRONTA permite consultar dados relacionados ao CAR e visualizar informações disponíveis no mapa. A disponibilidade depende das bases integradas.</p></details>
+                <details><summary>{{ cobertura_comercial.pergunta_faq }}</summary><p>{{ cobertura_comercial.resposta_faq }}</p></details>
             </div>
         </section>
 
@@ -431,6 +438,7 @@
                 <span><strong>CONFRONTA</strong><small>Inteligência Territorial</small></span>
             </a>
             <p>Inteligência territorial rural para consultar, confrontar e decidir.</p>
+            <small class="cfp-footer-coverage">Cobertura atual: {{ cobertura_comercial.regiao }}.</small>
             <nav aria-label="Links do rodapé">
                 <a href="#recursos">Recursos</a>
                 <a href="#planos">Planos</a>

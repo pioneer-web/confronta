@@ -46,6 +46,7 @@ urlpatterns = [
     path('clientes/novo/', clientes.novo_cliente, name='cliente_novo'),
     path('clientes/<int:pk>/editar/', clientes.editar_cliente, name='cliente_editar'),
     path('clientes/<int:pk>/alternar/', clientes.alternar_cliente, name='cliente_alternar'),
+    path('clientes/<int:pk>/excluir/', clientes.excluir_cliente, name='cliente_excluir'),
     path('planos/', planos.lista_planos, name='planos'),
     path('financeiro/asaas/', financeiro.financeiro_asaas, name='financeiro_asaas'),
     path('planos/novo/', planos.novo_plano, name='plano_novo'),

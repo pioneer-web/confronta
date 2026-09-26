@@ -156,6 +156,7 @@
     font-size:12px;
     line-height:1.55;
 }
+.cf-coverage-checkout { margin: 10px 0 0; color: #52695e; font-size: 12px; line-height: 1.5; }
 
 .cf-registration-payment-action{
     flex:0 0 auto;

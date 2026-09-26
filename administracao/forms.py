@@ -9,6 +9,10 @@ from administracao.datasets import get_dataset, datasets_for_source
 from administracao.models import User
 from administracao.services.partitioning import UF_NAMES
 from administracao.services.prodes_filter import DEFAULT_PRODES_START_YEAR
+from administracao.services.batch_upload import (
+    BatchUploadLimitError,
+    validate_upload_limits,
+)
 
 
 def _apply_tabler_form_classes(form):
@@ -44,10 +48,11 @@ class LoginForm(forms.Form):
             if self.user_cache is None:
                 raise forms.ValidationError('E-mail ou senha inválidos.')
             if not self.user_cache.is_active:
-                raise forms.ValidationError('Esta conta está desativada.')
+                self.user_cache = None
+                raise forms.ValidationError('E-mail ou senha inválidos.')
             if not (self.user_cache.is_superuser or self.user_cache.role in {User.Role.ADMIN_TOTAL, User.Role.ADMIN_JUNIOR}):
                 self.user_cache = None
-                raise forms.ValidationError('Esta conta não possui acesso ao Manage Confronta.')
+                raise forms.ValidationError('E-mail ou senha inválidos.')
         return cleaned
 
     def get_user(self):
@@ -99,6 +104,10 @@ class UploadBaseForm(forms.Form):
 
     def clean_arquivo(self):
         arquivo = self.cleaned_data['arquivo']
+        try:
+            validate_upload_limits([arquivo], enforce_batch=False)
+        except BatchUploadLimitError as exc:
+            raise forms.ValidationError(str(exc)) from exc
         suffix = Path(arquivo.name).suffix.lower()
         spec = get_dataset(self.dataset_slug) if self.dataset_slug else None
         if self.source_slug == 'sicar':
@@ -165,6 +174,8 @@ def _batch_allowed_extensions(source_slug):
 
 
 def _batch_accept(source_slug):
+    if str(source_slug or '').strip().lower() == 'sicar':
+        return '.zip,.gpkg'
     return ','.join(sorted(_batch_allowed_extensions(source_slug)))
 
 
@@ -274,6 +285,10 @@ class ImportacaoLoteForm(forms.Form):
                 raise forms.ValidationError(
                     f'O arquivo {arquivo.name} não possui uma extensão permitida para esta fonte ({expected}).'
                 )
+        try:
+            validate_upload_limits(arquivos)
+        except BatchUploadLimitError as exc:
+            raise forms.ValidationError(str(exc)) from exc
         return cleaned
 
 
@@ -472,7 +487,7 @@ class ClienteAdminForm(_ClienteAdminBaseForm):
         label='Nova senha',
         required=False,
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
-        help_text='Deixe em branco para manter a senha atual.',
+        help_text='Preencha apenas se desejar redefinir a senha deste cliente.',
     )
     nova_senha2 = forms.CharField(
         label='Confirmar nova senha',

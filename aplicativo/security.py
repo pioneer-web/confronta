@@ -155,11 +155,20 @@ def registrar_falha_login(request, email: str, *, administrativo: bool = False) 
     prefixo = 'ADMIN' if administrativo else 'CLIENTE'
     combinada = f'{ip}|{identidade}'
 
+    janela_segundos = (
+        getattr(settings, 'ADMIN_LOGIN_FAILURE_WINDOW_SECONDS', 300)
+        if administrativo
+        else getattr(settings, 'LOGIN_FAILURE_WINDOW_SECONDS', 900)
+    )
     combo = _registrar(
         f'LOGIN_{prefixo}_COMBO',
         combinada,
-        limite=getattr(settings, 'LOGIN_FAILURE_LIMIT', 5),
-        janela_segundos=getattr(settings, 'LOGIN_FAILURE_WINDOW_SECONDS', 900),
+        limite=(
+            getattr(settings, 'ADMIN_LOGIN_FAILURE_LIMIT', 5)
+            if administrativo
+            else getattr(settings, 'LOGIN_FAILURE_LIMIT', 5)
+        ),
+        janela_segundos=janela_segundos,
         bloqueio_segundos=getattr(settings, 'LOGIN_BLOCK_SECONDS', 900),
         bloquear_ao_atingir=True,
     )
@@ -167,7 +176,7 @@ def registrar_falha_login(request, email: str, *, administrativo: bool = False) 
         f'LOGIN_{prefixo}_IDENTIDADE',
         identidade,
         limite=(getattr(settings, 'ADMIN_LOGIN_IDENTITY_FAILURE_LIMIT', 8) if administrativo else getattr(settings, 'CLIENT_LOGIN_IDENTITY_FAILURE_LIMIT', 10)),
-        janela_segundos=getattr(settings, 'LOGIN_FAILURE_WINDOW_SECONDS', 900),
+        janela_segundos=janela_segundos,
         bloqueio_segundos=getattr(settings, 'LOGIN_IDENTITY_BLOCK_SECONDS', 900),
         bloquear_ao_atingir=True,
     )
@@ -175,7 +184,7 @@ def registrar_falha_login(request, email: str, *, administrativo: bool = False) 
         f'LOGIN_{prefixo}_IP',
         ip,
         limite=(getattr(settings, 'ADMIN_LOGIN_IP_FAILURE_LIMIT', 20) if administrativo else getattr(settings, 'CLIENT_LOGIN_IP_FAILURE_LIMIT', 40)),
-        janela_segundos=getattr(settings, 'LOGIN_FAILURE_WINDOW_SECONDS', 900),
+        janela_segundos=janela_segundos,
         bloqueio_segundos=getattr(settings, 'LOGIN_IP_BLOCK_SECONDS', 1800),
         bloquear_ao_atingir=True,
     )

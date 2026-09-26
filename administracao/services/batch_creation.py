@@ -1,6 +1,5 @@
 import hashlib
 import logging
-import os
 import shutil
 from pathlib import Path
 
@@ -17,8 +16,13 @@ from .batch_storage import (
     _create_recovery_link,
 )
 from .batch_upload import (
+    BatchUploadLimitError,
     _save_batch_upload,
+    _upload_limits,
     _validate_input_extension,
+    ensure_batch_disk_space,
+    save_uploaded_file,
+    validate_upload_limits,
 )
 from .extraction import extract_zip_safely
 from .partitioning import normalize_uf
@@ -35,6 +39,8 @@ def create_batch(uploaded_file, source_slug, usuario, default_uf='', prodes_star
     if not fonte:
         raise ValueError('Fonte não cadastrada para importação em lote.')
 
+    validate_upload_limits([uploaded_file])
+
     lote = LoteImportacao.objects.create(
         fonte=fonte,
         nome_arquivo_original=Path(uploaded_file.name).name,
@@ -46,9 +52,6 @@ def create_batch(uploaded_file, source_slug, usuario, default_uf='', prodes_star
     batch_zip = None
     extracted = Path(settings.BATCH_DIR) / f'lote_{lote.pk}'
     try:
-        if settings.MAX_UPLOAD_SIZE_BYTES and uploaded_file.size > settings.MAX_UPLOAD_SIZE_BYTES:
-            raise ValueError('O pacote do lote excede o limite configurado para upload.')
-
         batch_zip, digest, size = _save_batch_upload(uploaded_file, lote.pk)
         lote.hash_sha256 = digest
         lote.tamanho_bytes = size
@@ -56,6 +59,10 @@ def create_batch(uploaded_file, source_slug, usuario, default_uf='', prodes_star
         lote.save(update_fields=['hash_sha256','tamanho_bytes','quarantine_path'])
 
         security = validate_zip(batch_zip)
+        ensure_batch_disk_space(
+            extra_extraction_bytes=security['conteudo_descompactado_bytes'],
+            recovery_bytes=security['conteudo_descompactado_bytes'],
+        )
         antivirus = run_antivirus(batch_zip)
         extract_zip_safely(batch_zip, extracted)
         lote.extracted_path = str(extracted.resolve())
@@ -107,11 +114,16 @@ def create_batch(uploaded_file, source_slug, usuario, default_uf='', prodes_star
     except Exception as exc:
         logger.exception('Falha ao preparar lote de importação %s', lote.pk)
         lote.status = LoteImportacao.Status.FALHOU
-        lote.motivo_falha = str(exc)
+        lote.motivo_falha = (
+            str(exc) if isinstance(exc, BatchUploadLimitError)
+            else 'Espaço de armazenamento insuficiente para processar este lote com segurança.'
+            if isinstance(exc, OSError) else str(exc)
+        )
         lote.data_finalizacao = timezone.now()
         lote.save(update_fields=['status','motivo_falha','data_finalizacao','extracted_path'])
         registrar_auditoria(
-            usuario, 'LOTE_IMPORTACAO_FALHOU', 'LoteImportacao', lote.pk, {'motivo': str(exc)}
+            usuario, 'LOTE_IMPORTACAO_FALHOU', 'LoteImportacao', lote.pk,
+            {'motivo': lote.motivo_falha},
         )
         if extracted.exists():
             shutil.rmtree(extracted, ignore_errors=True)
@@ -130,6 +142,7 @@ def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='
     files = list(uploaded_files or [])
     if not files:
         raise ValueError('Nenhum arquivo foi selecionado para o lote.')
+    declared_total = validate_upload_limits(files)
 
     lote = LoteImportacao.objects.create(
         fonte=fonte, nome_arquivo_original=f'{len(files)} arquivo(s) selecionado(s)',
@@ -137,26 +150,22 @@ def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='
         status=LoteImportacao.Status.PREPARANDO,
     )
     extracted = Path(settings.BATCH_DIR) / f'lote_{lote.pk}'
-    extracted.mkdir(parents=True, exist_ok=True)
     manifest = hashlib.sha256()
     total = 0
+    total_uncompressed = 0
     try:
+        extracted.mkdir(parents=True, exist_ok=True)
         for index, uploaded in enumerate(files, 1):
             _validate_input_extension(uploaded.name, source_slug)
-            if settings.MAX_UPLOAD_SIZE_BYTES and uploaded.size > settings.MAX_UPLOAD_SIZE_BYTES:
-                raise ValueError(f'O arquivo {uploaded.name} excede o limite configurado para upload.')
             safe_name = Path(uploaded.name).name
             item_dir = extracted / f'item_{index:04d}'
             item_dir.mkdir(parents=True, exist_ok=True)
             target = item_dir / safe_name
             file_hash = hashlib.sha256()
-            with target.open('wb') as dst:
-                for chunk in uploaded.chunks():
-                    dst.write(chunk)
-                    file_hash.update(chunk)
-                    total += len(chunk)
-                dst.flush()
-                os.fsync(dst.fileno())
+            digest, size = save_uploaded_file(
+                uploaded, target, existing_batch_bytes=total, digest=file_hash,
+            )
+            total += size
             if not target.is_file():
                 raise IOError(f'O arquivo {safe_name} não permaneceu disponível na área compartilhada do lote.')
             expected_size = int(getattr(uploaded, 'size', 0) or 0)
@@ -164,6 +173,14 @@ def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='
                 raise IOError(
                     f'O arquivo {safe_name} foi gravado com tamanho divergente '
                     f'({target.stat().st_size} de {expected_size} bytes). O lote foi bloqueado.'
+                )
+            if target.suffix.lower() == '.zip':
+                security = validate_zip(target)
+                total_uncompressed += security['conteudo_descompactado_bytes']
+                ensure_batch_disk_space(
+                    max(0, declared_total - total),
+                    extra_extraction_bytes=total_uncompressed,
+                    recovery_bytes=max(0, declared_total - total) + size,
                 )
             manifest.update(safe_name.encode('utf-8', errors='replace'))
             manifest.update(b'\0')
@@ -202,7 +219,11 @@ def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='
     except Exception as exc:
         logger.exception('Falha ao preparar lote de múltiplos arquivos %s', lote.pk)
         lote.status = LoteImportacao.Status.FALHOU
-        lote.motivo_falha = str(exc)
+        lote.motivo_falha = (
+            str(exc) if isinstance(exc, BatchUploadLimitError)
+            else 'Espaço de armazenamento insuficiente para processar este lote com segurança.'
+            if isinstance(exc, OSError) else str(exc)
+        )
         lote.data_finalizacao = timezone.now()
         lote.save(update_fields=['status','motivo_falha','data_finalizacao'])
         shutil.rmtree(extracted, ignore_errors=True)
@@ -225,8 +246,9 @@ def create_sequential_batch(source_slug, usuario, expected_files, default_uf='',
     expected = int(expected_files or 0)
     if expected < 1:
         raise ValueError('O lote sequencial precisa conter pelo menos um arquivo.')
-    if expected > 500:
-        raise ValueError('O lote excede o limite administrativo de 500 arquivos por seleção.')
+    _max_file, _max_total, max_files = _upload_limits()
+    if expected > min(max_files, 500):
+        raise BatchUploadLimitError('O lote contém mais arquivos que o permitido.')
 
     names = [Path(str(value)).name for value in (filenames or [])][:expected]
     lote = LoteImportacao.objects.create(

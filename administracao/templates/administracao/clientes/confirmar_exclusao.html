@@ -1,0 +1,24 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Excluir cliente — CONFRONTA{% endblock %}
+{% block content %}
+<section class="page-head">
+    <div><span class="eyebrow">Gestão comercial</span><h1>Excluir cliente?</h1><p>Revise os dados antes de confirmar.</p></div>
+    <a class="button button-secondary" href="{% url 'administracao:clientes' %}">Cancelar</a>
+</section>
+<div class="card"><div class="card-body">
+    <dl class="row mb-4">
+        <dt class="col-sm-3">Nome</dt><dd class="col-sm-9">{{ cliente.usuario.get_full_name|default:cliente.usuario.email }}</dd>
+        <dt class="col-sm-3">E-mail</dt><dd class="col-sm-9">{{ cliente.usuario.email }}</dd>
+        <dt class="col-sm-3">Plano atual</dt><dd class="col-sm-9">{{ cliente.nome_plano_atual }}</dd>
+        <dt class="col-sm-3">Data de cadastro</dt><dd class="col-sm-9">{{ cliente.criado_em|date:'d/m/Y H:i' }}</dd>
+    </dl>
+    {% if historico_financeiro %}
+        <div class="alert alert-warning" role="alert">Este cliente possui histórico financeiro e não pode ser excluído. Desative o acesso para preservar o histórico.</div>
+        <form method="post" class="d-flex gap-2">{% csrf_token %}<input type="hidden" name="desativar_cliente" value="sim"><button class="btn btn-warning" type="submit">Desativar cliente</button><a class="btn btn-outline-secondary" href="{% url 'administracao:clientes' %}">Cancelar</a></form>
+    {% else %}
+        <div class="alert alert-danger" role="alert">Esta ação é permanente para clientes sem histórico financeiro.</div>
+        {% if erro_confirmacao %}<div class="alert alert-warning" role="alert">Confirme explicitamente a exclusão para continuar.</div>{% endif %}
+        <form method="post" class="d-flex gap-2">{% csrf_token %}<input type="hidden" name="confirmar_exclusao" value="sim"><a class="btn btn-outline-secondary" href="{% url 'administracao:clientes' %}">Cancelar</a><button class="btn btn-danger" type="submit">Excluir cliente</button></form>
+    {% endif %}
+</div></div>
+{% endblock %}

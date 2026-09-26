@@ -20,6 +20,14 @@ from administracao.services.batch import (
     finalize_sequential_batch, retry_failed_batch_items, retry_review_batch_items,
     update_batch_status, request_batch_interruption, delete_batch_record,
 )
+from administracao.services.batch_upload import (
+    BatchUploadLimitError,
+    INSUFFICIENT_SPACE_MESSAGE,
+    MAX_BATCH_FILES_MESSAGE,
+    MAX_BATCH_TOTAL_MESSAGE,
+    MAX_FILE_MESSAGE,
+)
+from administracao.services.batch_sequential import reject_empty_sequential_batch
 from administracao.services.pipeline import process_import
 from administracao.services.sicar_tracking import state_rows
 from administracao.services.partitioning import normalize_uf, UF_NAMES
@@ -227,8 +235,10 @@ def iniciar_lote_sequencial(request):
             prodes_start_year=prodes_year,
             filenames=filenames,
         )
-    except Exception as exc:
+    except BatchUploadLimitError as exc:
         return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Não foi possível iniciar o lote sequencial.'}, status=400)
     return JsonResponse({
         'ok': True,
         'lote_id': lote.pk,
@@ -248,8 +258,12 @@ def upload_lote_sequencial(request, pk):
         return JsonResponse({'ok': False, 'error': 'Nenhum arquivo foi recebido.'}, status=400)
     try:
         item = append_sequential_upload(pk, uploaded, request.user, index=request.POST.get('indice'))
-    except Exception as exc:
+    except BatchUploadLimitError as exc:
+        reject_empty_sequential_batch(pk, request.user, str(exc))
         return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    except Exception:
+        reject_empty_sequential_batch(pk, request.user, 'O arquivo não pôde ser recebido para processamento.')
+        return JsonResponse({'ok': False, 'error': 'O arquivo não pôde ser recebido para processamento.'}, status=400)
     return JsonResponse({
         'ok': True,
         'item_id': item.pk,
@@ -345,16 +359,28 @@ def novo_lote_importacao(request, fonte_slug=None, uf=None):
             messages.error(request, 'Para vários arquivos use o envio sequencial da própria tela. Recarregue e tente novamente.')
         else:
             prodes_start_year = form.cleaned_data.get('ano_inicial') if form.cleaned_data['fonte'] == 'prodes' else None
-            lote = create_batch_from_uploads(
-                arquivos, form.cleaned_data['fonte'], request.user,
-                default_uf=form.cleaned_data.get('uf', ''),
-                prodes_start_year=prodes_start_year,
-            )
-            if lote.status == LoteImportacao.Status.FALHOU:
-                messages.error(request, 'O lote não pôde ser preparado. Consulte o relatório.')
+            try:
+                lote = create_batch_from_uploads(
+                    arquivos, form.cleaned_data['fonte'], request.user,
+                    default_uf=form.cleaned_data.get('uf', ''),
+                    prodes_start_year=prodes_start_year,
+                )
+            except BatchUploadLimitError as exc:
+                form.add_error(None, str(exc))
             else:
-                messages.success(request, 'Arquivo recebido e colocado na fila de processamento seguro.')
-            return redirect('administracao:lote_importacao_detalhe', pk=lote.pk)
+                if lote.status == LoteImportacao.Status.FALHOU:
+                    if lote.motivo_falha in {
+                        MAX_FILE_MESSAGE,
+                        MAX_BATCH_TOTAL_MESSAGE,
+                        MAX_BATCH_FILES_MESSAGE,
+                        INSUFFICIENT_SPACE_MESSAGE,
+                    }:
+                        messages.error(request, lote.motivo_falha)
+                    else:
+                        messages.error(request, 'O lote não pôde ser preparado. Consulte o relatório.')
+                else:
+                    messages.success(request, 'Arquivo recebido e colocado na fila de processamento seguro.')
+                return redirect('administracao:lote_importacao_detalhe', pk=lote.pk)
     recentes = LoteImportacao.objects.select_related('administrador').filter(oculto_painel=False)[:30]
     maintenance_sources = [
         {'slug': slug, 'label': fonte.label}

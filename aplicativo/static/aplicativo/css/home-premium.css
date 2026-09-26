@@ -191,6 +191,9 @@
     line-height: 1.62;
 }
 .cfp-hero-actions { margin-top: 31px; display: flex; gap: 12px; flex-wrap: wrap; }
+.cfp-coverage-hero { display: grid; justify-items: start; gap: 5px; margin-top: 17px; }
+.cfp-coverage-hero > span { padding: 6px 11px; border: 1px solid #d4e6d9; border-radius: 999px; background: #eef6ef; color: #286147; font-size: 11px; font-weight: 700; }
+.cfp-coverage-hero small { color: #64766f; font-size: 12px; line-height: 1.5; }
 .cfp-hero-note { display: block; margin-top: 12px; color: #71807b; font-size: 12px; }
 .cfp-button {
     min-height: 54px;
@@ -440,6 +443,10 @@
 .cfp-section-head-light p { color: #bfd0ca; margin-inline: auto; }
 .cfp-plans .cfp-eyebrow { color: #c9ee7a; }
 .cfp-plan-grid { width: min(920px, 100%); margin: 0 auto; display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; align-items: stretch; }
+.cf-coverage-note { width: min(920px, 100%); margin: 0 auto 24px; padding: 18px 21px; border: 1px solid rgba(201,238,122,.42); border-radius: 16px; background: rgba(255,255,255,.08); color: #e6f0eb; }
+.cf-coverage-note__title { display: block; margin-bottom: 5px; color: #d9f19f; font-size: 14px; font-weight: 750; }
+.cf-coverage-note p { margin: 0; color: #d1dfda; font-size: 13px; line-height: 1.6; }
+.cf-coverage-note p + p { margin-top: 4px; }
 .cfp-plan-card {
     position: relative;
     display: flex;
@@ -496,6 +503,7 @@
 .cfp-footer-brand strong { font-size: 13px; font-weight: 700; letter-spacing: .08em; }
 .cfp-footer-brand small { margin-top: 5px; color: #819891; font-size: 9px; }
 .cfp-footer p { margin: 0; font-size: 11px; text-align: center; }
+.cfp-footer-coverage { color: #a9bbb6; font-size: 10px; }
 .cfp-footer nav { justify-self: end; display: flex; gap: 20px; flex-wrap: wrap; justify-content: flex-end; }
 .cfp-footer nav a { color: #d5dfdc; font-size: 11px; font-weight: 600; text-decoration: none; }
 .cfp-footer nav a:hover { color: #fff; }
