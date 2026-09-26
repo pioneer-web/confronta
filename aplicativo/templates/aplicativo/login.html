@@ -31,6 +31,9 @@
                 <p>Entre para consultar imóveis e utilizar as ferramentas disponíveis no seu plano.</p>
             </div>
 
+            {% for message in messages %}<div class="cf-auth-alert" role="alert">{{ message }}</div>{% endfor %}
+            {% include 'aplicativo/partials/google_login.html' %}
+
             <form method="post" class="cf-auth-form" novalidate>
                 {% csrf_token %}
                 <div class="security-honeypot" aria-hidden="true"><label>Website<input type="text" name="{{ honeypot_field }}" value="" tabindex="-1" autocomplete="off"></label></div>
@@ -63,8 +66,8 @@
             </form>
 
             <div class="cf-auth-footer">
-                <span>Ainda não possui acesso?</span>
-                <a href="{% url 'public_root' %}#planos">Conhecer os planos</a>
+                <span>Ainda não possui uma conta?</span>
+                <a href="{% url 'aplicativo:cadastro' %}">Criar conta</a>
             </div>
         </div>
     </section>

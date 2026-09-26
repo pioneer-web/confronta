@@ -1,0 +1,32 @@
+.confronta-location-control button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    padding: 7px;
+    color: #173b43;
+    cursor: pointer;
+}
+.confronta-location-control button:hover { color: #087c70; }
+.confronta-location-control svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+.confronta-location-notice {
+    max-width: min(24rem, calc(100vw - 2rem));
+    margin: 0 0 12px 12px;
+    padding: .65rem .85rem;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: .55rem;
+    background: rgb(8 45 58 / 92%);
+    color: #fff;
+    box-shadow: 0 5px 18px rgb(0 0 0 / 18%);
+    font-size: .8rem;
+    line-height: 1.4;
+}
+.confronta-location-notice[hidden] { display: none !important; }

@@ -49,6 +49,86 @@
         return button;
     };
     fullscreenControl.addTo(map);
+
+    const myLocationControl = L.control({ position: 'topright' });
+    let locationNotice = null;
+    let locationNoticeTimer = null;
+    myLocationControl.onAdd = function () {
+        const container = L.DomUtil.create('div', 'leaflet-bar confronta-location-control');
+        const button = L.DomUtil.create('button', 'confronta-location-button', container);
+        button.type = 'button';
+        button.title = 'Minha localização';
+        button.setAttribute('aria-label', 'Minha localização');
+        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+        L.DomEvent.disableClickPropagation(container);
+        L.DomEvent.disableScrollPropagation(container);
+        L.DomEvent.on(button, 'click', requestUserLocation);
+        return container;
+    };
+    myLocationControl.addTo(map);
+
+    const locationNoticeControl = L.control({ position: 'bottomleft' });
+    locationNoticeControl.onAdd = function () {
+        locationNotice = L.DomUtil.create('div', 'confronta-location-notice');
+        locationNotice.setAttribute('role', 'status');
+        locationNotice.setAttribute('aria-live', 'polite');
+        locationNotice.hidden = true;
+        return locationNotice;
+    };
+    locationNoticeControl.addTo(map);
+
+    function showLocationMessage(message, timeout) {
+        if (!locationNotice) return;
+        window.clearTimeout(locationNoticeTimer);
+        locationNotice.textContent = message;
+        locationNotice.hidden = false;
+        if (timeout) {
+            locationNoticeTimer = window.setTimeout(() => {
+                if (locationNotice) locationNotice.hidden = true;
+            }, timeout);
+        }
+    }
+
+    function showLocationUnavailable() {
+        showLocationMessage('Não foi possível acessar sua localização. Navegue pelo mapa normalmente.', 5000);
+    }
+
+    function hideLocationMessage() {
+        window.clearTimeout(locationNoticeTimer);
+        if (locationNotice) locationNotice.hidden = true;
+    }
+
+    function requestUserLocation() {
+        showLocationMessage('Localizando sua região...');
+        if (!navigator.geolocation || typeof navigator.geolocation.getCurrentPosition !== 'function') {
+            showLocationUnavailable();
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = position && position.coords && position.coords.latitude;
+                const longitude = position && position.coords && position.coords.longitude;
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                    showLocationUnavailable();
+                    return;
+                }
+                map.setView([latitude, longitude], 13);
+                hideLocationMessage();
+            },
+            showLocationUnavailable,
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
+        );
+    }
+
+    let automaticLocationRequested = false;
+    function requestLocationAutomatically() {
+        // A consulta, CAR, geometria ou resultado carregado sempre tem prioridade.
+        const activeCar = Boolean(configElement && configElement.dataset.car);
+        if (automaticLocationRequested || rawData || activeCar) return;
+        automaticLocationRequested = true;
+        requestUserLocation();
+    }
+
     document.addEventListener('fullscreenchange', function () {
         const active = document.fullscreenElement === fullscreenTarget;
         if (fullscreenButton) {
@@ -104,6 +184,12 @@
             event && event.coords ? event.coords : event
         );
     });
+
+    L.control.layers(
+        { 'Satélite': satellite },
+        { 'Nomes e localidades': referenceLabels },
+        { collapsed: true, position: 'topright' }
+    ).addTo(map);
 
 
     // MAPA CLEAN V1.2 — mantém qualquer popup integralmente visível.
@@ -905,6 +991,15 @@
             pane: 'carsContextuaisPane',
             style: { color: '#36A970', weight: 2, opacity: 0.94, fillColor: '#63C88D', fillOpacity: 0.14 },
             onEachFeature: function (feature, layer) {
+                if (configElement.dataset.freeMode === 'true') {
+                    layer.on('click', function () {
+                        if (typeof window.CONFRONTA_SHOW_FREE_CAR_PAYWALL === 'function') {
+                            window.CONFRONTA_SHOW_FREE_CAR_PAYWALL();
+                        }
+                    });
+                    return;
+                }
+
                 const props = feature.properties || {};
                 layer.bindPopup(function () {
                     const popup = document.createElement('section');
@@ -1121,5 +1216,6 @@
         fitCar: enquadrarCar
     };
 
+    requestLocationAutomatically();
     window.setTimeout(() => map.invalidateSize(), 80);
 })();

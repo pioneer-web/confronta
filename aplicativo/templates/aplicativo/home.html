@@ -9,7 +9,7 @@
     <title>CONFRONTA | Consulta CAR e Análise Territorial Rural</title>
 
     <meta name="description"
-          content="Consulte CAR, sobreposições, embargos IBAMA e ICMBio, PRODES, FUNAI, INCRA, SICOR e APAs em uma plataforma de inteligência territorial rural.">
+          content="Consulte CAR e informações ambientais, fundiárias e de crédito rural de imóveis rurais em um único mapa com o CONFRONTA.">
 
     <meta name="robots"
           content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
@@ -27,7 +27,7 @@
     <meta property="og:title"
           content="CONFRONTA | Consulta CAR e Análise Territorial Rural">
     <meta property="og:description"
-          content="Inteligência territorial rural para consulta de CAR, sobreposições, embargos, PRODES, FUNAI, INCRA, SICOR e APAs.">
+          content="O CONFRONTA reúne informações territoriais de CAR, meio ambiente, situação fundiária e crédito rural em um único mapa.">
     <meta property="og:url" content="{{ seo_site_url }}/">
     <meta property="og:image"
           content="{{ seo_site_url }}{% static 'aplicativo/img/hero.png' %}">
@@ -81,6 +81,20 @@
     }
     </script>
 
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"O que é o CONFRONTA?","acceptedAnswer":{"@type":"Answer","text":"O CONFRONTA é uma plataforma de consulta e análise territorial de imóveis rurais."}},
+        {"@type":"Question","name":"O que é possível consultar no CONFRONTA?","acceptedAnswer":{"@type":"Answer","text":"É possível consultar informações disponíveis de CAR, sobreposições, bases ambientais, fundiárias, crédito rural e ferramentas geoespaciais."}},
+        {"@type":"Question","name":"Preciso pagar antes de criar uma conta?","acceptedAnswer":{"@type":"Answer","text":"Não. Você pode criar sua conta primeiro. A contratação de um plano é feita posteriormente para liberar os recursos disponíveis no plano."}},
+        {"@type":"Question","name":"O CONFRONTA substitui documentos oficiais?","acceptedAnswer":{"@type":"Answer","text":"Não. As informações do CONFRONTA apoiam a análise e não substituem documentos oficiais."}},
+        {"@type":"Question","name":"Posso consultar dados de CAR no mapa?","acceptedAnswer":{"@type":"Answer","text":"Sim. O CONFRONTA permite consultar dados relacionados ao CAR e visualizar informações disponíveis no mapa. A disponibilidade depende das bases integradas."}}
+      ]
+    }
+    </script>
+
     {% if google_analytics_id %}
     <script async
             src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_id }}"></script>
@@ -93,7 +107,7 @@
     {% endif %}
     <link rel="stylesheet" href="{% static 'aplicativo/css/tailwind.css' %}?v=070">
     <link rel="stylesheet" href="{% static 'aplicativo/css/app.css' %}?v=070">
-    <link rel="stylesheet" href="{% static 'aplicativo/css/home-premium.css' %}?v=071">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/home-premium.css' %}?v=072">
     <link rel="stylesheet" href="{% static 'aplicativo/css/preco-anual.css' %}?v=001">
 </head>
 <body class="cfp-home">
@@ -108,14 +122,27 @@
             </a>
 
             <div class="cfp-nav-links" data-home-menu>
-                <a href="#solucoes">Soluções</a>
                 <a href="#como-funciona">Como funciona</a>
+                <a href="#recursos">Recursos</a>
                 <a href="#planos">Planos</a>
+                <a href="#conteudos">Conteúdos</a>
+                <div class="cfp-nav-mobile-auth">
+                    {% if user.is_authenticated %}
+                    <a class="cfp-nav-mobile-cta" href="{% url 'aplicativo:inicio' %}">Ir para o mapa</a>
+                    {% else %}
+                    <a class="cfp-nav-mobile-cta" href="{% url 'aplicativo:cadastro' %}">Criar conta grátis</a>
+                    <a class="cfp-nav-mobile-login" href="{% url 'aplicativo:login' %}">Entrar</a>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="cfp-nav-actions">
+                {% if user.is_authenticated %}
+                <a class="cfp-nav-cta" href="{% url 'aplicativo:inicio' %}">Ir para o mapa</a>
+                {% else %}
+                <a class="cfp-nav-cta" href="{% url 'aplicativo:cadastro' %}">Criar conta grátis</a>
                 <a class="cfp-nav-login" href="{% url 'aplicativo:login' %}">Entrar</a>
-                <a class="cfp-nav-cta" href="#planos">Começar agora</a>
+                {% endif %}
                 <button class="cfp-menu-button" type="button" aria-label="Abrir menu" aria-expanded="false" data-home-menu-button>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                 </button>
@@ -131,16 +158,24 @@
             <div class="cfp-hero-shell">
                 <div class="cfp-hero-copy">
                     <span class="cfp-kicker"><span></span> Inteligência territorial rural</span>
-                    <h1>Consulte imóveis rurais e <em>confronte dados oficiais</em> em um só lugar.</h1>
-                    <p>Visualize o CAR e analise informações ambientais, fundiárias e de crédito rural com dados do SICAR, PRODES, IBAMA, INCRA, FUNAI, SICOR e ICMBio.</p>
+                    <h1>Consulte CAR e informações territoriais de imóveis rurais em um único mapa</h1>
+                    <p>O CONFRONTA reúne informações ambientais, fundiárias e de crédito rural para ajudar você a analisar imóveis rurais com mais rapidez e contexto.</p>
 
                     <div class="cfp-hero-actions">
-                        <a class="cfp-button cfp-button-primary" href="#planos">
-                            Consultar agora
+                        {% if user.is_authenticated %}
+                        <a class="cfp-button cfp-button-primary" href="{% url 'aplicativo:inicio' %}">
+                            Ir para o mapa
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                         </a>
-                        <a class="cfp-button cfp-button-ghost" href="#solucoes">Ver o que oferecemos</a>
+                        {% else %}
+                        <a class="cfp-button cfp-button-primary" href="{% url 'aplicativo:cadastro' %}">
+                            Criar conta grátis
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                        {% endif %}
+                        <a class="cfp-button cfp-button-ghost" href="#como-funciona">Ver como funciona</a>
                     </div>
+                    {% if not user.is_authenticated %}<small class="cfp-hero-note">Cadastre-se gratuitamente e conheça a plataforma.</small>{% endif %}
 
                     <div class="cfp-source-line" aria-label="Principais bases integradas">
                         <span>Principais fontes</span>
@@ -163,17 +198,17 @@
             </div>
         </section>
 
-        <section class="cfp-section cfp-solutions" id="solucoes">
+        <section class="cfp-section cfp-solutions" id="recursos">
             <div class="cfp-section-head cfp-section-head-left">
-                <span class="cfp-eyebrow">Soluções</span>
-                <h2>O que você encontra no CONFRONTA.</h2>
+                <span class="cfp-eyebrow">Recursos</span>
+                <h2>Recursos para análise territorial rural.</h2>
                 <p>Uma leitura organizada do imóvel rural, reunindo identificação, contexto ambiental, situação fundiária, crédito rural, alertas e ferramentas geoespaciais.</p>
             </div>
 
             <div class="cfp-intelligence-card">
                 <div class="cfp-intelligence-copy">
                     <span class="cfp-intelligence-badge">Visão consolidada</span>
-                    <h3>Ficha de inteligência do imóvel</h3>
+                    <h3>Informações territoriais em contexto.</h3>
                     <p>Em vez de consultar cada base separadamente, o CONFRONTA organiza as informações relevantes do imóvel em uma única análise, conectada ao mapa e aos alertas territoriais.</p>
                     <div class="cfp-intelligence-tags" aria-label="Áreas da ficha de inteligência">
                         <span>Identificação</span>
@@ -187,8 +222,8 @@
                 <div class="cfp-intelligence-visual" aria-hidden="true">
                     <div class="cfp-intelligence-score">
                         <small>Inteligência territorial</small>
-                        <strong>1</strong>
-                        <span>análise territorial integrada</span>
+                        <strong>CAR</strong>
+                        <span>contexto territorial</span>
                     </div>
                     <div class="cfp-intelligence-lines">
                         <i></i><i></i><i></i><i></i>
@@ -271,22 +306,35 @@
             <div class="cfp-how-shell">
                 <div class="cfp-how-title">
                     <span class="cfp-eyebrow">Como funciona</span>
-                    <h2>Da consulta à análise, sem complicação.</h2>
+                    <h2>Comece pelo cadastro. Avance no seu ritmo.</h2>
                 </div>
                 <div class="cfp-how-steps">
-                    <article><span>01</span><div><strong>Informe o CAR</strong><p>Localize o imóvel rural.</p></div></article>
-                    <article><span>02</span><div><strong>Confronte as bases</strong><p>O sistema cruza os dados disponíveis.</p></div></article>
-                    <article><span>03</span><div><strong>Veja a inteligência do imóvel</strong><p>Analise mapa, dados e alertas no mesmo contexto.</p></div></article>
+                    <article><span>01</span><div><strong>Crie sua conta gratuitamente</strong><p>Cadastre-se em poucos passos.</p></div></article>
+                    <article><span>02</span><div><strong>Acesse o CONFRONTA</strong><p>Entre na plataforma e conheça o ambiente de análise territorial.</p></div></article>
+                    <article><span>03</span><div><strong>Desbloqueie as análises quando precisar</strong><p>Escolha um plano para utilizar os recursos profissionais disponíveis.</p></div></article>
                 </div>
+            </div>
+        </section>
+
+        <section class="cfp-audience cfp-section" id="para-quem">
+            <div class="cfp-section-head">
+                <span class="cfp-eyebrow">Para quem é</span>
+                <h2>Feito para quem trabalha com imóveis e território rural.</h2>
+            </div>
+            <div class="cfp-audience-grid">
+                <article>Consultores e técnicos rurais</article>
+                <article>Profissionais do agronegócio</article>
+                <article>Instituições e analistas de crédito rural</article>
+                <article>Proprietários e gestores de imóveis rurais</article>
             </div>
         </section>
 
         <section class="cfp-section cfp-plans" id="planos">
             <div class="cfp-section-head cfp-section-head-light">
                 <span class="cfp-eyebrow">Preço de lançamento</span>
-                <h2>Um CONFRONTA. Duas formas de assinar.</h2>
+                <h2>Conheça os planos do CONFRONTA.</h2>
                 {% if plano_confronta %}
-                <p>Mesmas funcionalidades no mensal e no anual. No anual, você economiza R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano e pode pagar em até {{ plano_confronta.quantidade_parcelas_anual }}x no cartão.</p>
+                <p>Crie sua conta primeiro. A contratação é feita depois, dentro da plataforma. No anual, economize R$ {{ plano_confronta.economia_anual|floatformat:2 }} por ano e pague em até {{ plano_confronta.quantidade_parcelas_anual }}x.</p>
                 {% else %}
                 <p>Mesmas funcionalidades no mensal e no anual.</p>
                 {% endif %}
@@ -298,10 +346,10 @@
                     <div class="cfp-plan-head">
                         <span>Mensal</span>
                         <h3>R$ {{ plano_confronta.preco_mensal|floatformat:2 }}/mês</h3>
-                        <p>Cobrança recorrente mensal, com flexibilidade para começar.</p>
+                        <p>Uma opção mensal para utilizar os recursos profissionais disponíveis no plano.</p>
                     </div>
                             <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
-                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_mensal' %}">Assinar mensal</a>
+                    <a class="cfp-plan-button" href="{% if user.is_authenticated %}{% url 'aplicativo:inicio' %}{% else %}{% url 'aplicativo:cadastro' %}{% endif %}">{% if user.is_authenticated %}Ir para o mapa{% else %}Começar grátis{% endif %}</a>
                 </article>
 
                 <article class="cfp-plan-card is-featured">
@@ -311,28 +359,63 @@
                         {% include 'aplicativo/partials/preco_anual.html' with plano=plano_confronta variante='card' %}
                     </div>
                             <ul class="cfp-plan-features">{% for recurso in plano_confronta.lista_recursos %}<li><span>✓</span>{{ recurso }}</li>{% endfor %}</ul>
-                    <a class="cfp-plan-button" href="{% url 'aplicativo:cadastro_anual' %}">Assinar anual — até {{ plano_confronta.quantidade_parcelas_anual }}x</a>
+                    <a class="cfp-plan-button" href="{% if user.is_authenticated %}{% url 'aplicativo:inicio' %}{% else %}{% url 'aplicativo:cadastro' %}{% endif %}">{% if user.is_authenticated %}Ir para o mapa{% else %}Começar grátis{% endif %}</a>
                 </article>
             </div>
             {% else %}<div class="cfp-empty-plans">O plano está sendo configurado.</div>{% endif %}
         </section>
 
+        <section class="cfp-content cfp-section" id="conteudos">
+            <div class="cfp-section-head">
+                <span class="cfp-eyebrow">Conteúdos</span>
+                <h2>Conteúdos sobre CAR e análise territorial rural.</h2>
+                <p>Orientações introdutórias para ajudar você a entender dados e informações territoriais.</p>
+            </div>
+            <div class="cfp-content-grid">
+                <article><h3>Como consultar um CAR?</h3><p>Localize o cadastro pelo código e confira as informações disponíveis nas bases consultadas.</p></article>
+                <article><h3>Como identificar sobreposição entre CARs?</h3><p>Compare os perímetros apresentados no mapa e observe as áreas em que eles se cruzam.</p></article>
+                <article><h3>Como verificar informações de embargo de um imóvel rural?</h3><p>Consulte as camadas de embargo disponíveis e confira a fonte e os dados apresentados.</p></article>
+                <article><h3>O que analisar antes de trabalhar com um imóvel rural?</h3><p>Reúna as informações territoriais disponíveis e consulte as fontes oficiais pertinentes à sua análise.</p></article>
+            </div>
+            <div class="cfp-content-cta">
+                <a class="cfp-button cfp-button-primary" href="{% if user.is_authenticated %}{% url 'aplicativo:inicio' %}{% else %}{% url 'aplicativo:cadastro' %}{% endif %}">{% if user.is_authenticated %}Ir para o mapa{% else %}Explore o CONFRONTA{% endif %}</a>
+            </div>
+        </section>
+
+        <section class="cfp-faq cfp-section" id="perguntas-frequentes">
+            <div class="cfp-section-head">
+                <span class="cfp-eyebrow">Dúvidas frequentes</span>
+                <h2>Perguntas sobre o CONFRONTA.</h2>
+            </div>
+            <div class="cfp-faq-list">
+                <details><summary>O que é o CONFRONTA?</summary><p>O CONFRONTA é uma plataforma de consulta e análise territorial de imóveis rurais.</p></details>
+                <details><summary>O que é possível consultar no CONFRONTA?</summary><p>É possível consultar informações disponíveis de CAR, sobreposições, bases ambientais, fundiárias, crédito rural e ferramentas geoespaciais.</p></details>
+                <details><summary>Preciso pagar antes de criar uma conta?</summary><p>Não. Você pode criar sua conta primeiro. A contratação de um plano é feita posteriormente para liberar os recursos disponíveis no plano.</p></details>
+                <details><summary>O CONFRONTA substitui documentos oficiais?</summary><p>Não. As informações do CONFRONTA apoiam a análise e não substituem documentos oficiais.</p></details>
+                <details><summary>Posso consultar dados de CAR no mapa?</summary><p>Sim. O CONFRONTA permite consultar dados relacionados ao CAR e visualizar informações disponíveis no mapa. A disponibilidade depende das bases integradas.</p></details>
+            </div>
+        </section>
+
         <section class="cfp-final" id="contato">
             <div class="cfp-final-shell">
                 <div>
-                    <span class="cfp-eyebrow">CONFRONTA</span>
-                    <h2>Entenda melhor o imóvel antes de decidir.</h2>
-                    <p>Comece sua consulta ou fale com nossa equipe para conhecer a plataforma.</p>
+                    <span class="cfp-eyebrow">Comece pelo CONFRONTA</span>
+                    <h2>Comece pelo CONFRONTA.</h2>
+                    <p>Crie sua conta gratuitamente e conheça uma nova forma de analisar informações territoriais rurais.</p>
                 </div>
                 <div class="cfp-final-actions">
                     <a class="cfp-button cfp-button-light"
-                       href="https://wa.me/5587933005214"
+                       href="{% if user.is_authenticated %}{% url 'aplicativo:inicio' %}{% else %}{% url 'aplicativo:cadastro' %}{% endif %}">
+                        {% if user.is_authenticated %}Ir para o mapa{% else %}Criar conta grátis{% endif %}
+                    </a>
+                    <a class="cfp-button cfp-button-outline-light cfp-contact-link"
+                       href="{% if contato_comercial_url %}{{ contato_comercial_url }}{% else %}https://wa.me/5587933005214{% endif %}"
                        target="_blank"
                        rel="noopener noreferrer">
                         WhatsApp: (87) 93300-5214
                     </a>
 
-                    <a class="cfp-button cfp-button-outline-light"
+                    <a class="cfp-button cfp-button-outline-light cfp-contact-link"
                        href="mailto:confrontagis@gmail.com">
                         confrontagis@gmail.com
                     </a>
@@ -349,10 +432,10 @@
             </a>
             <p>Inteligência territorial rural para consultar, confrontar e decidir.</p>
             <nav aria-label="Links do rodapé">
-                <a href="#solucoes">Soluções</a>
+                <a href="#recursos">Recursos</a>
                 <a href="#planos">Planos</a>
-                <a href="{% url 'aplicativo:login' %}">Entrar</a>
-                <a href="https://wa.me/5587933005214"
+                {% if user.is_authenticated %}<a href="{% url 'aplicativo:inicio' %}">Ir para o mapa</a>{% else %}<a href="{% url 'aplicativo:cadastro' %}">Criar conta grátis</a><a href="{% url 'aplicativo:login' %}">Entrar</a>{% endif %}
+                <a href="{% if contato_comercial_url %}{{ contato_comercial_url }}{% else %}https://wa.me/5587933005214{% endif %}"
                    target="_blank"
                    rel="noopener noreferrer">WhatsApp</a>
                 <a href="mailto:confrontagis@gmail.com">E-mail</a>

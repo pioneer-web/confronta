@@ -91,18 +91,21 @@ def login_view(request):
 @sensitive_post_parameters('password1', 'password2')
 @never_cache
 def cadastro_view(request, modalidade=None):
+    cadastro_neutro = modalidade is None
     mapa_ciclos = {
         'mensal': AsaasCheckout.Ciclo.MONTHLY,
         'anual': AsaasCheckout.Ciclo.YEARLY,
     }
 
-    if modalidade not in mapa_ciclos:
+    if not cadastro_neutro and modalidade not in mapa_ciclos:
         return redirect(f"{reverse('public_root')}#planos")
 
-    ciclo = mapa_ciclos[modalidade]
+    ciclo = mapa_ciclos.get(modalidade)
 
     if request.user.is_authenticated:
         acesso_atual = resolver_acesso_aplicativo(request.user)
+        if cadastro_neutro and acesso_atual is not None:
+            return redirect('aplicativo:inicio')
         if acesso_atual is not None and acesso_atual.eh_administrador:
             logout(request)
             request.session.pop(SESSION_LOGOUT_LOCAL, None)
@@ -119,7 +122,7 @@ def cadastro_view(request, modalidade=None):
             registrar_sinal_bot(request, origem='cadastro_cliente')
             form.add_error(None, 'Não foi possível processar o cadastro. Tente novamente mais tarde.')
             status = 429
-        elif plano is None:
+        elif not cadastro_neutro and plano is None:
             form.add_error(None, 'O plano de contratação ainda não está disponível.')
         elif form.is_valid():
             nome = form.cleaned_data['nome']
@@ -137,21 +140,35 @@ def cadastro_view(request, modalidade=None):
                         is_staff=False,
                         role=None,
                     )
+                    perfil_dados = {
+                        'telefone': form.cleaned_data['telefone'],
+                        'plano': PerfilCliente.Plano.SEM_PLANO,
+                        'ativo': True,
+                        'renovacao_automatica': False,
+                    }
+                    if not cadastro_neutro and plano is not None:
+                        perfil_dados.update(
+                            plano_desejado=plano.nivel_acesso,
+                            plano_desejado_comercial=plano,
+                        )
                     perfil = PerfilCliente.objects.create(
                         usuario=user,
-                        telefone=form.cleaned_data['telefone'],
-                        plano=PerfilCliente.Plano.SEM_PLANO,
-                        plano_desejado=plano.nivel_acesso,
-                        plano_desejado_comercial=plano,
-                        ativo=True,
-                        renovacao_automatica=False,
+                        **perfil_dados,
                     )
             except IntegrityError:
                 form.add_error('email', 'Já existe uma conta cadastrada com este e-mail.')
             else:
-                login(request, user)
+                login(
+                    request,
+                    user,
+                    backend='django.contrib.auth.backends.ModelBackend',
+                )
                 ativar_sessao_unica_cliente(request, user)
                 request.session.pop(SESSION_LOGOUT_LOCAL, None)
+
+                if cadastro_neutro:
+                    request.session.pop(SESSION_CICLO_CONTRATACAO, None)
+                    return redirect('aplicativo:inicio')
 
                 # Guarda somente a modalidade escolhida.
                 # O Checkout será criado apenas quando o cliente confirmar
@@ -163,7 +180,7 @@ def cadastro_view(request, modalidade=None):
 
     return render(request, 'aplicativo/cadastro.html', {
         'form': form,
-        'plano_selecionado': plano,
+        'plano_selecionado': None if cadastro_neutro else plano,
         'ciclo': ciclo,
         'modalidade': modalidade,
         'honeypot_field': HONEYPOT_FIELD,

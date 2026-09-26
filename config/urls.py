@@ -9,6 +9,7 @@ from aplicativo.views.public import (
 )
 
 urlpatterns = [
+    path('accounts/', include('allauth.urls')),
     path('health/', health, name='health'),
 
     # SEO / indexação pública

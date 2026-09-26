@@ -27,18 +27,36 @@ class CarsVisiveisTests(SimpleTestCase):
         request.session = {SESSION_CAR_ATUAL: selected} if selected else {}
         return request
 
-    def test_rota_existe_e_nega_acesso_sem_permissao(self):
+    def test_rota_existe_bloqueia_anonimo_e_libera_geometria_free(self):
         self.assertEqual(resolve(self.url).func.__name__, cars_visiveis.__name__)
         anonimo = SimpleNamespace(is_authenticated=False)
         with patch.object(RepositorioTerritorial, 'buscar_cars_no_bbox') as busca:
             self.assertEqual(cars_visiveis(self.request(user=anonimo)).status_code, 302)
             sem_plano = SimpleNamespace(
-                is_authenticated=True, is_active=True, is_superuser=False,
+                pk=43, is_authenticated=True, is_active=True, is_superuser=False,
                 role='CLIENTE', Role=SimpleNamespace(ADMIN_TOTAL='ADMIN_TOTAL', ADMIN_JUNIOR='ADMIN_JUNIOR'),
                 perfil_cliente=SimpleNamespace(ativo=True, acesso_vigente=True, plano='SEM_PLANO'),
             )
-            self.assertEqual(cars_visiveis(self.request(user=sem_plano)).status_code, 403)
-            busca.assert_not_called()
+            resultado = {
+                'quantidade': 1,
+                'truncada': False,
+                'features': [{
+                    'type': 'Feature',
+                    'properties': {
+                        'cod_imovel': 'CAR-TESTE', 'municipio': 'Recife',
+                        'uf': 'PE', 'area_total_ha': 12.5, 'situacao_car': 'ATIVO',
+                    },
+                    'geometry': {'type': 'Polygon', 'coordinates': [[[0, 0], [1, 0], [1, 1], [0, 0]]]},
+                }],
+            }
+            busca.return_value = resultado
+            response = cars_visiveis(self.request(user=sem_plano))
+            self.assertEqual(response.status_code, 200)
+            payload = json.loads(response.content)
+            self.assertEqual(payload['features'][0]['geometry'], resultado['features'][0]['geometry'])
+            # O endpoint mantém a resposta compatível; o modo Free não a exibe no popup.
+            self.assertEqual(payload['features'][0]['properties']['cod_imovel'], 'CAR-TESTE')
+            self.assertEqual(busca.call_count, 1)
 
     def test_zoom_baixo_e_bbox_invalido_nao_consultam(self):
         invalidos = [

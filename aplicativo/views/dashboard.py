@@ -46,6 +46,8 @@ def _contexto_base(request, *, form=None, consulta=None, erro_consulta=None):
         'acesso_aplicativo': acesso,
         'eh_cliente': acesso.eh_cliente,
         'possui_plano': acesso.possui_plano,
+        'pode_explorar_mapa': acesso.pode_explorar_mapa,
+        'pode_consultar': acesso.pode_consultar,
         'pode_desenhar_glebas': acesso.pode_desenhar_glebas,
         'consulta_origem': request.session.get(SESSION_CONSULTA_ORIGEM, 'car'),
         'glebas_temporarias': (
@@ -254,4 +256,3 @@ def nova_consulta_geometria(request):
     except (ConsultaCarErro, ConsultaGeometriaErro) as exc:
         messages.error(request, str(exc))
     return redirect('aplicativo:inicio')
-

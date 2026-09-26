@@ -6,6 +6,15 @@ from aplicativo.models import PerfilCliente
 
 
 class AcessoAplicativoTests(TestCase):
+    def test_sem_plano_pode_explorar_mapa_sem_receber_permissoes_premium(self):
+        user = User.objects.create_user(email='free@test.local', password='SenhaForte123!')
+        PerfilCliente.objects.create(usuario=user, plano=PerfilCliente.Plano.SEM_PLANO)
+        acesso = resolver_acesso_aplicativo(user)
+        self.assertTrue(acesso.pode_explorar_mapa)
+        self.assertFalse(acesso.possui_plano)
+        self.assertFalse(acesso.pode_consultar)
+        self.assertFalse(acesso.pode_desenhar_glebas)
+
     def test_superadministrador_recebe_total(self):
         user = User.objects.create_superuser(email='super@test.local', password='SenhaForte123!')
         acesso = resolver_acesso_aplicativo(user)

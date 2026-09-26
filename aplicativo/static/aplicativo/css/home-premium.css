@@ -99,10 +99,11 @@
     font-weight: 700;
     text-decoration: none;
 }
-.cfp-nav-login { border: 1px solid #6c978d; background: #0a5144; color: #fff !important; }
+.cfp-nav-login { border: 0; background: transparent; color: #e2eee9 !important; }
 .cfp-nav-cta { border: 1px solid var(--cfp-lime); background: var(--cfp-lime); color: #173c2f !important; }
-.cfp-nav-login:hover { background: #0d5b4b; }
+.cfp-nav-login:hover { color: #fff !important; text-decoration: underline; }
 .cfp-nav-cta:hover { background: #d4f18b; }
+.cfp-nav-mobile-auth { display: none; }
 .cfp-menu-button {
     display: none;
     width: 43px;
@@ -190,6 +191,7 @@
     line-height: 1.62;
 }
 .cfp-hero-actions { margin-top: 31px; display: flex; gap: 12px; flex-wrap: wrap; }
+.cfp-hero-note { display: block; margin-top: 12px; color: #71807b; font-size: 12px; }
 .cfp-button {
     min-height: 54px;
     padding: 0 23px;
@@ -402,6 +404,36 @@
 .cfp-how-steps strong { display: block; margin-bottom: 9px; color: #163f36; font-size: 16px; font-weight: 700; }
 .cfp-how-steps p { margin: 0; color: #6f7f7b; font-size: 13px; line-height: 1.55; }
 
+.cfp-audience { background: #fff; }
+.cfp-audience-grid, .cfp-content-grid {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+.cfp-audience-grid article, .cfp-content-grid article {
+    padding: 24px;
+    border: 1px solid var(--cfp-line);
+    border-radius: 18px;
+    background: #fbfcfa;
+    color: #244a40;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+.cfp-content { background: #f2f6f2; }
+.cfp-content-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cfp-content-grid article { min-height: 155px; background: #fff; }
+.cfp-content-grid h3 { margin: 0 0 10px; color: #163f36; font-size: 17px; }
+.cfp-content-grid p { margin: 0; color: #667873; font-size: 13px; line-height: 1.65; }
+.cfp-content-cta { margin: 30px auto 0; text-align: center; }
+.cfp-faq { background: #fff; }
+.cfp-faq-list { width: min(880px, 100%); margin: 0 auto; }
+.cfp-faq-list details { border-bottom: 1px solid #e1e9e5; }
+.cfp-faq-list summary { padding: 20px 4px; color: #173f36; font-size: 15px; font-weight: 700; cursor: pointer; }
+.cfp-faq-list details p { margin: -4px 4px 20px; color: #667873; font-size: 14px; line-height: 1.65; }
+
 /* PLANS ---------------------------------------------------------------- */
 .cfp-plans { background: linear-gradient(155deg, #062f2a 0%, #083f35 55%, #0a493b 100%); }
 .cfp-section-head-light h2 { color: #fff; }
@@ -453,6 +485,7 @@
 .cfp-final-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 .cfp-button-light { background: #c9ee7a; color: #173d2e !important; }
 .cfp-button-outline-light { border: 1px solid #70998f; color: #fff !important; background: #0b4d41; }
+.cfp-contact-link { min-height: 38px; padding: 0 8px; border: 0; background: transparent; color: #d1dfda !important; font-size: 12px; text-decoration: underline; }
 
 /* FOOTER --------------------------------------------------------------- */
 .cfp-footer { padding: 32px 40px; background: #041f1d; color: #a9bbb6; }
@@ -587,4 +620,29 @@
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
     }
+}
+
+@media (max-width: 1180px) {
+    .cfp-nav { grid-template-columns: auto 1fr auto; gap: 14px; }
+    .cfp-nav-links { gap: 15px; }
+    .cfp-nav-links a { font-size: 12px; }
+    .cfp-nav-cta { display: inline-flex; padding-inline: 12px; }
+    .cfp-nav-login { display: inline-flex; padding-inline: 8px; }
+    .cfp-nav-actions { gap: 5px; }
+}
+
+@media (max-width: 920px) {
+    .cfp-nav-cta, .cfp-nav-login { display: none; }
+    .cfp-nav-mobile-auth { display: grid; gap: 7px; margin-top: 5px; padding: 12px 7px 4px; border-top: 1px solid rgba(255,255,255,.14); }
+    .cfp-nav-mobile-auth a { min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .cfp-nav-mobile-cta { background: var(--cfp-lime); color: #173c2f !important; }
+    .cfp-nav-mobile-login { color: #e2eee9 !important; }
+    .cfp-audience-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 680px) {
+    .cfp-audience-grid, .cfp-content-grid { grid-template-columns: 1fr; }
+    .cfp-audience-grid article, .cfp-content-grid article { padding: 20px; }
+    .cfp-final-actions { align-items: flex-start; flex-direction: column; }
+    .cfp-final-actions .cfp-contact-link { width: auto; }
 }

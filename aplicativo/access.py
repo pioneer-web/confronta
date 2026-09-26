@@ -15,6 +15,7 @@ class AcessoAplicativo:
     plano: str
     origem: str
     ativo: bool = True
+    perfil_ativo: bool = True
 
     @property
     def possui_plano(self):
@@ -22,6 +23,11 @@ class AcessoAplicativo:
             PerfilCliente.Plano.BASICO,
             PerfilCliente.Plano.TOTAL,
         }
+
+    @property
+    def pode_explorar_mapa(self):
+        """Conta cliente ativa pode abrir e navegar no mapa, mesmo sem plano."""
+        return (self.eh_cliente and self.perfil_ativo) or self.eh_administrador
 
     @property
     def pode_consultar(self):
@@ -89,4 +95,5 @@ def resolver_acesso_aplicativo(user):
         plano=perfil.plano,
         origem='CLIENTE',
         ativo=perfil.acesso_vigente,
+        perfil_ativo=perfil.ativo,
     )

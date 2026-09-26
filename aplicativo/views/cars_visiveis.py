@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
-from aplicativo.permissions import plano_ativo_required
+from aplicativo.permissions import cliente_required
 from aplicativo.repositories.territorial import CamadaIndisponivel, RepositorioTerritorial
 from aplicativo.session_keys import SESSION_CAR_ATUAL
 
@@ -40,7 +40,7 @@ def _viewport_validado(params):
 
 
 @never_cache
-@plano_ativo_required
+@cliente_required
 @require_GET
 def cars_visiveis(request):
     viewport = _viewport_validado(request.GET)

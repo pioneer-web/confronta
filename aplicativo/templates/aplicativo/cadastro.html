@@ -14,7 +14,8 @@
 
     <section class="cf-contract-shell">
         <div class="cf-contract-copy">
-            <span class="cf-auth-eyebrow">Assinatura online</span>
+            <span class="cf-auth-eyebrow">{% if modalidade %}Assinatura online{% else %}Área do cliente{% endif %}</span>
+            {% if modalidade %}
             <h1>Crie sua conta. Depois, finalize o pagamento no Asaas.</h1>
             <p>Agora pedimos apenas os dados da sua conta. CPF, endereço e dados de pagamento serão informados diretamente no Checkout seguro do Asaas. O acesso é liberado somente após a confirmação do pagamento.</p>
             <div class="cf-contract-steps">
@@ -22,6 +23,10 @@
                 <div><strong>2</strong><span>Informe CPF, endereço e cartão no Checkout seguro do Asaas.</span></div>
                 <div><strong>3</strong><span>Pagamento confirmado: o acesso é liberado automaticamente.</span></div>
             </div>
+            {% else %}
+            <h1>Comece pelo CONFRONTA.</h1>
+            <p>Crie sua conta gratuitamente para entrar na plataforma. Você poderá conhecer o ambiente e contratar um plano posteriormente, quando precisar dos recursos profissionais.</p>
+            {% endif %}
         </div>
 
         <div class="cf-contract-card">
@@ -41,6 +46,8 @@
                 {% endif %}
             </div>
             {% endif %}
+
+            {% include 'aplicativo/partials/google_login.html' %}
 
             <form method="post" class="cf-auth-form" novalidate style="margin-top:24px">
                 {% csrf_token %}
@@ -82,7 +89,7 @@
                     {% for error in form.password2.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
                 </div>
 
-                <button class="cf-auth-submit" type="submit">Realizar cadastro</button>
+                <button class="cf-auth-submit" type="submit">{% if modalidade %}Realizar cadastro{% else %}Criar conta grátis{% endif %}</button>
             </form>
 
             <div class="cf-contract-plans">

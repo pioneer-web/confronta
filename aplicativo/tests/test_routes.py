@@ -65,11 +65,28 @@ class AplicativoRouteTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn('/mapa/login/', response.url)
 
-    def test_cliente_sem_plano_abre_area_com_cta(self):
+    def test_cliente_sem_plano_abre_dashboard_completa_em_modo_free(self):
         self.client.force_login(self.sem_plano)
         response = self.client.get(reverse('aplicativo:inicio'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Você ainda não possui um plano ativo')
+        self.assertContains(response, 'territorial-screen')
+        self.assertContains(response, 'id="map"')
+        self.assertContains(response, 'CONFRONTA')
+        self.assertContains(response, 'aria-label="Mapa"')
+        self.assertContains(response, 'aria-label="Alertas"')
+        self.assertContains(response, 'data-free-mode="true"')
+        self.assertContains(response, 'data-can-explore-map="true"')
+        self.assertContains(response, 'data-can-consult="false"')
+        self.assertContains(response, 'Recurso disponível nos planos do CONFRONTA.')
+        self.assertNotContains(response, 'Você ainda não possui um plano ativo')
+        self.assertContains(response, 'data-cars-url="/mapa/api/cars-visiveis/"')
+
+    def test_cliente_sem_plano_tem_acoes_premium_bloqueadas_no_backend(self):
+        self.client.force_login(self.sem_plano)
+        consulta = self.client.post(reverse('aplicativo:nova_consulta'), {'car': self.CAR})
+        self.assertRedirects(consulta, reverse('aplicativo:planos'), fetch_redirect_response=False)
+        exportacao = self.client.get(reverse('aplicativo:exportar_car_kml'))
+        self.assertEqual(exportacao.status_code, 403)
 
     def test_nova_consulta_get_retorna_para_tela_principal(self):
         self.client.force_login(self.basico)
@@ -86,7 +103,7 @@ class AplicativoRouteTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.redirect_chain[-1][0], reverse('aplicativo:inicio'))
         self.assertNotContains(response, 'new-query-drawer')
-        self.assertContains(response, 'client-map-welcome')
+        self.assertContains(response, 'territorial-screen')
 
     @patch('aplicativo.views.dashboard.ConsultaCarService.validar_existencia')
     def test_post_nova_consulta_grava_car_na_sessao_e_redireciona_para_url_limpa(self, validar):

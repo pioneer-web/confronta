@@ -1,6 +1,7 @@
 from decimal import Decimal
 from unittest.mock import patch
 
+from django.contrib.auth import SESSION_KEY
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -67,6 +68,39 @@ class CadastroClienteTests(TestCase):
             self.client.session[SESSION_CICLO_CONTRATACAO],
             AsaasCheckout.Ciclo.MONTHLY,
         )
+
+    def test_cadastro_neutro_abre_formulario_sem_escolha_de_plano(self):
+        response = self.client.get(reverse('aplicativo:cadastro'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Criar conta grátis')
+        self.assertNotContains(response, 'Modalidade selecionada')
+
+    def test_cadastro_neutro_cria_cliente_sem_checkout_e_abre_mapa(self):
+        response = self.client.post(
+            reverse('aplicativo:cadastro'),
+            self._dados('neutro@test.local'),
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('aplicativo:inicio'),
+            fetch_redirect_response=False,
+        )
+        user = User.objects.get(email='neutro@test.local')
+        perfil = user.perfil_cliente
+        self.assertEqual(perfil.plano, PerfilCliente.Plano.SEM_PLANO)
+        self.assertTrue(perfil.ativo)
+        self.assertFalse(perfil.renovacao_automatica)
+        self.assertIsNone(perfil.plano_desejado)
+        self.assertIsNone(perfil.plano_desejado_comercial)
+        self.assertFalse(AsaasCheckout.objects.filter(perfil=perfil).exists())
+        self.assertEqual(str(self.client.session[SESSION_KEY]), str(user.pk))
+        self.assertTrue(perfil.token_sessao_ativa)
+        dashboard = self.client.get(reverse('aplicativo:inicio'))
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertContains(dashboard, 'id="map"')
+        self.assertContains(dashboard, 'data-free-mode="true"')
 
     def test_tela_anual_exibe_parcelamento_e_nao_pede_cpf(self):
         response = self.client.get(

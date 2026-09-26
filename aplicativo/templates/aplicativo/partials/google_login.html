@@ -1,0 +1,8 @@
+{% load socialaccount %}
+{% if GOOGLE_OAUTH_ENABLED %}
+<form method="post" action="{% provider_login_url 'google' process='login' %}" class="cf-google-login-form">
+    {% csrf_token %}
+    <button class="cf-google-login" type="submit"><span class="cf-google-mark" aria-hidden="true">G</span>Continuar com Google</button>
+</form>
+<div class="cf-auth-divider"><span>ou</span></div>
+{% endif %}

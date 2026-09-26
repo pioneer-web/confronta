@@ -1,0 +1,42 @@
+.client-rail-link[data-premium-lock] .client-rail-label::after {
+    content: '  🔒';
+    font-size: .68em;
+    opacity: .78;
+}
+.new-query-button[data-premium-lock]::after { content: ' 🔒'; font-size: .75em; }
+.new-query-option[data-premium-lock]::after,
+.new-query-form[data-premium-lock] button[type="submit"]::after {
+    content: ' 🔒';
+    font-size: .75em;
+}
+.free-feature-notice[hidden] { display: none; }
+.free-feature-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgb(5 20 28 / 55%);
+}
+.free-feature-notice-card {
+    position: relative;
+    width: min(100%, 26rem);
+    padding: 2rem;
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 24%);
+}
+.free-feature-notice-card h2 { margin: 0 0 1.25rem; font-size: 1.15rem; }
+.free-feature-notice-card p:empty { display: none; }
+.free-feature-notice-card p:not(:empty) { margin: -.65rem 0 1.25rem; color: #52656b; line-height: 1.5; }
+.free-feature-notice-card [data-free-notice-close] {
+    position: absolute;
+    top: .55rem;
+    right: .7rem;
+    border: 0;
+    background: transparent;
+    font-size: 1.6rem;
+    cursor: pointer;
+}
