@@ -43,9 +43,9 @@ services:
       IMPORT_INBOX_DIR: /app/import_inbox
     volumes:
       - confronta_var:/app/var
-      - ./manage_batches:/app/manage_batches
+      - manage_batches_current:/app/manage_batches
       - manage_batches:/app/manage_batches_legacy
-      - ./import_inbox:/app/import_inbox
+      - import_inbox:/app/import_inbox
       - staticfiles:/app/staticfiles
     expose:
       - "8000"
@@ -86,9 +86,9 @@ services:
         condition: service_healthy
     volumes:
       - confronta_var:/app/var
-      - ./manage_batches:/app/manage_batches
+      - manage_batches_current:/app/manage_batches
       - manage_batches:/app/manage_batches_legacy
-      - ./import_inbox:/app/import_inbox
+      - import_inbox:/app/import_inbox
     expose:
       - "8001"
     command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8001", "--workers", "2", "--timeout", "180"]
@@ -112,9 +112,9 @@ services:
         condition: service_healthy
     volumes:
       - confronta_var:/app/var
-      - ./manage_batches:/app/manage_batches
+      - manage_batches_current:/app/manage_batches
       - manage_batches:/app/manage_batches_legacy
-      - ./import_inbox:/app/import_inbox
+      - import_inbox:/app/import_inbox
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
@@ -159,9 +159,9 @@ services:
         condition: service_healthy
     volumes:
       - confronta_var:/app/var
-      - ./manage_batches:/app/manage_batches
+      - manage_batches_current:/app/manage_batches
       - manage_batches:/app/manage_batches_legacy
-      - ./import_inbox:/app/import_inbox
+      - import_inbox:/app/import_inbox
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
@@ -188,6 +188,10 @@ volumes:
     name: saas-confronta-main_confronta_var
   manage_batches:
     name: saas-confronta-main_manage_batches
+  manage_batches_current:
+    name: saas-confronta-main_manage_batches_current
+  import_inbox:
+    name: saas-confronta-main_import_inbox
   staticfiles:
     name: saas-confronta-main_staticfiles
 

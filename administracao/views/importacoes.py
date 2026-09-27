@@ -1,4 +1,5 @@
 import json
+import logging
 import queue
 import threading
 
@@ -36,6 +37,9 @@ from administracao.services.pipeline import process_import
 from administracao.services.sicar_tracking import state_rows
 from administracao.services.partitioning import normalize_uf, UF_NAMES
 from administracao.services.source_sync import enqueue_ibama
+
+
+logger = logging.getLogger(__name__)
 
 
 @admin_required
@@ -247,6 +251,7 @@ def iniciar_lote_sequencial(request):
     except BatchUploadLimitError as exc:
         return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
     except Exception:
+        logger.exception('Falha ao iniciar lote sequencial (fonte=%s).', source_slug)
         return JsonResponse({'ok': False, 'error': 'Não foi possível iniciar o lote sequencial.'}, status=400)
     return JsonResponse({
         'ok': True,
