@@ -103,7 +103,7 @@ class UploadBaseForm(forms.Form):
             self.fields['arquivo'].label = 'Arquivo de Operações SICOR'
             self.fields['arquivo'].help_text = (
                 'Formatos aceitos: .gz, .csv ou arquivo SICOR descompactado sem extensão. '
-                'Exemplo: SICOR_OPERACAO_BASICA_ESTADO_2026. Ano de referência identificado pelo nome (2013 a 2026). '
+                'Exemplo: SICOR_OPERACAO_BASICA_ESTADO_2026. Ano de referência identificado pelo nome, a partir de 2013. '
                 'Destino previsto: banco PostgreSQL do CONFRONTA.'
             )
         elif spec and spec.mode == 'raw_only' and spec.data_kind == 'tabular_flexible':
@@ -269,7 +269,7 @@ class ImportacaoLoteForm(forms.Form):
             if self.fonte_locked == 'sicor_operacoes':
                 self.fields['arquivos'].help_text = (
                     'Formatos aceitos: .gz, .csv ou arquivo SICOR descompactado sem extensão. '
-                    'O nome deve identificar ano entre 2013 e 2026.'
+                    'O nome deve identificar ano de referência a partir de 2013.'
                 )
                 self.fields['arquivos'].widget.attrs.pop('accept', None)
             else:

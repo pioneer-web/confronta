@@ -10,6 +10,7 @@ from administracao.datasets import get_dataset
 from administracao.forms import UploadBaseForm
 from administracao.models import User
 from administracao.services.batch_creation import create_batch_from_uploads
+from administracao.services.batch_classification import _year_hint_from_name
 from administracao.services.batch_upload import allowed_input_extensions
 from administracao.services.sicor_operations import (
     INVALID_OPERATIONS_HEADER,
@@ -86,7 +87,7 @@ class SicorOperationsManageTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         self.assertNotIn('accept', form.fields['arquivo'].widget.attrs)
 
-    def test_csv_correspondente_tambem_e_aceito_e_ano_fora_do_intervalo_nao(self):
+    def test_csv_correspondente_e_aceito_e_ano_futuro_tambem(self):
         csv_form = UploadBaseForm(
             files={'arquivo': SimpleUploadedFile(
                 'SICOR_OPERACAO_BASICA_ESTADO_2025.csv',
@@ -96,25 +97,30 @@ class SicorOperationsManageTests(TestCase):
             dataset_slug='sicor-operacoes',
         )
         self.assertTrue(csv_form.is_valid(), csv_form.errors)
-        self.assertIsNone(operations_reference_year('SICOR_OPERACAO_BASICA_ESTADO_2027.gz'))
+        self.assertEqual(operations_reference_year('SICOR_OPERACAO_BASICA_ESTADO_2027.gz'), 2027)
 
-    def test_aceita_nome_sem_extensao_em_2013_e_2026(self):
-        for year in (2013, 2026):
-            filename = f'SICOR_OPERACAO_BASICA_ESTADO_{year}'
-            form = UploadBaseForm(
-                files={'arquivo': SimpleUploadedFile(filename, self.content(filename))},
-                source_slug='sicor_operacoes',
-                dataset_slug='sicor-operacoes',
-            )
-            self.assertTrue(form.is_valid(), form.errors)
-            self.assertEqual(operations_reference_year(filename), year)
+    def test_aceita_anos_a_partir_de_2013_sem_limite_superior(self):
+        for year in (2013, 2026, 2027, 2035, 2100):
+            for suffix in ('', '.csv', '.gz'):
+                filename = f'SICOR_OPERACAO_BASICA_ESTADO_{year}{suffix}'
+                self.assertEqual(operations_reference_year(filename), year)
+                form = UploadBaseForm(
+                    files={'arquivo': SimpleUploadedFile(filename, self.content(filename))},
+                    source_slug='sicor_operacoes',
+                    dataset_slug='sicor-operacoes',
+                )
+                self.assertTrue(form.is_valid(), f'{filename}: {form.errors}')
+        self.assertEqual(_year_hint_from_name('SICOR_OPERACAO_BASICA_ESTADO_2100.gz'), 2100)
 
-    def test_rejeita_nomes_sem_extensao_aleatorios_e_anos_fora_da_faixa(self):
+    def test_rejeita_anos_anteriores_e_nomes_com_ano_com_quantidade_incorreta_de_digitos(self):
         for filename in (
             'arquivo_qualquer',
             'SICOR_OPERACAO_BASICA_ESTADO_2012',
-            'SICOR_OPERACAO_BASICA_ESTADO_2027',
+            'SICOR_OPERACAO_BASICA_ESTADO_2012.gz',
+            'SICOR_OPERACAO_BASICA_ESTADO_999.gz',
+            'SICOR_OPERACAO_BASICA_ESTADO_10000.gz',
         ):
+            self.assertIsNone(operations_reference_year(filename), filename)
             form = UploadBaseForm(
                 files={'arquivo': SimpleUploadedFile(filename, self.content(filename))},
                 source_slug='sicor_operacoes',

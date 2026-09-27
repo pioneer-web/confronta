@@ -30,7 +30,7 @@ from .zip_security import run_antivirus
 logger = logging.getLogger(__name__)
 
 _GZIP_MAGIC = b'\x1f\x8b'
-_YEAR_RE = re.compile(r'(?<!\d)(20\d{2})(?!\d)')
+_YEAR_RE = re.compile(r'(?<!\d)(\d{4})(?!\d)')
 _SUPPORTED_ENCODINGS = ('utf-8-sig', 'utf-8', 'cp1252', 'latin-1')
 _DELIMITERS = (';', ',', '\t', '|')
 
@@ -260,7 +260,7 @@ def _validate_identity(spec, file_name: str, csv_info):
 
 def _extract_year(file_name: str):
     years = [int(match.group(1)) for match in _YEAR_RE.finditer(str(file_name or ''))]
-    years = [year for year in years if 2013 <= year <= timezone.localdate().year + 1]
+    years = [year for year in years if year >= 2013]
     return years[-1] if years else None
 
 

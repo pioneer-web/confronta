@@ -403,7 +403,7 @@ def process_sicor_operations_import(uploaded_file, spec, usuario, context=None, 
     year = operations_reference_year(filename)
     if year is None:
         # Normally rejected by the upload form; keep the service boundary safe.
-        raise SicorOperationsValidationError('Ano SICOR inválido. Use um arquivo anual de 2013 a 2026.')
+        raise SicorOperationsValidationError('Ano SICOR inválido. Use um arquivo anual com ano de referência a partir de 2013.')
 
     imp = Importacao.objects.create(
         fonte=spec.fonte,

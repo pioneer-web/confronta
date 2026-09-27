@@ -575,5 +575,9 @@ def _classify_batch_input(input_path, source_slug, relative_path='', archive_sha
 
 def _year_hint_from_name(filename):
     import re
-    years = re.findall(r'(?<!\d)(20\d{2})(?!\d)', str(filename or ''))
+    filename = str(filename or '')
+    # SICOR publishes logical yearly partitions without a fixed upper year.
+    # Keep existing year-hint behavior for other sources unchanged.
+    pattern = r'(?<!\d)(\d{4})(?!\d)' if 'sicor' in filename.casefold() else r'(?<!\d)(20\d{2})(?!\d)'
+    years = re.findall(pattern, filename)
     return int(years[-1]) if years else None

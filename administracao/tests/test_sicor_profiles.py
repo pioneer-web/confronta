@@ -73,9 +73,15 @@ class SicorProfileTests(SimpleTestCase):
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from administracao.services.sicor_import import _detect_csv_format, _validate_identity, _polygonal_geometry
+from administracao.services.sicor_import import _extract_year
 
 
 class SicorParserTests(SimpleTestCase):
+    def test_extrator_generico_aceita_ano_futuro_distante_em_glebas_wkt(self):
+        self.assertEqual(_extract_year('sicor_glebas_wkt_2100.csv'), 2100)
+        self.assertIsNone(_extract_year('sicor_glebas_wkt_2012.csv'))
+        self.assertIsNone(_extract_year('sicor_glebas_wkt_10000.csv'))
+
     def test_properties_header_is_confirmed_and_extra_is_preserved(self):
         spec = get_dataset('sicor-propriedades')
         with TemporaryDirectory() as tmp:

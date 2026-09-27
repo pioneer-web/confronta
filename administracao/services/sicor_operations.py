@@ -8,7 +8,7 @@ import zlib
 
 
 INVALID_OPERATIONS_FILENAME = (
-    'Use SICOR_OPERACAO_BASICA_ESTADO_<ANO> com ou sem extensão .gz/.csv, com ano entre 2013 e 2026.'
+    'Use SICOR_OPERACAO_BASICA_ESTADO_<ANO> com ou sem extensão .gz/.csv e ano de referência a partir de 2013.'
 )
 INVALID_OPERATIONS_HEADER = (
     'Cabeçalho inválido para Operações SICOR: esperado o cabeçalho oficial com 47 colunas '
@@ -29,7 +29,7 @@ _OPERATIONS_HEADER = (
     'CD_CICLO_CULTIVAR', 'CD_TIPO_SOLO', 'PC_BONUS_CAR',
 )
 _FILENAME_RE = re.compile(
-    r'^SICOR_OPERACAO_BASICA_ESTADO_(20\d{2})(?:\.(?:gz|csv))?$',
+    r'^SICOR_OPERACAO_BASICA_ESTADO_(\d{4})(?:\.(?:gz|csv))?$',
     re.IGNORECASE,
 )
 
@@ -44,7 +44,7 @@ def operations_reference_year(filename):
     if not match:
         return None
     year = int(match.group(1))
-    if not 2013 <= year <= 2026:
+    if year < 2013:
         return None
     return year
 
