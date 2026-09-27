@@ -1,4 +1,5 @@
-.env
+.env*
+!.env.example
 __pycache__/
 *.py[cod]
 *.sqlite3
@@ -17,7 +18,6 @@ import_inbox/*
 manage_batches/*
 !manage_batches/.gitkeep
 import_inbox/.manage_batches/
-.envback
 
 # Artefatos locais de atualização
 *.bak-v*
