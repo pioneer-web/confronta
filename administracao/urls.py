@@ -31,6 +31,8 @@ urlpatterns = [
     path('importacoes/lote/<int:pk>/interromper/', importacoes.interromper_lote_importacao, name='interromper_lote_importacao'),
     path('importacoes/lote/<int:pk>/excluir/', importacoes.excluir_lote_importacao, name='excluir_lote_importacao'),
     path('importacoes/lote/<int:pk>/confirmar/', importacoes.confirmar_lote_importacao, name='confirmar_lote_importacao'),
+    path('importacoes/lote/<int:pk>/item/<int:item_pk>/confirmar-sicor/', importacoes.confirmar_reducao_sicor_item, name='confirmar_reducao_sicor_item'),
+    path('importacoes/lote/<int:pk>/item/<int:item_pk>/cancelar-sicor/', importacoes.cancelar_reducao_sicor_item, name='cancelar_reducao_sicor_item'),
     path('importacoes/lote/<int:pk>/reprocessar-falhas/', importacoes.reprocessar_falhas_lote, name='reprocessar_falhas_lote'),
     path('importacoes/lote/<int:pk>/reanalisar-revisoes/', importacoes.reanalisar_revisoes_lote, name='reanalisar_revisoes_lote'),
     path('importacoes/lote/<int:pk>/item/<int:item_pk>/uf/', importacoes.definir_uf_item_lote, name='definir_uf_item_lote'),
@@ -41,6 +43,8 @@ urlpatterns = [
     path('importar/<slug:fonte_slug>/<slug:dataset_slug>/', importacoes.importar_dataset, name='importar_dataset'),
     path('importacoes/', importacoes.historico_importacoes, name='historico_importacoes'),
     path('importacoes/<int:pk>/', importacoes.importacao_detalhe, name='importacao_detalhe'),
+    path('importacoes/<int:pk>/confirmar-reducao-sicor/', importacoes.confirmar_reducao_sicor_importacao, name='confirmar_reducao_sicor_importacao'),
+    path('importacoes/<int:pk>/cancelar-reducao-sicor/', importacoes.cancelar_reducao_sicor_importacao, name='cancelar_reducao_sicor_importacao'),
 
     # Administração comercial e de acessos dentro do mesmo painel.
     path('clientes/', clientes.lista_clientes, name='clientes'),

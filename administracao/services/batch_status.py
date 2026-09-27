@@ -198,12 +198,25 @@ def retry_failed_batch_items(lote_id, usuario):
     """
     with transaction.atomic():
         lote = LoteImportacao.objects.select_for_update().get(pk=lote_id)
-        failed = lote.itens.filter(status=ItemLoteImportacao.Status.FALHOU)
-        quantidade = failed.count()
+        failed = list(
+            lote.itens.filter(status=ItemLoteImportacao.Status.FALHOU)
+            .select_related('importacao')
+        )
+        quantidade = len(failed)
         if not quantidade:
             raise ValueError('Não há itens com falha técnica para reprocessar neste lote.')
 
-        failed.update(
+        preserve_prepared_sicor = [
+            item.pk for item in failed
+            if item.importacao_id
+            and (item.importacao.contexto or {}).get('sicor_reduction_confirmation')
+            and (
+                (item.importacao.resultado or {}).get('pending_sicor_publication')
+                or (item.importacao.resultado or {}).get('sicor_operacoes', {}).get('staging_schema')
+            )
+        ]
+        failed_qs = lote.itens.filter(pk__in=[item.pk for item in failed])
+        failed_qs.exclude(pk__in=preserve_prepared_sicor).update(
             status=ItemLoteImportacao.Status.AGUARDANDO_FILA,
             progresso=0,
             etapa='Aguardando nova análise na fila',
@@ -212,6 +225,14 @@ def retry_failed_batch_items(lote_id, usuario):
             finalizado_em=None,
             importacao=None,
             fingerprint_conteudo='',
+        )
+        lote.itens.filter(pk__in=preserve_prepared_sicor).update(
+            status=ItemLoteImportacao.Status.AGUARDANDO_FILA,
+            progresso=0,
+            etapa='Retomando staging SICOR preparado',
+            motivo='',
+            iniciado_em=None,
+            finalizado_em=None,
         )
 
         result = dict(lote.resultado or {})
@@ -331,6 +352,25 @@ def update_batch_status(lote_id):
         lote.data_finalizacao = None
         lote.save(update_fields=['status', 'data_finalizacao', 'resultado'])
         _update_sicar_states_for_batch(lote)
+        return lote
+
+    reduction_reviews = counts.get(ItemLoteImportacao.Status.AGUARDANDO_CONFIRMACAO_SICOR, 0)
+    if reduction_reviews:
+        result['sicor_reducoes_aguardando_confirmacao'] = reduction_reviews
+        result['progresso_percentual'] = 100
+        lote.resultado = result
+        sequential_upload_incomplete = (
+            result.get('modo') == 'UPLOAD_SEQUENCIAL'
+            and not result.get('sequencial_finalizado')
+            and int(result.get('arquivos_recebidos') or 0) < int(result.get('arquivos_esperados') or 0)
+        )
+        lote.status = (
+            LoteImportacao.Status.ANALISANDO
+            if sequential_upload_incomplete
+            else LoteImportacao.Status.AGUARDANDO_CONFIRMACAO
+        )
+        lote.data_finalizacao = None
+        lote.save(update_fields=['status', 'data_finalizacao', 'resultado'])
         return lote
 
     # No envio sequencial, terminar um item não encerra o lote: o navegador

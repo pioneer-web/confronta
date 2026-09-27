@@ -21,6 +21,28 @@
 <div class="message error"><strong>Motivo:</strong> {{ importacao.motivo_rejeicao }}</div>
 {% endif %}
 
+{% if sicor_comparison and not importacao.contexto.lote_id %}
+{% with comparison=sicor_comparison %}
+<section class="mc-card mc-action-card mc-action-warning">
+    <div>
+        <div class="mc-eyebrow">{% if comparison.reducao_detectada %}Redução detectada{% else %}Comparação da publicação{% endif %}</div>
+        <h2>Atualização SICOR — {% if comparison.snapshot_completo %}Snapshot de Glebas{% else %}{{ comparison.ano_referencia }}{% endif %}</h2>
+        {% if comparison.reducao_detectada %}<p>Redução de registros detectada. A publicação automática foi bloqueada para evitar substituição por arquivo possivelmente incompleto.</p>{% elif comparison.snapshot_completo %}<p>Este dataset é um snapshot completo. A nova versão substituirá o snapshot atualmente publicado.</p>{% endif %}
+        <div class="mc-metrics">
+            <div class="mc-metric"><span>{% if comparison.snapshot_completo %}Snapshot atual{% else %}Base atual{% endif %}</span><strong>{{ comparison.registros_base_atual }}</strong></div>
+            <div class="mc-metric"><span>{% if comparison.snapshot_completo %}Novo snapshot{% else %}Nova versão{% endif %}</span><strong>{{ comparison.registros_nova_versao }}</strong></div>
+            <div class="mc-metric"><span>Diferença</span><strong>{{ comparison.diferenca_registros }}{% if comparison.diferenca_percentual != None %} ({{ comparison.diferenca_percentual|floatformat:2 }}%){% endif %}</strong></div>
+        </div>
+        {% if comparison.snapshot_completo %}<p>Política: substituição integral do snapshot.</p>{% else %}<p>Política: substituição da versão {{ comparison.ano_referencia }}. Outros anos serão preservados.</p>{% endif %}
+    </div>
+    {% if importacao.status == 'AGUARDANDO_CONFIRMACAO_REDUCAO' %}<div class="d-flex gap-2">
+        <form method="post" action="{% url 'administracao:cancelar_reducao_sicor_importacao' importacao.pk %}" onsubmit="return confirm('Cancelar esta atualização e preservar a versão atual?');">{% csrf_token %}<button class="btn btn-outline-secondary" type="submit">Cancelar</button></form>
+        <form method="post" action="{% url 'administracao:confirmar_reducao_sicor_importacao' importacao.pk %}" onsubmit="return confirm('Confirmar a substituição SICOR apesar da redução detectada?');">{% csrf_token %}<button class="btn btn-danger" type="submit">Confirmar substituição</button></form>
+    </div>{% endif %}
+</section>
+{% endwith %}
+{% endif %}
+
 {% if importacao.identidade_relatorio %}
 <div class="card">
     <h2>Validação da identidade do dataset</h2>

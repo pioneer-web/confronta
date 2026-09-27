@@ -4,6 +4,7 @@ import csv
 import gzip
 import hashlib
 import io
+import json
 import logging
 import time
 import zlib
@@ -22,6 +23,7 @@ from administracao.models import Importacao, SicorOperacao
 from .auditoria import registrar_auditoria
 from .exceptions import BatchInterruptionRequested, SecurityValidationError
 from .postgis import create_staging_schema, drop_schema
+from .sicor_publication import comparison as compare_publication, count_rows, count_staging_rows, make_staging_durable
 from .sicor_import import _upsert_layer
 from .sicor_operations import (
     INVALID_OPERATIONS_HEADER,
@@ -205,6 +207,8 @@ def _stream_copy(path, filename, year, staging, columns_and_fields, file_size, p
     records_imported = 0
     records_rejected = 0
     rejected_samples = []
+    content_fingerprint = hashlib.sha256()
+    content_fingerprint.update(('\x1f'.join(_OPERATIONS_HEADER) + '\n').encode('utf-8'))
     previous_physical_line = 1
     expanded_bytes = 0
     compression_ratio = None
@@ -226,6 +230,10 @@ def _stream_copy(path, filename, year, staging, columns_and_fields, file_size, p
                 raise SicorOperationsValidationError(
                     f'Linha {line_number}: esperado 47 campos, recebidos {len(values)}.'
                 )
+
+            content_fingerprint.update(
+                (json.dumps(values, ensure_ascii=False, separators=(',', ':')) + '\n').encode('utf-8')
+            )
 
             raw_rows.append((line_number, year, filename, *values))
             _line_number, converted, invalid = _typed_row(values, columns_and_fields, line_number)
@@ -278,6 +286,7 @@ def _stream_copy(path, filename, year, staging, columns_and_fields, file_size, p
         'registros_lidos': records_read,
         'registros_importados': records_imported,
         'registros_rejeitados': records_rejected,
+        'fingerprint_conteudo': content_fingerprint.hexdigest(),
         'amostras_rejeitadas': rejected_samples,
         'bytes_descompactados': expanded_bytes if suffix == '.gz' else file_size,
         'taxa_expansao': round(compression_ratio, 2) if compression_ratio is not None else None,
@@ -313,7 +322,7 @@ def _create_raw_target(schema, raw_table, canonical_columns):
         )
 
 
-def _publish_year(schema, table, raw_table, staging, columns_and_fields, year, filename):
+def _publish_year(schema, table, raw_table, staging, columns_and_fields, year, filename, confirmation=None):
     canonical_columns = [column for column, _field in columns_and_fields]
     raw_target_columns = ['_numero_linha', '_ano_arquivo', '_arquivo_origem', *canonical_columns]
     typed_source_columns = ['_numero_linha', '_ano_arquivo', *canonical_columns]
@@ -330,6 +339,18 @@ def _publish_year(schema, table, raw_table, staging, columns_and_fields, year, f
             )
             cursor.execute(sql.SQL('CREATE SCHEMA IF NOT EXISTS {}').format(sql.Identifier(schema)))
         _create_raw_target(schema, raw_table, canonical_columns)
+        base_count = count_rows(schema, table, year)
+        new_count = count_staging_rows(staging, _TYPED_STAGE_TABLE, year=year)
+        compared = compare_publication(
+            base_count, new_count, year=year,
+            policy='SUBSTITUICAO_ATOMICA_POR_ANO', preserve_years=True,
+        )
+        if compared['reducao_detectada']:
+            approved_count = (confirmation or {}).get('quantidade_anterior')
+            if not (confirmation or {}).get('confirmacao_manual') or approved_count != base_count:
+                if confirmation and confirmation.get('confirmacao_manual'):
+                    compared['confirmacao_expirada'] = True
+                return None, None, compared
         with connection.cursor() as cursor:
             cursor.execute(
                 sql.SQL('DELETE FROM {} WHERE _ano_arquivo = %s').format(_relation(schema, raw_table)),
@@ -366,7 +387,7 @@ def _publish_year(schema, table, raw_table, staging, columns_and_fields, year, f
                 [year],
             )
             operational_count = int(cursor.fetchone()[0] or 0)
-    return raw_count, operational_count
+    return raw_count, operational_count, compared
 
 
 def _progress(callback, percent, stage):
@@ -393,6 +414,116 @@ def _finish_failure(imp, status, reason, *, report=None, identity_status=None):
     if identity_status:
         fields.append('identidade_status')
     imp.save(update_fields=fields)
+
+
+def _publish_operations_stage(imp, spec, usuario, year, staging, filename, report, confirmation=None):
+    schema = FONTE_SCHEMAS[spec.fonte]
+    signature = hashlib.sha256('\x1f'.join(_OPERATIONS_HEADER).encode('utf-8')).hexdigest()
+    raw_count, operational_count, compared = _publish_year(
+        schema, spec.stable_table, spec.raw_table, staging,
+        _columns_and_types(), year, filename, confirmation=confirmation,
+    )
+    if compared['reducao_detectada'] and raw_count is None:
+        make_staging_durable(staging, [_RAW_STAGE_TABLE, _TYPED_STAGE_TABLE])
+        report['comparacao_publicacao'] = compared
+        report['staging_schema'] = staging
+        report['politica'] = 'SUBSTITUICAO_ATOMICA_POR_ANO'
+        report['anos_anteriores_preservados'] = True
+        imp.status = Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO
+        imp.motivo_rejeicao = 'Redução de registros detectada. A publicação automática foi bloqueada para evitar substituição por arquivo possivelmente incompleto.'
+        imp.resultado = {'sicor_operacoes': report, 'comparacao_publicacao': compared}
+        imp.save(update_fields=['status', 'motivo_rejeicao', 'resultado'])
+        registrar_auditoria(usuario, 'SICOR_REDUCAO_PUBLICACAO_BLOQUEADA', 'Importacao', imp.pk, {
+            'dataset': spec.slug, **compared, 'confirmacao_manual': False,
+        })
+        return imp
+
+    confirmation = confirmation or {}
+    comparison_data = {
+        **compared,
+        'confirmacao_manual': bool(confirmation.get('confirmacao_manual')),
+        'usuario_confirmou_id': confirmation.get('usuario_id'),
+        'confirmado_em': confirmation.get('confirmado_em'),
+    }
+    report.update({
+        'registros_raw_ano': raw_count,
+        'registros_operacionais_ano': operational_count,
+        'comparacao_publicacao': comparison_data,
+        'tempo_processamento_segundos': report.get('tempo_processamento_segundos'),
+        'substituicao': 'SUBSTITUICAO_ATOMICA_POR_ANO',
+        'politica': 'SUBSTITUICAO_ATOMICA_POR_ANO',
+        'anos_anteriores_preservados': True,
+        'destino': f'{schema}.{spec.stable_table}',
+        'destino_raw': f'{schema}.{spec.raw_table}',
+        'mensagem': (
+            f'Importação SICOR {year} concluída: {operational_count:,} registros importados; '
+            f'{report.get("registros_rejeitados", 0):,} rejeitados.'
+        ).replace(',', '.'),
+    })
+    imp.status = Importacao.Status.CONCLUIDO
+    imp.data_finalizacao = timezone.now()
+    imp.motivo_rejeicao = ''
+    imp.resultado = {'sicor_operacoes': report}
+    imp.save(update_fields=['status', 'data_finalizacao', 'motivo_rejeicao', 'resultado'])
+    _upsert_layer(spec, imp, signature)
+    registrar_auditoria(usuario, 'IMPORTACAO_SICOR_OPERACOES_CONCLUIDA', 'Importacao', imp.pk, {
+        'dataset': spec.slug, 'ano_referencia': year,
+        'quantidade_anterior': compared['registros_base_atual'],
+        'quantidade_nova': operational_count,
+        'diferenca': compared['diferenca_registros'],
+        'percentual': compared['diferenca_percentual'],
+        'confirmacao_manual': comparison_data['confirmacao_manual'],
+        'usuario_confirmou_id': comparison_data['usuario_confirmou_id'],
+        'confirmado_em': comparison_data['confirmado_em'],
+        'politica': 'SUBSTITUICAO_ATOMICA_POR_ANO',
+        'anos_anteriores_preservados': True,
+    })
+    return imp
+
+
+def resume_sicor_operations_import(importacao_id, usuario):
+    with transaction.atomic():
+        imp = Importacao.objects.select_for_update().get(pk=importacao_id)
+        if imp.status != Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO and not (
+            imp.status == Importacao.Status.IMPORTANDO
+            and (imp.contexto or {}).get('sicor_reduction_confirmation', {}).get('confirmacao_manual')
+        ) and not (
+            imp.status == Importacao.Status.FALHOU
+            and (imp.contexto or {}).get('sicor_reduction_confirmation', {}).get('confirmacao_manual')
+            and (imp.resultado or {}).get('sicor_operacoes', {}).get('staging_schema')
+        ):
+            raise ValueError('Esta publicação SICOR não está aguardando confirmação.')
+        from administracao.datasets import get_dataset
+        spec = get_dataset(imp.dataset_slug)
+        report = dict((imp.resultado or {}).get('sicor_operacoes') or {})
+        staging = report.get('staging_schema')
+        if not spec or not staging:
+            raise ValueError('O staging desta publicação SICOR não está disponível para retomada.')
+        if imp.status != Importacao.Status.IMPORTANDO:
+            imp.status = Importacao.Status.IMPORTANDO
+            imp.save(update_fields=['status'])
+    confirmation = (imp.contexto or {}).get('sicor_reduction_confirmation') or {}
+    try:
+        with transaction.atomic():
+            result = _publish_operations_stage(
+                imp, spec, usuario, int(report['ano']), staging,
+                report.get('arquivo') or imp.nome_arquivo_original, report, confirmation,
+            )
+        if result.status == Importacao.Status.CONCLUIDO:
+            drop_schema(staging)
+        elif (result.resultado or {}).get('comparacao_publicacao', {}).get('confirmacao_expirada'):
+            context = dict(result.contexto or {})
+            context.pop('sicor_reduction_confirmation', None)
+            result.contexto = context
+            result.save(update_fields=['contexto'])
+        return result
+    except Exception:
+        logger.exception('Falha ao retomar publicação de Operações SICOR %s.', imp.pk)
+        imp.refresh_from_db()
+        if imp.status == Importacao.Status.IMPORTANDO:
+            imp.status = Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO
+            imp.save(update_fields=['status'])
+        raise
 
 
 def process_sicor_operations_import(uploaded_file, spec, usuario, context=None, progress_callback=None):
@@ -441,6 +572,27 @@ def process_sicor_operations_import(uploaded_file, spec, usuario, context=None, 
         imp.quarantine_path = str(quarantine.relative_to(settings.BASE_DIR))
         imp.status = Importacao.Status.VALIDANDO
         imp.save(update_fields=['hash_sha256', 'tamanho_bytes', 'quarantine_path', 'status'])
+
+        duplicate = Importacao.objects.filter(
+            dataset_slug=spec.slug,
+            hash_sha256=digest,
+            status__in=[Importacao.Status.CONCLUIDO, Importacao.Status.SEM_ALTERACAO],
+        ).exclude(pk=imp.pk).order_by('-data_inicio').first()
+        if duplicate and int((duplicate.resultado or {}).get('sicor_operacoes', {}).get('ano') or 0) == year:
+            imp.status = Importacao.Status.SEM_ALTERACAO
+            imp.identidade_status = 'SEM_ALTERACAO'
+            imp.data_finalizacao = timezone.now()
+            imp.resultado = {
+                'duplicado': True,
+                'importacao_anterior_id': duplicate.pk,
+                'sicor_operacoes': {'ano': year, 'motivo': 'SHA-256 idêntico à versão anual já publicada.'},
+            }
+            imp.save(update_fields=['status', 'identidade_status', 'data_finalizacao', 'resultado'])
+            registrar_auditoria(usuario, 'IMPORTACAO_SICOR_OPERACOES_SEM_ALTERACAO', 'Importacao', imp.pk, {
+                'ano_referencia': year, 'importacao_anterior_id': duplicate.pk,
+                'motivo': 'SHA-256 idêntico à versão anual já publicada.',
+            })
+            return imp
 
         _progress(progress_callback, 12, 'Validando segurança e cabeçalho oficial')
         antivirus = run_antivirus(quarantine)
@@ -493,48 +645,35 @@ def process_sicor_operations_import(uploaded_file, spec, usuario, context=None, 
                 report,
             )
 
-        _progress(progress_callback, 73, f'Validado: {staged_typed:,} registros prontos para publicar'.replace(',', '.'))
-        schema = FONTE_SCHEMAS[spec.fonte]
-        signature = hashlib.sha256('\x1f'.join(_OPERATIONS_HEADER).encode('utf-8')).hexdigest()
-        with transaction.atomic():
-            raw_count, operational_count = _publish_year(
-                schema,
-                spec.stable_table,
-                spec.raw_table,
-                staging,
-                columns_and_fields,
-                year,
-                filename,
-            )
-            report.update({
-                'registros_raw_ano': raw_count,
-                'registros_operacionais_ano': operational_count,
-                'tempo_processamento_segundos': round(time.monotonic() - started, 2),
-                'substituicao': 'SUBSTITUICAO_ATOMICA_POR_ANO',
-                'destino': f'{schema}.{spec.stable_table}',
-                'destino_raw': f'{schema}.{spec.raw_table}',
-                'mensagem': (
-                    f'Importação SICOR {year} concluída: {operational_count:,} registros importados; '
-                    f'{stats["registros_rejeitados"]:,} rejeitados.'
-                ).replace(',', '.'),
-            })
-            imp.status = Importacao.Status.CONCLUIDO
+        same_content = Importacao.objects.filter(
+            dataset_slug=spec.slug,
+            status__in=[Importacao.Status.CONCLUIDO, Importacao.Status.SEM_ALTERACAO],
+            resultado__sicor_operacoes__ano=year,
+            resultado__sicor_operacoes__fingerprint_conteudo=stats['fingerprint_conteudo'],
+        ).exclude(pk=imp.pk).exists()
+        if same_content:
+            imp.status = Importacao.Status.SEM_ALTERACAO
             imp.data_finalizacao = timezone.now()
-            imp.motivo_rejeicao = ''
-            imp.resultado = {'sicor_operacoes': report}
-            imp.save(update_fields=['status', 'data_finalizacao', 'motivo_rejeicao', 'resultado'])
-            _upsert_layer(spec, imp, signature)
-            registrar_auditoria(
-                usuario,
-                'IMPORTACAO_SICOR_OPERACOES_CONCLUIDA',
-                'Importacao',
-                imp.pk,
-                {
-                    'ano': year,
-                    'registros_lidos': stats['registros_lidos'],
-                    'registros_importados': operational_count,
-                    'registros_rejeitados': stats['registros_rejeitados'],
+            imp.resultado = {
+                'sem_alteracao': True,
+                'sicor_operacoes': {
+                    **stats, 'ano': year,
+                    'motivo': 'Conteúdo operacional SICOR idêntico ao já publicado; nenhuma escrita foi realizada.',
                 },
+            }
+            imp.save(update_fields=['status', 'data_finalizacao', 'resultado'])
+            registrar_auditoria(usuario, 'IMPORTACAO_SICOR_OPERACOES_SEM_ALTERACAO', 'Importacao', imp.pk, {
+                'dataset': spec.slug, 'ano_referencia': year,
+                'fingerprint_conteudo': stats['fingerprint_conteudo'],
+            })
+            return imp
+
+        _progress(progress_callback, 73, f'Validado: {staged_typed:,} registros prontos para publicar'.replace(',', '.'))
+        report['tempo_processamento_segundos'] = round(time.monotonic() - started, 2)
+        with transaction.atomic():
+            _publish_operations_stage(
+                imp, spec, usuario, year, staging, filename, report,
+                (imp.contexto or {}).get('sicor_reduction_confirmation'),
             )
         _progress(progress_callback, 100, 'Importação de Operações SICOR concluída')
         return imp
@@ -583,7 +722,7 @@ def process_sicor_operations_import(uploaded_file, spec, usuario, context=None, 
         )
         return imp
     finally:
-        if staging:
+        if staging and imp.status != Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
             try:
                 drop_schema(staging)
             except Exception:

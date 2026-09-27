@@ -799,6 +799,11 @@
     box-shadow: 0 18px 42px rgba(4, 23, 32, .4) !important;
 }
 
+.cf-gleba-popup-alert > strong { display: block; margin-bottom: 3px; }
+.cf-gleba-popup-alert ul { margin: 3px 0 0; padding-left: 16px; }
+.cf-gleba-popup-alert li { margin: 1px 0; }
+.cf-gleba-popup-alert > span { display: block; }
+
 .confronta-sicor-leaflet-popup .leaflet-popup-tip {
     background: #103a43 !important;
 }
@@ -1058,6 +1063,80 @@
 .client-shell:fullscreen .client-content-app {
     height: 100vh !important;
     min-height: 0 !important;
+}
+
+/* Popup da gleba no padrão escuro dos cards territoriais do mapa. */
+.confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
+    overflow: hidden !important;
+    border: 1px solid rgba(137, 222, 178, .28) !important;
+    border-radius: 0 !important;
+    background: #103a43 !important;
+    box-shadow: 0 18px 42px rgba(4, 23, 32, .4) !important;
+}
+.confronta-gleba-leaflet-popup .leaflet-popup-tip {
+    background: #103a43 !important;
+}
+.client-content-app .confronta-gleba-leaflet-popup .leaflet-popup-close-button {
+    color: #d1eee0 !important;
+}
+.cf-gleba-popup {
+    color: #effbf5 !important;
+    background: #103a43 !important;
+}
+.cf-gleba-popup-head {
+    border-bottom: 1px solid rgba(194, 226, 213, .16) !important;
+    background: #103a43 !important;
+}
+.cf-gleba-popup-title strong {
+    color: #fff !important;
+}
+.cf-gleba-popup-title span,
+.cf-gleba-popup-metric:first-child span {
+    color: #a7c9bd !important;
+}
+.cf-gleba-popup-metric:first-child strong {
+    color: #fff !important;
+}
+.cf-gleba-popup-metric:first-child {
+    background: transparent !important;
+}
+.cf-gleba-popup-alert,
+.cf-gleba-popup-alert.is-clear {
+    border: 1px solid rgba(137, 222, 178, .2) !important;
+    border-left: 3px solid #89deb2 !important;
+    background: rgba(137, 222, 178, .08) !important;
+    color: #effbf5 !important;
+}
+.cf-gleba-popup-alert > strong { color: #89deb2 !important; }
+.cf-gleba-popup-action.is-primary {
+    border: 1px solid #a1edbc !important;
+    background: #89deb2 !important;
+    color: #103a43 !important;
+}
+.cf-gleba-popup-action.is-secondary {
+    border: 1px solid rgba(137, 222, 178, .58) !important;
+    background: transparent !important;
+    color: #effbf5 !important;
+}
+.cf-gleba-popup-action.is-danger {
+    border: 1px solid rgba(255, 148, 148, .48) !important;
+    background: rgba(175, 66, 66, .12) !important;
+    color: #ffb6b6 !important;
+}
+.cf-gleba-popup-action.is-primary:hover,
+.cf-gleba-popup-action.is-primary:focus-visible {
+    background: #b1f2cb !important;
+    color: #103a43 !important;
+}
+.cf-gleba-popup-action.is-secondary:hover,
+.cf-gleba-popup-action.is-secondary:focus-visible {
+    background: rgba(137, 222, 178, .14) !important;
+    color: #fff !important;
+}
+.cf-gleba-popup-action.is-danger:hover,
+.cf-gleba-popup-action.is-danger:focus-visible {
+    background: rgba(175, 66, 66, .24) !important;
+    color: #ffd0d0 !important;
 }
 
 .client-shell:fullscreen .territorial-screen {

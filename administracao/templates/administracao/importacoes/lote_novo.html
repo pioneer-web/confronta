@@ -204,7 +204,7 @@
     const deleteButton = document.getElementById('execute-source-delete');
     const deleteHelp = document.getElementById('delete-source-help');
     const supportedDeleteSources = new Set([{% for source in maintenance_sources %}'{{ source.slug }}'{% if not forloop.last %},{% endif %}{% endfor %}]);
-    const terminalStatuses = new Set(['CONCLUIDO','IGNORADO_DUPLICADO','SEM_ALTERACAO','REQUER_REVISAO','FALHOU','PRONTO_IMPORTAR']);
+    const terminalStatuses = new Set(['CONCLUIDO','IGNORADO_DUPLICADO','SEM_ALTERACAO','REQUER_REVISAO','FALHOU','PRONTO_IMPORTAR','AGUARDANDO_CONFIRMACAO_SICOR']);
     const sourceAcceptMap = JSON.parse((document.getElementById('batch-source-accepts') || {textContent:'{}'}).textContent || '{}');
     const sourceFormatMap = JSON.parse((document.getElementById('batch-source-formats') || {textContent:'{}'}).textContent || '{}');
 

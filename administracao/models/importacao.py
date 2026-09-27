@@ -12,6 +12,7 @@ class Importacao(models.Model):
         REJEITADO_IDENTIDADE = 'REJEITADO_IDENTIDADE', 'Dataset não confirmado'
         VALIDANDO_GIS = 'VALIDANDO_GIS', 'Validando GIS'
         IMPORTANDO = 'IMPORTANDO', 'Importando'
+        AGUARDANDO_CONFIRMACAO_REDUCAO = 'AGUARDANDO_CONFIRMACAO_REDUCAO', 'Aguardando confirmação de redução SICOR'
         CONCLUIDO = 'CONCLUIDO', 'Concluído'
         IGNORADO_DUPLICADO = 'IGNORADO_DUPLICADO', 'Ignorado — já importado'
         SEM_ALTERACAO = 'SEM_ALTERACAO', 'Verificado — sem alteração'

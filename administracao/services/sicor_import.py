@@ -25,6 +25,7 @@ from .auditoria import registrar_auditoria
 from .exceptions import BatchInterruptionRequested, DatasetIdentityError, SecurityValidationError
 from .names import normalize_identifier
 from .postgis import create_staging_schema, drop_schema, table_exists
+from .sicor_publication import comparison as compare_publication, count_rows, count_staging_rows, make_staging_durable
 from .zip_security import run_antivirus
 
 logger = logging.getLogger(__name__)
@@ -993,7 +994,7 @@ def _prepare_gleba_points_aggregate(staging, op_staging, spec, progress_callback
     }
 
 
-def _promote_gleba_points(staging, raw_staging, op_staging, spec, raw_columns, progress_callback=None):
+def _promote_gleba_points(staging, raw_staging, op_staging, spec, raw_columns, progress_callback=None, confirmation=None):
     schema = FONTE_SCHEMAS[spec.fonte]
     srid = int(spec.geometry_srid or 4674)
     _ensure_schema(schema)
@@ -1006,6 +1007,17 @@ def _promote_gleba_points(staging, raw_staging, op_staging, spec, raw_columns, p
     with transaction.atomic():
         with connection.cursor() as cursor:
             cursor.execute('SELECT pg_advisory_xact_lock(hashtext(%s))', [f'confronta:{schema}:{spec.stable_table}'])
+            base_count = count_rows(schema, spec.stable_table, valid_geometries=True)
+            new_count = count_staging_rows(staging, aggregate_table, valid_geometries=True)
+            compared = compare_publication(
+                base_count, new_count, policy='SUBSTITUI_TABELA', snapshot=True,
+            )
+            if compared['reducao_detectada']:
+                approved_count = (confirmation or {}).get('quantidade_anterior')
+                if not (confirmation or {}).get('confirmacao_manual') or approved_count != base_count:
+                    if confirmation and confirmation.get('confirmacao_manual'):
+                        compared['confirmacao_expirada'] = True
+                    return {'aguardando_confirmacao': True, 'comparacao_publicacao': compared, **aggregate_stats}
             _ensure_raw_table(schema, spec, raw_columns)
             _ensure_operational_table(schema, spec)
             cursor.execute(sql.SQL('TRUNCATE TABLE {}').format(_relation(schema, spec.raw_table)))
@@ -1053,14 +1065,20 @@ def _promote_gleba_points(staging, raw_staging, op_staging, spec, raw_columns, p
         **aggregate_stats,
         'srid': srid,
         'modo': 'SUBSTITUI_TABELA',
+        'comparacao_publicacao': {
+            **compared,
+            'confirmacao_manual': bool((confirmation or {}).get('confirmacao_manual')),
+            'usuario_confirmou_id': (confirmation or {}).get('usuario_id'),
+            'confirmado_em': (confirmation or {}).get('confirmado_em'),
+        },
     }
 
 
-def _promote(staging, raw_staging, op_staging, spec, raw_columns, year, progress_callback=None):
+def _promote(staging, raw_staging, op_staging, spec, raw_columns, year, progress_callback=None, confirmation=None):
     if _is_gleba_points(spec):
         return _promote_gleba_points(
             staging, raw_staging, op_staging, spec, raw_columns,
-            progress_callback=progress_callback,
+            progress_callback=progress_callback, confirmation=confirmation,
         )
 
     schema = FONTE_SCHEMAS[spec.fonte]
@@ -1073,6 +1091,23 @@ def _promote(staging, raw_staging, op_staging, spec, raw_columns, year, progress
     with transaction.atomic():
         with connection.cursor() as cursor:
             cursor.execute('SELECT pg_advisory_xact_lock(hashtext(%s))', [f'confronta:{schema}:{spec.stable_table}'])
+
+            if spec.data_kind == 'sicor_wkt' and spec.year_partitioned:
+                base_count = count_rows(schema, spec.stable_table, year, valid_geometries=True)
+                new_count = count_staging_rows(staging, ready_table, year, valid_geometries=True)
+                compared = compare_publication(
+                    base_count, new_count, year=year,
+                    policy='SUBSTITUICAO_ATOMICA_POR_ANO', preserve_years=True,
+                )
+                if compared['reducao_detectada']:
+                    approved_count = (confirmation or {}).get('quantidade_anterior')
+                    if not (confirmation or {}).get('confirmacao_manual') or approved_count != base_count:
+                        if confirmation and confirmation.get('confirmacao_manual'):
+                            compared['confirmacao_expirada'] = True
+                        return {'aguardando_confirmacao': True, 'comparacao_publicacao': compared}
+            else:
+                compared = None
+
             _ensure_raw_table(schema, spec, raw_columns)
             _ensure_operational_table(schema, spec)
 
@@ -1118,6 +1153,14 @@ def _promote(staging, raw_staging, op_staging, spec, raw_columns, year, progress
         'registros_operacionais_total_tabela': operational_total,
         'particao_ano_substituida': year if spec.year_partitioned else None,
         'modo': 'SUBSTITUI_ANO' if spec.year_partitioned else 'SUBSTITUI_TABELA',
+        **({
+            'comparacao_publicacao': {
+                **compared,
+                'confirmacao_manual': bool((confirmation or {}).get('confirmacao_manual')),
+                'usuario_confirmou_id': (confirmation or {}).get('usuario_id'),
+                'confirmado_em': (confirmation or {}).get('confirmado_em'),
+            }
+        } if compared is not None else {}),
     }
 
 
@@ -1156,6 +1199,69 @@ def _upsert_layer(spec, imp, signature):
             'ultima_importacao', 'status', 'data_sem_uso', 'ultima_importacao_ref',
         ])
     return obj
+
+
+def _complete_sicor_publication(imp, spec, usuario, headers, year, stats, promotion,
+                                identity, schema_header_changes, security, antivirus,
+                                fingerprint, confirmation=None, encoding='', delimiter=''):
+    structure_signature = hashlib.sha256(
+        ('|'.join(headers) + '|' + '|'.join(f'{f.canonical}:{f.sql_type}' for f in spec.fields)).encode('utf-8')
+    ).hexdigest()
+    _upsert_layer(spec, imp, structure_signature)
+    known_actual = {value for value in identity['mapeamento'].values() if value}
+    schema_changes = {
+        'campos_recebidos': headers,
+        'campos_extras_raw': [h for h in headers if h not in known_actual],
+        'campos_operacionais_mapeados': [name for name, actual in identity['mapeamento'].items() if actual],
+        'campos_adicionados_desde_ultima_versao': schema_header_changes.get('campos_adicionados', []),
+        'campos_ausentes_desde_ultima_versao': schema_header_changes.get('campos_ausentes_na_nova_versao', []),
+        'referencia_importacao_anterior_id': schema_header_changes.get('referencia_importacao_id'),
+        'politica': 'RAW flexível e aditiva; operacional estável com campos mapeados.',
+    }
+    pending = int(stats['registros_pendentes'] or 0) + int(promotion.get('geometrias_pendentes') or 0)
+    imp.status = Importacao.Status.CONCLUIDO
+    imp.data_finalizacao = timezone.now()
+    imp.motivo_rejeicao = ''
+    imp.resultado = {
+        'sicor_csv': {
+            'aplicado': True,
+            'ano_arquivo': year,
+            'encoding': encoding,
+            'delimitador': delimiter,
+            'campos_recebidos': headers,
+            **stats,
+        },
+        'fingerprint_conteudo': {'sha256': fingerprint},
+        'promocao': promotion,
+        'comparacao_publicacao': promotion.get('comparacao_publicacao', {}),
+        'alteracoes_estrutura': schema_changes,
+        'seguranca_arquivo': security,
+        'antimalware': antivirus,
+        'pendencias': {
+            'quantidade': pending,
+            'geometrias': int(stats['geometrias_pendentes'] or 0) + int(promotion.get('geometrias_pendentes') or 0),
+            'valores_invalidos_por_campo': stats['valores_invalidos_por_campo'],
+            'amostras_geometrias': stats['amostras_geometrias_pendentes'] or promotion.get('amostras_pendencias', []),
+        },
+    }
+    imp.save(update_fields=['status', 'data_finalizacao', 'motivo_rejeicao', 'resultado'])
+    compared = promotion.get('comparacao_publicacao') or {}
+    registrar_auditoria(usuario, 'IMPORTACAO_SICOR_CONCLUIDA', 'Importacao', imp.pk, {
+        'dataset': spec.slug,
+        'ano_referencia': year,
+        'quantidade_anterior': compared.get('registros_base_atual'),
+        'quantidade_nova': compared.get('registros_nova_versao'),
+        'diferenca': compared.get('diferenca_registros'),
+        'percentual': compared.get('diferenca_percentual'),
+        'confirmacao_manual': bool((confirmation or {}).get('confirmacao_manual')),
+        'usuario_confirmou_id': (confirmation or {}).get('usuario_id'),
+        'confirmado_em': (confirmation or {}).get('confirmado_em'),
+        'politica': compared.get('politica'),
+        'anos_anteriores_preservados': compared.get('anos_anteriores_preservados'),
+        'fingerprint': fingerprint,
+        'pendencias': pending,
+    })
+    return imp
 
 
 def process_sicor_import(uploaded_file, spec, usuario, context=None, progress_callback=None):
@@ -1305,62 +1411,38 @@ def process_sicor_import(uploaded_file, spec, usuario, context=None, progress_ca
             return imp
 
         _progress(progress_callback, 69, 'Preparando publicação SICOR')
-        promotion = _promote(
-            staging, raw_staging, op_staging, spec, csv_info['headers'], year,
-            progress_callback=progress_callback,
-        )
-        structure_signature = hashlib.sha256(
-            ('|'.join(csv_info['headers']) + '|' + '|'.join(f'{f.canonical}:{f.sql_type}' for f in spec.fields)).encode('utf-8')
-        ).hexdigest()
-        _upsert_layer(spec, imp, structure_signature)
-
-        known_actual = {value for value in identity['mapeamento'].values() if value}
-        schema_changes = {
-            'campos_recebidos': csv_info['headers'],
-            'campos_extras_raw': [h for h in csv_info['headers'] if h not in known_actual],
-            'campos_operacionais_mapeados': [name for name, actual in identity['mapeamento'].items() if actual],
-            'campos_adicionados_desde_ultima_versao': schema_header_changes.get('campos_adicionados', []),
-            'campos_ausentes_desde_ultima_versao': schema_header_changes.get('campos_ausentes_na_nova_versao', []),
-            'referencia_importacao_anterior_id': schema_header_changes.get('referencia_importacao_id'),
-            'politica': 'RAW flexível e aditiva; operacional estável com campos mapeados.',
-        }
-        pending = int(stats['registros_pendentes'] or 0) + int(promotion.get('geometrias_pendentes') or 0)
-        imp.status = Importacao.Status.CONCLUIDO
-        imp.data_finalizacao = timezone.now()
-        imp.resultado = {
-            'sicor_csv': {
-                'aplicado': True,
-                'ano_arquivo': year,
-                'encoding': csv_info['encoding'],
-                'delimitador': repr(csv_info['delimiter']),
-                'campos_recebidos': csv_info['headers'],
-                **stats,
-            },
-            'fingerprint_conteudo': {'sha256': fingerprint},
-            'promocao': promotion,
-            'alteracoes_estrutura': schema_changes,
-            'seguranca_arquivo': security,
-            'antimalware': antivirus,
-            'pendencias': {
-                'quantidade': pending,
-                'geometrias': int(stats['geometrias_pendentes'] or 0) + int(promotion.get('geometrias_pendentes') or 0),
-                'valores_invalidos_por_campo': stats['valores_invalidos_por_campo'],
-                'amostras_geometrias': stats['amostras_geometrias_pendentes'] or promotion.get('amostras_pendencias', []),
-            },
-        }
-        imp.motivo_rejeicao = ''
-        imp.save(update_fields=['status', 'data_finalizacao', 'resultado', 'motivo_rejeicao'])
-        registrar_auditoria(
-            usuario, 'IMPORTACAO_SICOR_CONCLUIDA', 'Importacao', imp.pk,
-            {
-                'dataset': spec.slug,
-                'ano': year,
-                'recebidos': stats['registros_recebidos'],
-                'operacionais': stats['registros_operacionais'],
-                'pendencias': pending,
-                'fingerprint': fingerprint,
-            },
-        )
+        with transaction.atomic():
+            promotion = _promote(
+                staging, raw_staging, op_staging, spec, csv_info['headers'], year,
+                progress_callback=progress_callback,
+                confirmation=(imp.contexto or {}).get('sicor_reduction_confirmation'),
+            )
+            if promotion.get('aguardando_confirmacao'):
+                comparison_data = promotion['comparacao_publicacao']
+                make_staging_durable(staging, [raw_staging, op_staging])
+                imp.status = Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO
+                imp.motivo_rejeicao = 'Redução de registros detectada. A publicação automática foi bloqueada para evitar substituição por arquivo possivelmente incompleto.'
+                imp.resultado = {
+                    'comparacao_publicacao': comparison_data,
+                    'pending_sicor_publication': {
+                        'staging_schema': staging, 'raw_staging': raw_staging, 'op_staging': op_staging,
+                        'headers': csv_info['headers'], 'year': year, 'stats': stats,
+                        'identity': identity, 'schema_header_changes': schema_header_changes,
+                        'security': security, 'antivirus': antivirus, 'fingerprint': fingerprint,
+                        'encoding': csv_info['encoding'], 'delimiter': repr(csv_info['delimiter']),
+                    },
+                }
+                imp.save(update_fields=['status', 'motivo_rejeicao', 'resultado'])
+                registrar_auditoria(usuario, 'SICOR_REDUCAO_PUBLICACAO_BLOQUEADA', 'Importacao', imp.pk, {
+                    'dataset': spec.slug, **comparison_data, 'confirmacao_manual': False,
+                })
+                return imp
+            _complete_sicor_publication(
+                imp, spec, usuario, csv_info['headers'], year, stats, promotion,
+                identity, schema_header_changes, security, antivirus, fingerprint,
+                (imp.contexto or {}).get('sicor_reduction_confirmation'),
+                csv_info['encoding'], repr(csv_info['delimiter']),
+            )
         _progress(progress_callback, 100, 'Importação SICOR concluída')
         return imp
 
@@ -1405,7 +1487,7 @@ def process_sicor_import(uploaded_file, spec, usuario, context=None, progress_ca
         registrar_auditoria(usuario, 'IMPORTACAO_SICOR_FALHOU', 'Importacao', imp.pk, {'motivo': str(exc), 'dataset': spec.slug})
         return imp
     finally:
-        if staging:
+        if staging and imp.status != Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
             try:
                 drop_schema(staging)
             except Exception:
@@ -1414,3 +1496,67 @@ def process_sicor_import(uploaded_file, spec, usuario, context=None, progress_ca
             shutil.rmtree(workdir, ignore_errors=True)
         if quarantine and Path(quarantine).exists():
             Path(quarantine).unlink(missing_ok=True)
+
+
+def resume_sicor_tabular_import(importacao_id, usuario):
+    with transaction.atomic():
+        imp = Importacao.objects.select_for_update().get(pk=importacao_id)
+        if imp.status != Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO and not (
+            imp.status == Importacao.Status.IMPORTANDO
+            and (imp.contexto or {}).get('sicor_reduction_confirmation', {}).get('confirmacao_manual')
+        ) and not (
+            imp.status == Importacao.Status.FALHOU
+            and (imp.contexto or {}).get('sicor_reduction_confirmation', {}).get('confirmacao_manual')
+            and (imp.resultado or {}).get('pending_sicor_publication', {}).get('staging_schema')
+        ):
+            raise ValueError('Esta publicação SICOR não está aguardando confirmação.')
+        pending = dict((imp.resultado or {}).get('pending_sicor_publication') or {})
+        confirmation = dict((imp.contexto or {}).get('sicor_reduction_confirmation') or {})
+        if not pending.get('staging_schema'):
+            raise ValueError('O staging desta publicação SICOR não está disponível para retomada.')
+        from administracao.datasets import get_dataset
+        spec = get_dataset(imp.dataset_slug)
+        if not spec:
+            raise ValueError('O dataset da publicação SICOR não está disponível.')
+        if imp.status != Importacao.Status.IMPORTANDO:
+            imp.status = Importacao.Status.IMPORTANDO
+            imp.save(update_fields=['status'])
+    staging = pending['staging_schema']
+    try:
+        with transaction.atomic():
+            promotion = _promote(
+                staging, pending['raw_staging'], pending['op_staging'], spec,
+                pending['headers'], pending.get('year'), confirmation=confirmation,
+            )
+            if promotion.get('aguardando_confirmacao'):
+                compared = promotion['comparacao_publicacao']
+                imp.status = Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO
+                imp.motivo_rejeicao = 'A contagem publicada mudou desde a confirmação. Revise os números e confirme novamente.' if compared.get('confirmacao_expirada') else 'Redução de registros detectada. A publicação automática foi bloqueada.'
+                imp.resultado = {'comparacao_publicacao': compared, 'pending_sicor_publication': pending}
+                imp.save(update_fields=['status', 'motivo_rejeicao', 'resultado'])
+                context = dict(imp.contexto or {})
+                context.pop('sicor_reduction_confirmation', None)
+                imp.contexto = context
+                imp.save(update_fields=['contexto'])
+                registrar_auditoria(usuario, 'SICOR_REDUCAO_PUBLICACAO_BLOQUEADA', 'Importacao', imp.pk, {
+                    'dataset': spec.slug, **compared, 'confirmacao_manual': False,
+                })
+                return imp
+            _complete_sicor_publication(
+                imp, spec, usuario, pending['headers'], pending.get('year'), pending['stats'],
+                promotion, pending['identity'], pending['schema_header_changes'],
+                pending['security'], pending['antivirus'], pending['fingerprint'],
+                confirmation, pending.get('encoding', ''), pending.get('delimiter', ''),
+            )
+        try:
+            drop_schema(staging)
+        except Exception:
+            logger.exception('Não foi possível remover o staging SICOR após confirmação %s.', imp.pk)
+        return imp
+    except Exception:
+        logger.exception('Falha ao retomar publicação SICOR %s.', imp.pk)
+        imp.refresh_from_db()
+        if imp.status == Importacao.Status.IMPORTANDO:
+            imp.status = Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO
+            imp.save(update_fields=['status'])
+        raise

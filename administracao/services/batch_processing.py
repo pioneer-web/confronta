@@ -14,6 +14,7 @@ from .batch_sicar import (
 from .exceptions import BatchInterruptionRequested
 from .partitioning import normalize_uf, sicar_partition_has_rows
 from .pipeline import process_import
+from .sicor_publication import resume_pending_sicor_import
 from .prodes_filter import (
     DEFAULT_PRODES_START_YEAR,
     normalize_prodes_start_year,
@@ -27,6 +28,67 @@ from .sicar_tracking import (
 
 def _import_classified_item(item, archive, source_slug):
     lote = item.lote
+    prior_import = item.importacao if item.importacao_id else None
+    if prior_import is None and source_slug in {'sicor', 'sicor_operacoes'} and item.dataset_slug and item.hash_sha256:
+        # O worker pode morrer depois do commit atômico da publicação e antes
+        # de gravar o FK Importacao no item. Recupere a conclusão pelo contexto
+        # idempotente do lote em vez de processar o arquivo/publicar novamente.
+        prior_import = Importacao.objects.filter(
+            dataset_slug=item.dataset_slug,
+            hash_sha256=item.hash_sha256,
+            contexto__lote_id=lote.pk,
+            contexto__caminho_lote=item.caminho_relativo,
+            status__in=[
+                Importacao.Status.CONCLUIDO,
+                Importacao.Status.SEM_ALTERACAO,
+                Importacao.Status.IGNORADO_DUPLICADO,
+            ],
+        ).order_by('-data_inicio').first()
+        if prior_import:
+            item.importacao = prior_import
+    pending_confirmation = bool(
+        prior_import
+        and (prior_import.contexto or {}).get('sicor_reduction_confirmation')
+        and (
+            prior_import.status in {
+                Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO,
+                Importacao.Status.IMPORTANDO,
+            }
+            or (
+                prior_import.status == Importacao.Status.FALHOU
+                and (
+                    (prior_import.resultado or {}).get('pending_sicor_publication')
+                    or (prior_import.resultado or {}).get('sicor_operacoes', {}).get('staging_schema')
+                )
+            )
+        )
+    )
+    if prior_import and prior_import.status == Importacao.Status.CONCLUIDO:
+        return _finish_item(item, ItemLoteImportacao.Status.CONCLUIDO, 'Atualizado com sucesso', importacao=prior_import)
+    if pending_confirmation:
+        try:
+            imp = resume_pending_sicor_import(prior_import.pk, lote.administrador)
+        except Exception:
+            prior_import.refresh_from_db()
+            return _finish_item(
+                item, ItemLoteImportacao.Status.FALHOU,
+                'Falha na publicação SICOR',
+                'A publicação falhou; a transação foi revertida e a versão ativa foi preservada. O staging está disponível para reprocessamento. Consulte os logs para diagnóstico.',
+                importacao=prior_import,
+            )
+            raise
+        if imp.status == Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
+            comparison = (imp.resultado or {}).get('comparacao_publicacao') or {}
+            return _finish_item(
+                item, ItemLoteImportacao.Status.AGUARDANDO_CONFIRMACAO_SICOR,
+                'Redução SICOR — confirmação necessária',
+                'A contagem publicada mudou desde a confirmação. Revise os números e confirme novamente.',
+                importacao=imp,
+            )
+        if imp.status == Importacao.Status.CONCLUIDO:
+            return _finish_item(item, ItemLoteImportacao.Status.CONCLUIDO, 'Atualizado com sucesso', importacao=imp)
+        return _finish_item(item, ItemLoteImportacao.Status.FALHOU, 'Falha na publicação SICOR', imp.motivo_rejeicao, importacao=imp)
+
     _set_item_progress(item.pk, 8, 'Confirmando arquivo antes da importação')
 
     current_hash = hash_file(archive)
@@ -232,6 +294,19 @@ def _import_classified_item(item, archive, source_slug):
             item, ItemLoteImportacao.Status.INTERROMPIDO, 'Interrompido com segurança',
             imp.motivo_rejeicao or 'Processamento interrompido antes da publicação atômica.',
             importacao=imp, progress=item.progresso,
+        )
+    if imp.status == Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
+        comparison = (imp.resultado or {}).get('comparacao_publicacao') or {}
+        base = int(comparison.get('registros_base_atual') or 0)
+        new = int(comparison.get('registros_nova_versao') or 0)
+        difference = int(comparison.get('diferenca_registros') or 0)
+        percent = comparison.get('diferenca_percentual')
+        percent_text = f' ({percent:+.2f}%)' if percent is not None else ''
+        return _finish_item(
+            item, ItemLoteImportacao.Status.AGUARDANDO_CONFIRMACAO_SICOR,
+            'Redução SICOR — confirmação necessária',
+            f'Redução detectada: {base:,} → {new:,} ({difference:+,}{percent_text}). A publicação foi bloqueada; confirme no Manage para continuar.'.replace(',', '.'),
+            importacao=imp,
         )
     if imp.status in {Importacao.Status.IGNORADO_DUPLICADO, Importacao.Status.SEM_ALTERACAO}:
         if source_slug == 'sicar':

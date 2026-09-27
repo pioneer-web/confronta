@@ -16,12 +16,12 @@
 {# Overrides visuais do mapa — sempre carregados por último #}
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-base.css' %}?v=008">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=001">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=007-popup-alert-summary">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=009-dark-gleba-popup">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=002">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=005-unified-palette">
 
 {% if pode_desenhar_glebas %}
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=004">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=005-gleba-edit-controls">
 {% endif %}
 
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=002">
@@ -305,6 +305,10 @@
         <div id="gleba-live-area-map" class="map-live-area" hidden aria-live="polite">
             <span>Área do polígono</span>
             <strong id="gleba-live-area-value">0,00 ha</strong>
+            <div id="gleba-edit-controls" class="gleba-edit-controls" hidden>
+                <button type="button" id="gleba-edit-cancel" class="button button-secondary">Cancelar</button>
+                <button type="button" id="gleba-edit-save" class="button button-primary">Salvar</button>
+            </div>
         </div>
 
         {% if pode_desenhar_glebas %}
@@ -729,7 +733,7 @@
 <script src="{% static 'aplicativo/js/car-ocr.js' %}?v=003-reset-preview-crop"></script>
 {% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}
 <script src="{% static 'aplicativo/js/interface.js' %}?v=057-report-print"></script>
-{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=058-kml-import-poligonos"></script>{% endif %}
+{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=059-popup-csv-inline-edit"></script>{% endif %}
 {% endif %}
 <script src="{% static 'aplicativo/js/suporte-chat.js' %}?v=062"></script>
 {% endblock %}

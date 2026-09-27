@@ -536,3 +536,30 @@
     }
 }
 
+/* Controles de edição usam a leitura de área já posicionada sobre o mapa. */
+.map-live-area.is-editing-gleba {
+    left: 12px;
+    right: auto;
+    bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    min-width: 0;
+    max-width: min(680px, calc(100% - 28px));
+    padding: 9px 12px;
+    transform: none;
+    pointer-events: auto;
+}
+.map-live-area.is-editing-gleba > span { white-space: nowrap; }
+.map-live-area.is-editing-gleba > strong { white-space: nowrap; }
+.gleba-edit-controls { display: flex; gap: 7px; margin-left: 4px; }
+.gleba-edit-controls[hidden] { display: none !important; }
+.gleba-edit-controls .button { min-height: 32px; padding: 6px 12px; font-size: 11px; }
+.polygon-overlaps { display: block; max-width: 100%; margin-top: 4px; overflow: hidden; color: #687b80; font-size: 9px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.polygon-overlaps.has-overlaps { color: #8a5809; }
+@media(max-width:560px) {
+    .map-live-area.is-editing-gleba { left: 8px; right: auto; bottom: 10px; max-width: calc(100% - 16px); justify-content: flex-start; transform: none; }
+    .map-live-area.is-editing-gleba > span { width: auto; }
+    .gleba-edit-controls { margin-left: auto; }
+}

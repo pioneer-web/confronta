@@ -40,6 +40,9 @@
     const overlapAlert = document.getElementById('overlap-alert');
     const liveAreaBox = document.getElementById('gleba-live-area-map');
     const liveAreaValue = document.getElementById('gleba-live-area-value');
+    const editControls = document.getElementById('gleba-edit-controls');
+    const editSaveButton = document.getElementById('gleba-edit-save');
+    const editCancelButton = document.getElementById('gleba-edit-cancel');
     const drawingHud = document.getElementById('gleba-drawing-hud');
     const drawingHudArea = document.getElementById('gleba-hud-area');
     const drawingHudColor = document.getElementById('gleba-hud-color');
@@ -70,9 +73,18 @@
     const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
     const MAX_IMPORT_POLYGONS = 100;
 
+    const glebasPane = map.createPane('confrontaGlebasPane');
+    // Acima de todas as camadas vetoriais do mapa (até o SICOR em 470),
+    // mas abaixo do markerPane padrão para manter os vértices arrastáveis.
+    glebasPane.style.zIndex = '590';
+    glebasPane.style.pointerEvents = 'auto';
+    const glebasRenderer = L.Browser && L.Browser.svg
+        ? L.svg({ pane: 'confrontaGlebasPane' })
+        : L.canvas({ pane: 'confrontaGlebasPane' });
     const drawnItems = new L.FeatureGroup().addTo(map);
     let selectedColor = DEFAULT_COLOR;
     let pendingLayer = null;
+    let editingLayer = null;
     let drawHandler = null;
     let workflowStep = 'create';
     let sequence = 1;
@@ -90,8 +102,17 @@
             weight: pending ? 3.2 : 2.8,
             opacity: 1,
             fillColor: normalized,
-            fillOpacity: normalized === '#FFFFFF' ? 0.08 : 0.14
+            fillOpacity: normalized === '#FFFFFF' ? 0.12 : 0.24
         };
+    }
+
+    function glebaDrawOptions(color, pending) {
+        return Object.assign({}, glebaStyle(color, pending), {
+            pane: 'confrontaGlebasPane',
+            renderer: glebasRenderer,
+            bubblingMouseEvents: false,
+            interactive: true
+        });
     }
 
     function nextId() {
@@ -164,10 +185,11 @@
 
     function showLiveArea(feature) {
         if (!liveAreaBox || !liveAreaValue) return;
+        liveAreaBox.classList.toggle('is-editing-gleba', Boolean(editingLayer));
         const value = feature ? areaHa(feature) : 0;
         const formatted = formatAreaHa(value);
         liveAreaValue.textContent = formatted;
-        if (workflowStep === 'drawing') {
+        if (workflowStep === 'drawing' && !editingLayer) {
             // Durante o desenho o HUD é a única leitura de área para não duplicar informação no mapa.
             liveAreaBox.hidden = true;
             if (drawingHudArea) drawingHudArea.textContent = formatted;
@@ -179,6 +201,7 @@
     function hideLiveArea() {
         if (!liveAreaBox || !liveAreaValue) return;
         liveAreaBox.hidden = true;
+        liveAreaBox.classList.remove('is-editing-gleba');
         liveAreaValue.textContent = '0,00 ha';
         if (drawingHudArea && workflowStep !== 'drawing') drawingHudArea.textContent = 'Marque pelo menos 3 pontos';
     }
@@ -210,11 +233,23 @@
         : null;
 
     const referenceFeatures = [];
-    function collectReferences(collection) {
+    function collectReferences(collection, isSicor) {
         Object.values(collection || {}).forEach((layerData) => {
             if (!layerData || !layerData.disponivel || !Array.isArray(layerData.features)) return;
             layerData.features.forEach((feature) => {
-                if (feature && feature.geometry) referenceFeatures.push({ label: layerData.label || 'Camada territorial', feature });
+                if (!feature || !feature.geometry) return;
+                if (isSicor) {
+                    const props = feature.properties || {};
+                    const identifier = [
+                        props.nu_indice_gleba, props.indice_gleba
+                    ].map((value) => String(value || '').trim()).find(Boolean);
+                    referenceFeatures.push({
+                        label: identifier ? `SICOR / Gleba ${identifier}` : 'SICOR / Gleba',
+                        feature
+                    });
+                    return;
+                }
+                referenceFeatures.push({ label: layerData.label || 'Camada territorial', feature });
             });
         });
     }
@@ -223,6 +258,8 @@
     // com outros CARs continuam disponíveis no mapa/relatório, mas não poluem
     // o aviso superior durante desenho, importação ou edição de glebas.
     collectReferences(consulta.camadas);
+    const sicorLayerData = consulta.camadas_externas && consulta.camadas_externas.sicor;
+    if (sicorLayerData) collectReferences({ sicor: sicorLayerData }, true);
 
     function intersectionArea(featureA, featureB) {
         try {
@@ -283,13 +320,15 @@
         const items = drawnItems.getLayers().map((layer) => {
             const feature = featureForLayer(layer);
             const meta = metadataFor(layer);
+            const overlaps = warningLabels(feature, layer);
             return {
                 id: String(meta.id),
                 nome: meta.nome,
                 cor: meta.cor,
                 origem: meta.origem,
                 area_ha: areaHa(feature),
-                alertas: warningLabels(feature, layer),
+                alertas: overlaps,
+                sobreposicoes: overlaps,
                 geometry: feature.geometry
             };
         });
@@ -351,7 +390,22 @@
 
         const alert = document.createElement('div');
         alert.className = `cf-gleba-popup-alert${alerts.length ? '' : ' is-clear'}`;
-        alert.textContent = alerts.length ? `Alertas: ${alerts.join(', ')}` : 'Nenhum alerta territorial identificado para esta gleba.';
+        const overlapTitle = document.createElement('strong');
+        overlapTitle.textContent = 'Sobreposições';
+        alert.appendChild(overlapTitle);
+        if (alerts.length) {
+            const overlapList = document.createElement('ul');
+            alerts.forEach((label) => {
+                const item = document.createElement('li');
+                item.textContent = label;
+                overlapList.appendChild(item);
+            });
+            alert.appendChild(overlapList);
+        } else {
+            const none = document.createElement('span');
+            none.textContent = 'Nenhuma sobreposição identificada';
+            alert.appendChild(none);
+        }
 
         const actions = document.createElement('div');
         actions.className = 'cf-gleba-popup-actions';
@@ -359,23 +413,12 @@
         const edit = document.createElement('button');
         edit.type = 'button';
         edit.className = 'cf-gleba-popup-action is-secondary';
-        edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg><span>' + (layer.editing && layer.editing.enabled() ? 'Salvar edição' : 'Editar gleba') + '</span>';
-
-        const cancelEdit = document.createElement('button');
-        cancelEdit.type = 'button';
-        cancelEdit.className = 'cf-gleba-popup-action is-cancel';
-        cancelEdit.hidden = !(layer.editing && layer.editing.enabled());
-        cancelEdit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"></path></svg><span>Cancelar edição</span>';
+        edit.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg><span>Editar</span>';
 
         edit.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            enableLayerEdit(layer, edit, cancelEdit);
-        });
-        cancelEdit.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            cancelLayerEdit(layer, edit, cancelEdit);
+            enableLayerEdit(layer);
         });
 
         const kml = document.createElement('button');
@@ -388,6 +431,16 @@
             downloadLayer(layer);
         });
 
+        const csv = document.createElement('button');
+        csv.type = 'button';
+        csv.className = 'cf-gleba-popup-action is-secondary';
+        csv.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"></path><path d="M4 9h16M9 4v16M15 4v16"></path></svg><span>Baixar CSV</span>';
+        csv.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            downloadLayerCsv(layer);
+        });
+
         const del = document.createElement('button');
         del.type = 'button';
         del.className = 'cf-gleba-popup-action is-danger';
@@ -396,21 +449,33 @@
             event.preventDefault();
             event.stopPropagation();
             if (!window.confirm(`Excluir a gleba "${meta.nome}" desta sessão?`)) return;
+            if (editingLayer === layer) cancelLayerEdit();
             drawnItems.removeLayer(layer);
             refresh();
             showOverlapAlert([]);
             map.closePopup();
         });
 
-        actions.append(edit, cancelEdit, kml, del);
+        actions.append(edit, kml, csv, del);
 
         body.append(metrics, carRow, alert, actions);
         root.append(head, body);
         return root;
     }
 
+    function stopGlebaClickPropagation(event) {
+        if (event && event.originalEvent) L.DomEvent.stopPropagation(event.originalEvent);
+    }
+
     function bindGlebaPopup(layer) {
         if (!layer || typeof layer.bindPopup !== 'function') return;
+        // O pane próprio coloca glebas acima dos CARs e a camada não propaga
+        // o clique ao mapa/camadas inferiores, inclusive durante edição.
+        layer.options.pane = 'confrontaGlebasPane';
+        layer.options.bubblingMouseEvents = false;
+        layer.off('click', stopGlebaClickPropagation);
+        layer.on('click', stopGlebaClickPropagation);
+        if (typeof layer.bringToFront === 'function') layer.bringToFront();
         try { layer.unbindPopup(); } catch (error) { /* noop */ }
         layer.bindPopup(() => buildGlebaPopup(layer), {
             maxWidth: 330,
@@ -514,7 +579,7 @@
         }
         map.getContainer().style.setProperty('--cf-gleba-vertex', selectedColor);
         if (drawHandler && workflowStep === 'drawing') {
-            try { drawHandler.setOptions({ shapeOptions: glebaStyle(selectedColor, true) }); } catch (error) { /* noop */ }
+            try { drawHandler.setOptions({ shapeOptions: glebaDrawOptions(selectedColor, true) }); } catch (error) { /* noop */ }
             if (drawHandler._poly && typeof drawHandler._poly.setStyle === 'function') drawHandler._poly.setStyle(glebaStyle(selectedColor, true));
         }
     }
@@ -569,7 +634,7 @@
             allowIntersection: false,
             showArea: false,
             repeatMode: false,
-            shapeOptions: glebaStyle(selectedColor, true)
+            shapeOptions: glebaDrawOptions(selectedColor, true)
         });
         drawHandler.enable();
         if (drawingHud) drawingHud.hidden = false;
@@ -595,6 +660,9 @@
         };
         if (typeof pendingLayer.setStyle === 'function') pendingLayer.setStyle(glebaStyle(selectedColor, false));
         map.removeLayer(pendingLayer);
+        pendingLayer.options.pane = 'confrontaGlebasPane';
+        pendingLayer.options.renderer = glebasRenderer;
+        pendingLayer.options.bubblingMouseEvents = false;
         drawnItems.addLayer(pendingLayer);
         const saved = pendingLayer;
         pendingLayer = null;
@@ -604,20 +672,12 @@
         showOverlapAlert(savedWarnings, `Atenção — ${name}`);
     }
 
-    function setPopupEditState(editButton, cancelButton, editing) {
-        if (editButton) {
-            const label = editButton.querySelector && editButton.querySelector('span');
-            if (label) label.textContent = editing ? 'Salvar edição' : 'Editar gleba';
-            else editButton.textContent = editing ? 'Salvar edição' : 'Editar';
-            editButton.classList.toggle('is-editing', editing);
-        }
-        if (cancelButton) cancelButton.hidden = !editing;
-    }
-
     function restoreLayerGeometry(layer, feature) {
         if (!layer || !feature || !feature.geometry || typeof layer.setLatLngs !== 'function') return false;
         try {
-            const temporary = L.geoJSON(feature);
+            const temporary = L.geoJSON(feature, {
+                pane: 'confrontaGlebasPane', renderer: glebasRenderer, bubblingMouseEvents: false
+            });
             const source = temporary.getLayers()[0];
             if (!source || typeof source.getLatLngs !== 'function') return false;
             layer.setLatLngs(source.getLatLngs());
@@ -629,47 +689,82 @@
         }
     }
 
-    function cancelLayerEdit(layer, editButton, cancelButton) {
-        if (!layer || !layer.editing || !layer.editing.enabled()) return;
-        layer.editing.disable();
-        layer.off('edit', onLayerEditing);
-        if (layer._confrontaEditSnapshot) restoreLayerGeometry(layer, layer._confrontaEditSnapshot);
+    function removeEditVertexListeners(layer) {
+        (layer._confrontaEditDragMarkers || []).forEach((marker) => marker.off('drag', updateEditingLayer));
+        layer._confrontaEditDragMarkers = [];
+    }
+
+    function addEditVertexListeners(layer) {
+        removeEditVertexListeners(layer);
+        const handlers = layer.editing && layer.editing._verticesHandlers;
+        const markers = [];
+        (handlers || []).forEach((handler) => {
+            (handler._markers || []).forEach((marker) => {
+                marker.on('drag', updateEditingLayer);
+                markers.push(marker);
+            });
+        });
+        layer._confrontaEditDragMarkers = markers;
+    }
+
+    function clearLayerEdit(layer) {
+        removeEditVertexListeners(layer);
+        layer.off('edit editdrag', updateEditingLayer);
+        if (layer.editing && layer.editing.enabled()) layer.editing.disable();
+        if (editingLayer === layer) editingLayer = null;
         layer._confrontaEditSnapshot = null;
+        if (editControls) editControls.hidden = true;
+        if (liveAreaBox) liveAreaBox.classList.remove('is-editing-gleba');
         hideLiveArea();
-        setPopupEditState(editButton, cancelButton, false);
+    }
+
+    function cancelLayerEdit() {
+        const layer = editingLayer;
+        if (!layer) return;
+        const original = layer._confrontaEditSnapshot;
+        clearLayerEdit(layer);
+        if (original) restoreLayerGeometry(layer, original);
         persistSession();
         refresh();
         showOverlapAlert(warningLabels(featureForLayer(layer), layer), `Edição cancelada — ${metadataFor(layer).nome}`);
     }
 
-    function enableLayerEdit(layer, button, cancelButton) {
-        if (!layer || !layer.editing) return;
-        const meta = metadataFor(layer);
-        const editing = layer.editing.enabled();
-        if (!editing) {
-            layer._confrontaEditSnapshot = JSON.parse(JSON.stringify(layer.toGeoJSON()));
-            map.getContainer().style.setProperty('--cf-gleba-vertex', meta.cor);
-            layer.editing.enable();
-            setPopupEditState(button, cancelButton, true);
-            layer.on('edit', onLayerEditing);
-            showLiveArea(layer.toGeoJSON());
-        } else {
-            layer.editing.disable();
-            layer._confrontaEditSnapshot = null;
-            setPopupEditState(button, cancelButton, false);
-            layer.off('edit', onLayerEditing);
-            hideLiveArea();
-            persistSession();
-            refresh();
-            showOverlapAlert(warningLabels(featureForLayer(layer), layer), `Atenção — ${meta.nome}`);
+    function saveLayerEdit() {
+        const layer = editingLayer;
+        if (!layer) return;
+        if (!geometryLooksValid(layer.toGeoJSON())) {
+            window.alert('A geometria do polígono não é válida. Ajuste os vértices antes de salvar.');
+            return;
         }
+        const meta = metadataFor(layer);
+        clearLayerEdit(layer);
+        refresh();
+        showOverlapAlert(warningLabels(featureForLayer(layer), layer), `Atenção — ${meta.nome}`);
     }
 
-    function onLayerEditing(event) {
-        const layer = event.target;
+    function updateEditingLayer() {
+        const layer = editingLayer;
+        if (!layer) return;
         const feature = layer.toGeoJSON();
         showLiveArea(feature);
         showOverlapAlert(warningLabels(feature, layer), 'Atenção — edição');
+    }
+
+    function enableLayerEdit(layer) {
+        if (!layer || !layer.editing || metadataFor(layer).visivel === false) return;
+        if (editingLayer === layer) return;
+        if (editingLayer) cancelLayerEdit();
+        const meta = metadataFor(layer);
+        editingLayer = layer;
+        layer._confrontaEditSnapshot = JSON.parse(JSON.stringify(layer.toGeoJSON()));
+        map.getContainer().style.setProperty('--cf-gleba-vertex', meta.cor);
+        layer.editing.enable();
+        layer.off('edit editdrag', updateEditingLayer);
+        layer.on('edit editdrag', updateEditingLayer);
+        addEditVertexListeners(layer);
+        if (editControls) editControls.hidden = false;
+        showLiveArea(layer.toGeoJSON());
+        map.closePopup();
     }
 
     function polygonRings(geometry) {
@@ -709,7 +804,7 @@
         const safeColor = normalizeColor(color);
         const stroke = safeColor === '#FFFFFF' ? '#65767c' : safeColor;
         const fill = safeColor === '#FFFFFF' ? '#eef3f2' : safeColor;
-        return `<svg viewBox="0 0 ${width} ${height}" aria-hidden="true"><path d="${path}" fill="${fill}" fill-opacity="${visible ? '.14' : '.05'}" stroke="${stroke}" stroke-opacity="${visible ? '1' : '.38'}" stroke-width="2" vector-effect="non-scaling-stroke"></path></svg>`;
+        return `<svg viewBox="0 0 ${width} ${height}" aria-hidden="true"><path d="${path}" fill="${fill}" fill-opacity="${visible ? (safeColor === '#FFFFFF' ? '.12' : '.24') : '.05'}" stroke="${stroke}" stroke-opacity="${visible ? '1' : '.38'}" stroke-width="2" vector-effect="non-scaling-stroke"></path></svg>`;
     }
 
     function applyLayerVisibility(layer) {
@@ -727,7 +822,10 @@
         const element = typeof layer.getElement === 'function' ? layer.getElement() : null;
         if (element) element.style.pointerEvents = visible ? '' : 'none';
         if (!visible && layer.editing && layer.editing.enabled()) {
-            try { layer.editing.disable(); } catch (error) { /* noop */ }
+            if (editingLayer === layer) cancelLayerEdit();
+            else {
+                try { layer.editing.disable(); } catch (error) { /* noop */ }
+            }
         }
     }
 
@@ -791,7 +889,12 @@
             const area = document.createElement('strong');
             area.textContent = formatAreaHa(areaHa(feature));
             metaRow.append(origin, area);
+            const overlaps = document.createElement('span');
+            overlaps.className = `polygon-overlaps${alerts.length ? ' has-overlaps' : ''}`;
+            overlaps.textContent = alerts.length ? `Sobrepõe: ${alerts.join(' • ')}` : 'Sem sobreposições';
+            overlaps.title = overlaps.textContent;
             main.append(name, metaRow);
+            main.appendChild(overlaps);
 
             const actions = document.createElement('div');
             actions.className = 'polygon-item-actions';
@@ -835,6 +938,7 @@
             del.textContent = 'Excluir';
             del.addEventListener('click', () => {
                 if (!window.confirm(`Excluir o polígono "${meta.nome}" desta sessão?`)) return;
+                if (editingLayer === layer) cancelLayerEdit();
                 drawnItems.removeLayer(layer);
                 refresh();
                 showOverlapAlert([]);
@@ -948,7 +1052,12 @@
         const opts = options || {};
         const color = normalizeColor(opts.cor || selectedColor);
         const baseName = sanitizeName(opts.nome || (feature.properties && (feature.properties.confronta_nome || feature.properties.name)), nextDefaultName());
-        const temporary = L.geoJSON(feature, { style: glebaStyle(color, false) });
+        const temporary = L.geoJSON(feature, {
+            pane: 'confrontaGlebasPane',
+            renderer: glebasRenderer,
+            bubblingMouseEvents: false,
+            style: glebaStyle(color, false)
+        });
         const added = [];
         let part = 0;
         temporary.eachLayer((layer) => {
@@ -1346,6 +1455,8 @@
     if (drawCancel) drawCancel.addEventListener('click', closeWorkflow);
     if (downloadAllButton) downloadAllButton.addEventListener('click', downloadAll);
     if (downloadAllCsvButton) downloadAllCsvButton.addEventListener('click', downloadAllCsv);
+    if (editSaveButton) editSaveButton.addEventListener('click', saveLayerEdit);
+    if (editCancelButton) editCancelButton.addEventListener('click', cancelLayerEdit);
 
     map.on('draw:drawvertex', (event) => {
         updateDrawingControls();
@@ -1357,6 +1468,8 @@
             showLiveArea(null);
         }
     });
+
+    map.on('draw:editvertex', updateEditingLayer);
 
     map.on(L.Draw.Event.CREATED, (event) => {
         if (window.CONFRONTA_QUERY_DRAW_ACTIVE) return;
@@ -1373,6 +1486,9 @@
             return;
         }
         pendingLayer = event.layer;
+        pendingLayer.options.pane = 'confrontaGlebasPane';
+        pendingLayer.options.renderer = glebasRenderer;
+        pendingLayer.options.bubblingMouseEvents = false;
         if (typeof pendingLayer.setStyle === 'function') pendingLayer.setStyle(glebaStyle(selectedColor, true));
         pendingLayer.addTo(map);
         if (pendingArea) pendingArea.textContent = formatAreaHa(areaHa(feature));

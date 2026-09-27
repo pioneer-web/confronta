@@ -71,6 +71,7 @@ class ItemLoteImportacao(models.Model):
         IGNORADO_DUPLICADO = 'IGNORADO_DUPLICADO', 'Ignorado — já importado'
         SEM_ALTERACAO = 'SEM_ALTERACAO', 'Sem alteração'
         REQUER_REVISAO = 'REQUER_REVISAO', 'Requer revisão'
+        AGUARDANDO_CONFIRMACAO_SICOR = 'AGUARDANDO_CONFIRMACAO_SICOR', 'Aguardando confirmação SICOR'
         INTERROMPIDO = 'INTERROMPIDO', 'Interrompido'
         FALHOU = 'FALHOU', 'Falhou'
 

@@ -5,6 +5,7 @@ import threading
 
 from django.contrib import messages
 from django.db import close_old_connections
+from django.db import transaction
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -37,6 +38,8 @@ from administracao.services.pipeline import process_import
 from administracao.services.sicar_tracking import state_rows
 from administracao.services.partitioning import normalize_uf, UF_NAMES
 from administracao.services.source_sync import enqueue_ibama
+from administracao.services.auditoria import registrar_auditoria
+from administracao.services.sicor_publication import cancel_pending_sicor_import, resume_pending_sicor_import
 
 
 logger = logging.getLogger(__name__)
@@ -433,6 +436,17 @@ def novo_lote_importacao(request, fonte_slug=None, uf=None, dataset_slug=None):
 def lote_importacao_detalhe(request, pk):
     lote = get_object_or_404(LoteImportacao.objects.select_related('administrador'), pk=pk)
     itens = list(lote.itens.select_related('importacao').all())
+    for item in itens:
+        if item.importacao_id:
+            resultado = item.importacao.resultado or {}
+            item.sicor_comparison = (
+                resultado.get('comparacao_publicacao')
+                or (resultado.get('sicor_operacoes') or {}).get('comparacao_publicacao')
+                or (resultado.get('promocao') or {}).get('comparacao_publicacao')
+                or {}
+            )
+        else:
+            item.sicor_comparison = {}
     progresso = calculate_batch_progress(lote, itens)
     source_is_sicar = str(lote.fonte) == 'SICAR'
     fase = str((lote.resultado or {}).get('fase') or '').upper()
@@ -497,6 +511,94 @@ def confirmar_lote_importacao(request, pk):
     else:
         messages.success(request, 'Alterações confirmadas. O worker iniciou a fase de importação segura.')
     return redirect('administracao:lote_importacao_detalhe', pk=lote.pk)
+
+
+@admin_required
+def confirmar_reducao_sicor_item(request, pk, item_pk):
+    if request.method != 'POST':
+        return redirect('administracao:lote_importacao_detalhe', pk=pk)
+    try:
+        with transaction.atomic():
+            lote = LoteImportacao.objects.select_for_update().get(pk=pk)
+            item = ItemLoteImportacao.objects.select_for_update().select_related('importacao').get(pk=item_pk, lote=lote)
+            imp = Importacao.objects.select_for_update().get(pk=item.importacao_id)
+            if item.status != ItemLoteImportacao.Status.AGUARDANDO_CONFIRMACAO_SICOR or imp.status != Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
+                raise ValueError('Este item não está aguardando confirmação de redução SICOR.')
+            comparison = (imp.resultado or {}).get('comparacao_publicacao') or {}
+            if not comparison.get('reducao_detectada'):
+                raise ValueError('A comparação SICOR não contém uma redução pendente de confirmação.')
+            confirmed_at = timezone.now()
+            confirmation = {
+                'confirmacao_manual': True,
+                'quantidade_anterior': int(comparison.get('registros_base_atual') or 0),
+                'usuario_id': request.user.pk,
+                'confirmado_em': confirmed_at.isoformat(),
+            }
+            context = dict(imp.contexto or {})
+            context['sicor_reduction_confirmation'] = confirmation
+            imp.contexto = context
+            imp.save(update_fields=['contexto'])
+            item.status = ItemLoteImportacao.Status.AGUARDANDO_FILA
+            item.progresso = 0
+            item.etapa = 'Aguardando publicação SICOR confirmada'
+            item.motivo = 'Substituição reduzida confirmada manualmente; staging preservado para publicação atômica.'
+            item.iniciado_em = None
+            item.finalizado_em = None
+            item.save(update_fields=['status', 'progresso', 'etapa', 'motivo', 'iniciado_em', 'finalizado_em'])
+            result = dict(lote.resultado or {})
+            result['fase'] = 'IMPORTACAO'
+            result['sicor_reducao_confirmada_por'] = request.user.pk
+            result['sicor_reducao_confirmada_em'] = confirmed_at.isoformat()
+            lote.resultado = result
+            lote.status = LoteImportacao.Status.PROCESSANDO
+            lote.data_finalizacao = None
+            lote.save(update_fields=['resultado', 'status', 'data_finalizacao'])
+            registrar_auditoria(request.user, 'SICOR_REDUCAO_SUBSTITUICAO_CONFIRMADA', 'Importacao', imp.pk, {
+                'dataset': imp.dataset_slug,
+                'ano_referencia': comparison.get('ano_referencia'),
+                'quantidade_anterior': comparison.get('registros_base_atual'),
+                'quantidade_nova': comparison.get('registros_nova_versao'),
+                'diferenca': comparison.get('diferenca_registros'),
+                'percentual': comparison.get('diferenca_percentual'),
+                'confirmacao_manual': True,
+                'usuario_confirmou_id': request.user.pk,
+                'confirmado_em': confirmed_at.isoformat(),
+                'politica': comparison.get('politica'),
+            })
+    except (LoteImportacao.DoesNotExist, ItemLoteImportacao.DoesNotExist):
+        messages.error(request, 'Lote ou item não encontrado.')
+    except ValueError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, 'Substituição confirmada. O worker retomará a publicação atômica do staging preservado.')
+    return redirect('administracao:lote_importacao_detalhe', pk=pk)
+
+
+@admin_required
+def cancelar_reducao_sicor_item(request, pk, item_pk):
+    if request.method != 'POST':
+        return redirect('administracao:lote_importacao_detalhe', pk=pk)
+    try:
+        with transaction.atomic():
+            lote = LoteImportacao.objects.select_for_update().get(pk=pk)
+            item = ItemLoteImportacao.objects.select_for_update().get(pk=item_pk, lote=lote)
+            if item.status != ItemLoteImportacao.Status.AGUARDANDO_CONFIRMACAO_SICOR or not item.importacao_id:
+                raise ValueError('Este item não está aguardando confirmação de redução SICOR.')
+            cancel_pending_sicor_import(item.importacao_id, request.user)
+            item.status = ItemLoteImportacao.Status.INTERROMPIDO
+            item.etapa = 'Substituição SICOR cancelada'
+            item.motivo = 'A versão ativa foi preservada; a substituição não foi publicada.'
+            item.progresso = 100
+            item.finalizado_em = timezone.now()
+            item.save(update_fields=['status', 'etapa', 'motivo', 'progresso', 'finalizado_em'])
+        update_batch_status(lote.pk)
+    except (LoteImportacao.DoesNotExist, ItemLoteImportacao.DoesNotExist):
+        messages.error(request, 'Lote ou item não encontrado.')
+    except ValueError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, 'Substituição cancelada. A versão SICOR ativa foi preservada.')
+    return redirect('administracao:lote_importacao_detalhe', pk=pk)
 
 
 @admin_required
@@ -672,11 +774,88 @@ def importacao_detalhe(request, pk):
         or classificacao.get('metadados_sicar')
         or {}
     )
+    sicor_comparison = (
+        resultado.get('comparacao_publicacao')
+        or (resultado.get('sicor_operacoes') or {}).get('comparacao_publicacao')
+        or (resultado.get('promocao') or {}).get('comparacao_publicacao')
+        or {}
+    )
     return render(
         request,
         'administracao/importacoes/detalhe.html',
-        {'importacao': importacao, 'sicar_metadata': sicar_metadata},
+        {'importacao': importacao, 'sicar_metadata': sicar_metadata, 'sicor_comparison': sicor_comparison},
     )
+
+
+@admin_required
+def confirmar_reducao_sicor_importacao(request, pk):
+    if request.method != 'POST':
+        return redirect('administracao:importacao_detalhe', pk=pk)
+    try:
+        with transaction.atomic():
+            imp = Importacao.objects.select_for_update().get(pk=pk)
+            if imp.status != Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
+                raise ValueError('Esta publicação SICOR não está aguardando confirmação.')
+            if (imp.contexto or {}).get('lote_id'):
+                raise ValueError('Confirme esta redução na tela do lote correspondente.')
+            comparison = (imp.resultado or {}).get('comparacao_publicacao') or {}
+            if not comparison.get('reducao_detectada'):
+                raise ValueError('A comparação SICOR não contém uma redução pendente de confirmação.')
+            confirmed_at = timezone.now()
+            context = dict(imp.contexto or {})
+            context['sicor_reduction_confirmation'] = {
+                'confirmacao_manual': True,
+                'quantidade_anterior': int(comparison.get('registros_base_atual') or 0),
+                'usuario_id': request.user.pk,
+                'confirmado_em': confirmed_at.isoformat(),
+            }
+            imp.contexto = context
+            imp.status = Importacao.Status.IMPORTANDO
+            imp.save(update_fields=['contexto', 'status'])
+            registrar_auditoria(request.user, 'SICOR_REDUCAO_SUBSTITUICAO_CONFIRMADA', 'Importacao', imp.pk, {
+                'dataset': imp.dataset_slug,
+                'ano_referencia': comparison.get('ano_referencia'),
+                'quantidade_anterior': comparison.get('registros_base_atual'),
+                'quantidade_nova': comparison.get('registros_nova_versao'),
+                'diferenca': comparison.get('diferenca_registros'),
+                'percentual': comparison.get('diferenca_percentual'),
+                'confirmacao_manual': True,
+                'usuario_confirmou_id': request.user.pk,
+                'confirmado_em': confirmed_at.isoformat(),
+                'politica': comparison.get('politica'),
+            })
+        imp = resume_pending_sicor_import(imp.pk, request.user)
+    except Importacao.DoesNotExist:
+        messages.error(request, 'Importação não encontrada.')
+    except ValueError as exc:
+        messages.error(request, str(exc))
+    except Exception:
+        logger.exception('Falha ao retomar a publicação SICOR %s após confirmação.', pk)
+        messages.error(request, 'Não foi possível retomar a publicação. A versão ativa foi preservada; consulte os logs do servidor.')
+    else:
+        if imp.status == Importacao.Status.CONCLUIDO:
+            messages.success(request, 'Substituição SICOR confirmada e publicada atomicamente.')
+        elif imp.status == Importacao.Status.AGUARDANDO_CONFIRMACAO_REDUCAO:
+            messages.warning(request, 'A quantidade publicada mudou. Revise a comparação atual antes de confirmar novamente.')
+    return redirect('administracao:importacao_detalhe', pk=pk)
+
+
+@admin_required
+def cancelar_reducao_sicor_importacao(request, pk):
+    if request.method != 'POST':
+        return redirect('administracao:importacao_detalhe', pk=pk)
+    try:
+        imp = Importacao.objects.get(pk=pk)
+        if (imp.contexto or {}).get('lote_id'):
+            raise ValueError('Cancele esta substituição na tela do lote correspondente.')
+        cancel_pending_sicor_import(imp.pk, request.user)
+    except Importacao.DoesNotExist:
+        messages.error(request, 'Importação não encontrada.')
+    except ValueError as exc:
+        messages.error(request, str(exc))
+    else:
+        messages.success(request, 'Substituição cancelada. A versão SICOR ativa foi preservada.')
+    return redirect('administracao:importacao_detalhe', pk=pk)
 
 
 # Compatibilidade das telas de sincronização existentes no projeto unificado.
