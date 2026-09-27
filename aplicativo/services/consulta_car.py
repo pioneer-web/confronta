@@ -592,7 +592,7 @@ class ConsultaCarService:
                 'properties': props,
                 'geometry': feature.get('geometry'),
             })
-        adicionar('sicor', 'SICOR / Crédito Rural', sicor, sicor_features)
+        adicionar('sicor', 'SICOR / Glebas', sicor, sicor_features)
         adicionar('outros_car', 'Sobreposição com outros CARs', outros_cars)
 
         # Uma única camada PRODES evita descartar classes não previstas e mantém

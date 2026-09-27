@@ -8,12 +8,11 @@ from django.urls import reverse
 
 from administracao.datasets import get_dataset
 from administracao.forms import UploadBaseForm
-from administracao.models import Importacao, User
+from administracao.models import User
 from administracao.services.batch_creation import create_batch_from_uploads
 from administracao.services.batch_upload import allowed_input_extensions
 from administracao.services.sicor_operations import (
     INVALID_OPERATIONS_HEADER,
-    IMPORTER_NOT_CONFIGURED,
     _OPERATIONS_HEADER,
     operations_reference_year,
     validate_operations_header,
@@ -163,23 +162,13 @@ class SicorOperationsManageTests(TestCase):
         self.assertNotIn('', allowed_input_extensions('sicor'))
         self.assertNotIn('', allowed_input_extensions('sicar'))
 
-    def test_processamento_placeholder_falha_controladamente_sem_resposta_500(self):
-        response = self.client.post(
-            reverse('administracao:importar_dataset', args=['sicor_operacoes', 'sicor-operacoes']),
-            {
-                'arquivo': SimpleUploadedFile(
-                    'SICOR_OPERACAO_BASICA_ESTADO_2026.gz',
-                    self.content('SICOR_OPERACAO_BASICA_ESTADO_2026.gz'),
-                ),
-            },
-        )
+    def test_pipeline_reconhece_dataset_operacional_com_arquivo_minimo(self):
+        filename = 'SICOR_OPERACAO_BASICA_ESTADO_2026'
+        dataset = get_dataset('sicor-operacoes')
+        uploaded = SimpleUploadedFile(filename, self.content(filename))
 
-        self.assertEqual(response.status_code, 302)
-        imp = Importacao.objects.get(dataset_slug='sicor-operacoes')
-        self.assertEqual(imp.status, Importacao.Status.FALHOU)
-        self.assertEqual(imp.motivo_rejeicao, IMPORTER_NOT_CONFIGURED)
-        self.assertEqual(imp.resultado['ano_referencia'], 2026)
-        self.assertEqual(imp.resultado['destino_previsto'], 'PostgreSQL do CONFRONTA')
+        self.assertEqual(dataset.data_kind, 'sicor_operacoes')
+        self.assertEqual(validate_operations_header(uploaded, filename), 2026)
 
     def test_lote_sequencial_pode_ser_iniciado_para_operacoes(self):
         response = self.client.post(

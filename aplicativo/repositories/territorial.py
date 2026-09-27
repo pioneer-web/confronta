@@ -842,7 +842,7 @@ class RepositorioTerritorial:
 
         if not wkt.get('disponivel') and not contratadas.get('disponivel'):
             return self._resultado_externo_indisponivel(
-                'SICOR / Crédito Rural',
+                'SICOR / Glebas',
                 'Nenhuma camada espacial de glebas SICOR está ativa para o confronto.'
             )
 
@@ -995,7 +995,7 @@ class RepositorioTerritorial:
             area_unica = None
 
         return {
-            'label': 'SICOR / Crédito Rural',
+            'label': 'SICOR / Glebas',
             'disponivel': bool(wkt.get('disponivel') or contratadas.get('disponivel')),
             'quantidade': len(registros),
             'features': features,

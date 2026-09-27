@@ -64,10 +64,10 @@ from .batch_classification import (
 )
 
 from .batch_classification import (
-    BATCH_CLASSIFIER_VERSION,
     _trusted_batch_history,
     _previous_signatures,
 )
+from .batch_version import BATCH_CLASSIFIER_VERSION
 
 from .batch_inbox import (
     _manifest_hash,

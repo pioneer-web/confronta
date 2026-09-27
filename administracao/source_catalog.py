@@ -170,13 +170,12 @@ SOURCE_PROFILES = (
     ),
     SourceProfile(
         slug='sicor',
-        label='SICOR / Crédito Rural',
+        label='SICOR / Glebas',
         organization='Banco Central do Brasil',
         areas=('financeiro',),
         purpose='Operações de crédito rural e informações complementares para a ficha financeira do imóvel.',
         official_url='https://www.bcb.gov.br/estabilidadefinanceira/tabelas-credito-rural-proagro',
         items=(
-            CatalogItem('SICOR_OPERACAO_BASICA', 'Operações contratadas', 'Arquivo anual com campo de UF.', 'sicor-operacao-basica'),
             CatalogItem('SICOR_COMPLEMENTO_OPERACAO_BASICA', 'Complemento da operação básica', 'Arquivo complementar nacional.', 'sicor-complemento-operacao-basica'),
             CatalogItem('SICOR_GLEBAS_CONTRAT', 'Glebas contratadas — coordenadas geodésicas', 'Arquivo nacional de pontos dos perímetros; o Manage reconstrói as glebas em SIRGAS 2000.', 'sicor-glebas-contratadas'),
             CatalogItem('SICOR_GLEBAS_WKT', 'Glebas financiadas em WKT', 'Arquivo anual; geometria WKT em SIRGAS2000.', 'sicor-glebas-wkt'),
@@ -213,12 +212,12 @@ SOURCE_PROFILES = (
         official_url='https://www.bcb.gov.br/estabilidadefinanceira/tabelas-credito-rural-proagro',
         items=(CatalogItem(
             'SICOR_OPERACAO_BASICA_ESTADO', 'Operações de crédito rural por estado',
-            'Arquivo anual SICOR_OPERACAO_BASICA_ESTADO_<ANO> (.gz, .csv ou sem extensão).', 'sicor-operacoes',
+            'Arquivos anuais publicados por partição lógica; importação com staging/COPY, publicação transacional e RAW preservada.', 'sicor-operacoes',
         ),),
         priority=1,
-        implementation='A_VALIDAR',
+        implementation='OPERACIONAL',
         import_source_slug='sicor_operacoes',
-        notes='Upload disponível para validar fluxo administrativo; importador de operações ainda não configurado.',
+        notes='Aceita SICOR_OPERACAO_BASICA_ESTADO_<ANO> em .gz, .csv ou no arquivo oficial sem extensão. Cada ano é publicado como partição lógica anual via staging/COPY, com publicação transacional em dados_sicor.sicor_operacoes e preservação da RAW em dados_sicor.raw_sicor_operacoes.',
     ),
     SourceProfile(
         slug='funai',

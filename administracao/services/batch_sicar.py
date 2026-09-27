@@ -12,10 +12,10 @@ from .exceptions import BatchInterruptionRequested
 from .zip_security import run_antivirus
 from .batch_classification import (
     classify_archive,
-    BATCH_CLASSIFIER_VERSION,
     _detect_uf_hint,
     _filename_token_hits,
 )
+from .batch_version import BATCH_CLASSIFIER_VERSION
 from .batch_queue import _finish_item, _set_item_progress
 from .field_matching import norm
 from .partitioning import normalize_uf, sicar_partition_has_rows

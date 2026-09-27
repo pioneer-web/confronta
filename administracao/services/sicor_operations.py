@@ -7,7 +7,6 @@ import zlib
 
 
 
-IMPORTER_NOT_CONFIGURED = 'Importador de Operações SICOR ainda não configurado.'
 INVALID_OPERATIONS_FILENAME = (
     'Use SICOR_OPERACAO_BASICA_ESTADO_<ANO> com ou sem extensão .gz/.csv, com ano entre 2013 e 2026.'
 )
@@ -36,7 +35,7 @@ _FILENAME_RE = re.compile(
 
 
 class SicorOperationsValidationError(ValueError):
-    """Friendly validation failure for the not-yet-imported Operations dataset."""
+    """Friendly validation failure for the SICOR Operations dataset."""
 
 
 def operations_reference_year(filename):

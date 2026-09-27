@@ -4712,7 +4712,7 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
     }
 }
 
-/* V3.4 — camada SICOR / Crédito Rural */
+/* V3.4 — camada SICOR / Glebas */
 
 
 /* CONFRONTA V0.6.2 — pós-pagamento e resumo premium da assinatura */
@@ -5084,5 +5084,4 @@ body.is-measuring-distance .leaflet-container { cursor: crosshair !important; }
 .gleba-drawing-hud-color { cursor: pointer; transition: transform .16s ease, box-shadow .16s ease; }
 .gleba-drawing-hud-color:hover,
 .gleba-drawing-hud-color:focus-visible { transform: scale(1.15); box-shadow: 0 0 0 3px rgba(255,255,255,.20); outline: none; }
-
 

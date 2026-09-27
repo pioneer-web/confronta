@@ -8,7 +8,7 @@ class FonteDados(models.TextChoices):
     CNUC = 'CNUC', 'CNUC'
     PRODES = 'PRODES', 'INPE / PRODES'
     INCRA = 'INCRA', 'INCRA'
-    SICOR = 'SICOR', 'SICOR / Crédito Rural'
+    SICOR = 'SICOR', 'SICOR / Glebas'
     SICOR_OPERACOES = 'SICOR_OPERACOES', 'Operações SICOR'
     SICOR_DOMINIOS = 'SICOR_DOMINIOS', 'Domínios SICOR'
     SIGEF = 'SIGEF', 'SIGEF / INCRA'

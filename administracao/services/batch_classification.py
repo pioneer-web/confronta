@@ -27,6 +27,7 @@ from administracao.models import Importacao
 
 from .field_matching import norm
 from .partitioning import UF_CODES
+from .batch_version import BATCH_CLASSIFIER_VERSION
 
 
 def _detect_uf(relative_path):
@@ -135,10 +136,6 @@ def _public_candidates(candidates):
         }
         for c in candidates
     ]
-
-# Vers?o da pol?tica de classifica??o dos lotes.
-BATCH_CLASSIFIER_VERSION = 9
-
 
 def _trusted_batch_history(imp):
     context = imp.contexto or {}

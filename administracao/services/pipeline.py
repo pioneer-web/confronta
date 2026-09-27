@@ -23,10 +23,10 @@ from .partitioning import UF_CODES, raw_table_for_import, detect_sicar_ufs_in_st
 from .zip_security import run_antivirus, validate_zip, validate_gpkg
 from .prodes_filter import DEFAULT_PRODES_START_YEAR, apply_prodes_year_filter, normalize_prodes_start_year
 from .content_fingerprint import fingerprint_staging_content
+from .batch_version import BATCH_CLASSIFIER_VERSION
 
 logger = logging.getLogger(__name__)
 
-BATCH_CLASSIFIER_VERSION = 4
 DIRECT_VECTOR_SUFFIXES = {'.gpkg', '.geojson', '.json', '.gml', '.kml'}
 UPLOAD_SUFFIXES = {'.zip'} | DIRECT_VECTOR_SUFFIXES
 

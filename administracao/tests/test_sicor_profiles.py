@@ -7,11 +7,10 @@ from administracao.source_catalog import get_source_profile
 
 
 class SicorProfileTests(SimpleTestCase):
-    def test_sicor_has_six_profiles(self):
+    def test_sicor_has_five_spatial_and_complementary_profiles(self):
         self.assertEqual(
             {d.slug for d in datasets_for_source('sicor')},
             {
-                'sicor-operacao-basica',
                 'sicor-complemento-operacao-basica',
                 'sicor-glebas-contratadas',
                 'sicor-glebas-wkt',
@@ -39,9 +38,11 @@ class SicorProfileTests(SimpleTestCase):
         self.assertTrue(source.is_importable)
         self.assertEqual(source.implementation, 'OPERACIONAL')
         self.assertEqual(
-            {item.dataset_slug for item in source.items},
+            {item.dataset_slug for item in source.items if item.dataset_slug},
             {d.slug for d in datasets_for_source('sicor')},
         )
+        self.assertNotIn('sicor-operacao-basica', {d.slug for d in datasets_for_source('sicor')})
+        self.assertIsNotNone(get_dataset('sicor-operacoes'))
 
     def test_incra_items_have_direct_import_targets(self):
         source = get_source_profile('incra')

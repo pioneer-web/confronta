@@ -2,11 +2,8 @@ from django.core.files import File
 
 from administracao.models import Importacao, ItemLoteImportacao
 
-from .batch_classification import (
-    BATCH_CLASSIFIER_VERSION,
-    _classify_batch_input,
-    _year_hint_from_name,
-)
+from .batch_classification import _classify_batch_input, _year_hint_from_name
+from .batch_version import BATCH_CLASSIFIER_VERSION
 from .batch_control import _batch_interruption_requested
 from .batch_queue import _finish_item, _set_item_progress
 from .batch_sicar import (

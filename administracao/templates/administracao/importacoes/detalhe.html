@@ -83,7 +83,7 @@
 </div>
 {% elif importacao.resultado.sicor_csv.aplicado %}
 <div class="card">
-    <h2>SICOR / Crédito Rural</h2>
+    <h2>{{ importacao.dataset_label|default:'SICOR' }}</h2>
     <div class="stats">
         <div><span>Registros recebidos</span><b>{{ importacao.resultado.sicor_csv.registros_recebidos }}</b></div>
         <div><span>Operacional</span><b>{{ importacao.resultado.sicor_csv.registros_operacionais }}</b></div>

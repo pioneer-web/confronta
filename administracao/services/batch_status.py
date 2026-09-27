@@ -11,7 +11,7 @@ from administracao.models import (
 )
 
 from .auditoria import registrar_auditoria
-from .batch_classification import BATCH_CLASSIFIER_VERSION
+from .batch_version import BATCH_CLASSIFIER_VERSION
 from .batch_common import _source_slug_from_value
 from .batch_control import _cleanup_finished_batch_files
 

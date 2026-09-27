@@ -18,7 +18,7 @@ def get_dataset(slug: str):
     return DATASET_BY_SLUG.get(slug)
 
 def datasets_for_source(fonte_slug: str) -> list[DatasetSpec]:
-    return [d for d in DATASETS if d.fonte_slug == fonte_slug]
+    return [d for d in DATASETS if d.fonte_slug == fonte_slug and d.slug != 'sicor-operacao-basica']
 
 def source_groups(fonte_slug: str):
     ordered=[]

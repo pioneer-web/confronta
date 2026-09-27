@@ -1,10 +1,11 @@
-from django.test import SimpleTestCase
+from django.test import TestCase
+from unittest.mock import patch
 
 from aplicativo.repositories import RepositorioTerritorial
 from aplicativo.services import ConsultaCarService
 
 
-class SicorTerritorialV34Tests(SimpleTestCase):
+class SicorTerritorialV34Tests(TestCase):
     def setUp(self):
         self.vazio = {'disponivel': True, 'quantidade': 0, 'features': [], 'registros': []}
         self.sicor = {
@@ -33,7 +34,7 @@ class SicorTerritorialV34Tests(SimpleTestCase):
         self.assertEqual(cfg['sicor_contratadas']['tabela'], 'sicor_glebas_contratadas')
         self.assertEqual(cfg['sicor_contratadas']['geometry_column'], 'geom')
 
-    def test_sicor_entra_nos_alertas(self):
+    def test_sicor_nao_entra_nos_alertas(self):
         alertas = ConsultaCarService._montar_alertas({
             'ibama': self.vazio,
             'prodes': self.vazio,
@@ -42,10 +43,9 @@ class SicorTerritorialV34Tests(SimpleTestCase):
             'apa': self.vazio,
             'sicor': self.sicor,
         }, self.vazio)
-        self.assertEqual(alertas['sicor']['status'], 'Identificado')
-        self.assertEqual(alertas['sicor']['layer_key'], 'ext_sicor')
-        self.assertIn('Crédito rural — SICOR', alertas['resumo']['tipos'])
-        self.assertNotIn('gt_geometria', alertas['sicor']['registros'][0])
+        self.assertNotIn('sicor', alertas)
+        self.assertNotIn('Crédito rural — SICOR', alertas['resumo']['tipos'])
+        self.assertFalse(alertas['tem_alerta'])
 
     def test_sicor_entra_como_camada_externa(self):
         camadas = ConsultaCarService._montar_camadas_externas({
@@ -58,5 +58,51 @@ class SicorTerritorialV34Tests(SimpleTestCase):
         }, self.vazio)
         self.assertIn('sicor', camadas)
         self.assertTrue(camadas['sicor']['disponivel'])
-        self.assertEqual(camadas['sicor']['label'], 'SICOR / Crédito Rural')
+        self.assertEqual(camadas['sicor']['label'], 'SICOR / Glebas')
         self.assertEqual(len(camadas['sicor']['features']), 1)
+
+    def test_validacao_uf_atual_preserva_gleba_com_uf_compativel(self):
+        repository = RepositorioTerritorial.__new__(RepositorioTerritorial)
+        wkt = {'disponivel': True, 'features': [{
+            'type': 'Feature', 'geometry': {'type': 'Polygon', 'coordinates': []},
+            'properties': {'ref_bacen': '519338239', 'nu_ordem': 1, 'nu_indice': 1, '_ano_arquivo': 2025},
+        }], 'registros': []}
+        empty = {'disponivel': False, 'features': [], 'registros': []}
+        with patch.object(repository, '_buscar_dados_operacoes_sicor', return_value={
+            ('519338239', 1, 2025): {'cd_estado': 'PE'},
+        }):
+            result = repository._combinar_sicor_fontes(wkt, empty, uf_car='PE')
+        self.assertEqual(len(result['features']), 1)
+        self.assertEqual(result['registros'][0]['validacao_uf_sicor'], 'VALIDADA')
+
+    def test_validacao_uf_descarta_gleba_incompativel(self):
+        repository = RepositorioTerritorial.__new__(RepositorioTerritorial)
+        wkt = {'disponivel': True, 'features': [{
+            'type': 'Feature', 'geometry': {'type': 'Polygon', 'coordinates': []},
+            'properties': {'ref_bacen': '2309549', 'nu_ordem': 1, 'nu_indice': 1, '_ano_arquivo': 2013},
+        }], 'registros': []}
+        empty = {'disponivel': False, 'features': [], 'registros': []}
+        with patch.object(repository, '_buscar_dados_operacoes_sicor', return_value={
+            ('2309549', 1, 2013): {'cd_estado': 'RS'},
+        }):
+            result = repository._combinar_sicor_fontes(wkt, empty, uf_car='PE')
+        self.assertEqual(result['features'], [])
+        self.assertEqual(result['registros'], [])
+
+    def test_campos_de_operacao_sao_projetados_em_feature_properties(self):
+        repository = RepositorioTerritorial.__new__(RepositorioTerritorial)
+        properties = {'ref_bacen': '519338239', 'nu_ordem': 1, 'nu_indice': 1, '_ano_arquivo': 2025}
+        wkt = {'disponivel': True, 'features': [{
+            'type': 'Feature', 'geometry': {'type': 'Polygon', 'coordinates': []}, 'properties': properties,
+        }], 'registros': []}
+        empty = {'disponivel': False, 'features': [], 'registros': []}
+        enrichment = {
+            'cd_estado': 'PE', 'nome_instituicao': 'BANCO', 'segmento_instituicao': 'COOPERATIVA',
+            'nome_programa': 'Programa', 'dt_emissao': '2025-01-01', 'dt_vencimento': '2026-01-01',
+            'vl_parc_credito': 10, 'vl_area_financ': 2,
+        }
+        with patch.object(repository, '_buscar_dados_operacoes_sicor', return_value={
+            ('519338239', 1, 2025): enrichment,
+        }):
+            result = repository._combinar_sicor_fontes(wkt, empty, uf_car='PE')
+        self.assertTrue(set(enrichment) <= result['features'][0]['properties'].keys())
