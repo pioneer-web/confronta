@@ -8,6 +8,7 @@ from django.conf import settings
 from administracao.datasets import datasets_for_source
 
 from .zip_security import validate_gpkg, validate_zip
+from .sicor_operations import validate_operations_filename, validate_operations_header
 
 
 class BatchUploadLimitError(ValueError):
@@ -139,7 +140,11 @@ def allowed_input_extensions(source_slug):
     specs = datasets_for_source(source_slug)
     allowed = set()
     for spec in specs:
-        if spec.data_kind in {'sicor_csv', 'sicor_wkt', 'sicor_gleba_points'}:
+        if spec.data_kind == 'sicor_operacoes':
+            allowed.update({'', '.gz', '.csv'})
+        elif spec.data_kind in {'sicor_domain_institutions', 'sicor_domain_programs'}:
+            allowed.add('.csv')
+        elif spec.data_kind in {'sicor_csv', 'sicor_wkt', 'sicor_gleba_points'}:
             allowed.update({'.gz', '.csv'})
         elif spec.data_kind == 'tabular_flexible':
             allowed.update({'.csv', '.gz', '.zip'})
@@ -156,6 +161,9 @@ def _allowed_input_extensions(source_slug):
 
 def _validate_input_extension(filename, source_slug):
     suffix = Path(str(filename or '')).suffix.lower()
+    if str(source_slug or '').strip().lower() == 'sicor_operacoes':
+        validate_operations_filename(filename)
+        return suffix
     allowed = _allowed_input_extensions(source_slug)
     if suffix not in allowed:
         expected = ', '.join(sorted(allowed))
@@ -171,6 +179,13 @@ def _validate_input_security(path, source_slug):
     suffix = _validate_input_extension(path.name, source_slug)
     if not path.is_file() or path.stat().st_size <= 0:
         raise ValueError('O arquivo recebido está vazio ou indisponível no storage do lote.')
+    if source_slug == 'sicor_operacoes':
+        validate_operations_header(path, path.name)
+        return {
+            'arquivo': path.name,
+            'tamanho_bytes': path.stat().st_size,
+            'validacao_lote': 'CABECALHO_SICOR_OPERACOES_VALIDO',
+        }
     if suffix == '.zip':
         return validate_zip(path)
     if suffix == '.gpkg':

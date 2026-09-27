@@ -9,6 +9,8 @@ class FonteDados(models.TextChoices):
     PRODES = 'PRODES', 'INPE / PRODES'
     INCRA = 'INCRA', 'INCRA'
     SICOR = 'SICOR', 'SICOR / Crédito Rural'
+    SICOR_OPERACOES = 'SICOR_OPERACOES', 'Operações SICOR'
+    SICOR_DOMINIOS = 'SICOR_DOMINIOS', 'Domínios SICOR'
     SIGEF = 'SIGEF', 'SIGEF / INCRA'
     SNCR = 'SNCR', 'SNCR / INCRA'
     FUNAI = 'FUNAI', 'FUNAI / Terras Indígenas'
@@ -29,6 +31,8 @@ FONTE_SLUGS = {
     'prodes': FonteDados.PRODES,
     'incra': FonteDados.INCRA,
     'sicor': FonteDados.SICOR,
+    'sicor_operacoes': FonteDados.SICOR_OPERACOES,
+    'sicor-dominios': FonteDados.SICOR_DOMINIOS,
     'sigef': FonteDados.SIGEF,
     'sncr': FonteDados.SNCR,
     'funai': FonteDados.FUNAI,
@@ -42,6 +46,8 @@ FONTE_SCHEMAS = {
     FonteDados.PRODES: 'dados_prodes',
     FonteDados.INCRA: 'dados_incra',
     FonteDados.SICOR: 'dados_sicor',
+    FonteDados.SICOR_OPERACOES: 'dados_sicor',
+    FonteDados.SICOR_DOMINIOS: 'dados_sicor',
     FonteDados.SIGEF: 'dados_sigef',
     FonteDados.SNCR: 'dados_sncr',
     FonteDados.FUNAI: 'dados_funai',
@@ -55,7 +61,6 @@ FONTE_SCHEMAS = {
 }
 
 # Todas as fontes técnicas cadastradas podem usar o lote sequencial manual.
-# A classificação continua conservadora: fontes com um único perfil técnico
-# usam esse perfil diretamente; fontes com múltiplos perfis exigem evidência
-# segura de nome/estrutura antes de qualquer escrita.
+# O novo slug Operações SICOR aponta apenas para seu DatasetSpec dedicado;
+# a fonte sicor e os perfis de glebas permanecem inalterados.
 BATCH_FONTE_SLUGS = dict(FONTE_SLUGS)

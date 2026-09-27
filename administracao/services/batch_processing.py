@@ -43,6 +43,7 @@ def _import_classified_item(item, archive, source_slug):
 
     spec, classification = _classify_batch_input(
         archive, source_slug, relative_path=item.caminho_relativo, archive_sha256=current_hash,
+        dataset_slug=item.dataset_slug,
     )
     if spec is None:
         return _finish_item(

@@ -31,6 +31,7 @@ from .batch_upload import (
 )
 from .zip_security import validate_zip
 from .partitioning import normalize_uf
+from .sicor_operations import validate_operations_header
 
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,8 @@ def append_sequential_upload(lote_id, uploaded_file, usuario, index=None):
             raise BatchUploadLimitError('O lote contém mais arquivos que o permitido.')
         source_slug = _source_slug_from_value(lote.fonte)
         _validate_input_extension(uploaded_file.name, source_slug)
+        if source_slug == 'sicor_operacoes':
+            validate_operations_header(uploaded_file, uploaded_file.name)
         validate_upload_limits(
             [uploaded_file],
             existing_bytes=int(lote.tamanho_bytes or 0),
@@ -99,7 +102,11 @@ def append_sequential_upload(lote_id, uploaded_file, usuario, index=None):
             recovery = _create_recovery_link(target, lote.pk, relative)
             pre_dataset_slug = ''
             pre_dataset_label = ''
-            pre_spec, _pre_report = _preclassify_input_name(source_slug, target)
+            selected_dataset = str(result.get('dataset_slug') or '')
+            pre_spec, _pre_report = _preclassify_input_name(source_slug, target, selected_dataset)
+            if selected_dataset and pre_spec is None:
+                from .sicor_domain_import import identify_domain_header
+                identify_domain_header(target, selected_dataset)
             if pre_spec is not None:
                 pre_dataset_slug = pre_spec.slug
                 pre_dataset_label = pre_spec.label

@@ -249,6 +249,7 @@
     const layers = {};
     let perimeter = null;
     let activeFullFeaturePreview = null;
+    let selectedSicorFeatureLayer = null;
 
     const palette = {
         perimetro: { color: '#FFFFFF', weight: 4.4, fillOpacity: 0.02, opacity: 1, fillColor: '#FFFFFF' },
@@ -269,7 +270,7 @@
         ext_funai: { color: '#7c3aed', weight: 2.45, fillOpacity: 0.27, opacity: 0.99 },
         ext_icmbio_embargo: { color: '#be123c', weight: 2.55, fillOpacity: 0.28, opacity: 0.99 },
         ext_apa: { color: '#16a34a', weight: 2.35, fillOpacity: 0.24, opacity: 0.98 },
-        ext_sicor: { color: '#3b82f6', weight: 2.65, fillOpacity: 0.28, opacity: 0.99 },
+        ext_sicor: { color: '#2563EB', fillColor: '#3B82F6', weight: 2, fillOpacity: 0.20, opacity: 0.9 },
         ext_outros_car: { color: '#0891b2', weight: 2.55, fillOpacity: 0.22, opacity: 0.99 }
     };
 
@@ -387,7 +388,7 @@
         const custom = featureLayer && featureLayer._confrontaCustomColor ? normalizeHexColor(featureLayer._confrontaCustomColor, style.color) : style.color;
         style.color = custom;
         if (!('fillColor' in style) || !style.fillColor) style.fillColor = custom;
-        else if (layerKey !== 'perimetro') style.fillColor = custom;
+        else if (layerKey !== 'perimetro' && layerKey !== 'ext_sicor') style.fillColor = custom;
         if (emphasize) {
             style.weight = Number(style.weight || 2) + 0.45;
             style.fillOpacity = Math.min(0.42, Number(style.fillOpacity || 0.2) + 0.08);
@@ -532,19 +533,26 @@
         }
     }
 
-    function downloadFeatureKml(feature, label) {
+    function downloadFeatureKml(feature, label, options = {}) {
         if (!feature || !feature.geometry) return;
         const geometry = geometryToKml(feature.geometry);
         if (!geometry) return;
         const safeLabel = String(label || 'area').replace(/[<>:&"']/g, ' ').trim() || 'area';
         const xmlLabel = escapeHtml(safeLabel);
+        const extendedData = Object.entries(options.metadata || {})
+            .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== '')
+            .map(([name, value]) => `<Data name="${escapeHtml(name)}"><value>${escapeHtml(value)}</value></Data>`)
+            .join('');
         const kml = `<?xml version="1.0" encoding="UTF-8"?>
-<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${xmlLabel}</name><Placemark><name>${xmlLabel}</name>${geometry}</Placemark></Document></kml>`;
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${xmlLabel}</name><Placemark><name>${xmlLabel}</name>${extendedData ? `<ExtendedData>${extendedData}</ExtendedData>` : ''}${geometry}</Placemark></Document></kml>`;
         const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement('a');
         anchor.href = url;
-        anchor.download = `${safeLabel.toLowerCase().replace(/[^a-z0-9áàâãéèêíïóôõöúçñ_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'area'}.kml`;
+        const filename = options.filename
+            ? String(options.filename).toLowerCase().replace(/[^a-z0-9áàâãéèêíïóôõöúçñ_-]+/gi, '_').replace(/^_+|_+$/g, '') || 'area'
+            : safeLabel.toLowerCase().replace(/[^a-z0-9áàâãéèêíïóôõöúçñ_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'area';
+        anchor.download = `${filename}.kml`;
         document.body.appendChild(anchor);
         anchor.click();
         anchor.remove();
@@ -595,6 +603,107 @@
     }
 
     function buildTerritorialPopup(feature, label, color, kind, layerData, layerKey, featureLayer) {
+        if (layerKey === 'ext_sicor') {
+            const props = feature?.properties || {};
+            const card = document.createElement('section');
+            card.className = 'cf-context-car-popup cf-layer-feature-popup';
+            const heading = document.createElement('div');
+            heading.className = 'cf-sicor-popup-heading';
+            const title = document.createElement('strong');
+            title.textContent = 'CRÉDITO RURAL SICOR';
+            heading.appendChild(title);
+            const year = props.ano_sicor || props._ano_arquivo || props.ano_operacao;
+            if (year !== null && year !== undefined && String(year).trim() && !['none', 'null', 'undefined'].includes(String(year).trim().toLowerCase())) {
+                const badge = document.createElement('span');
+                badge.className = 'cf-sicor-popup-year';
+                badge.textContent = String(year).trim();
+                heading.appendChild(badge);
+            }
+            card.appendChild(heading);
+            const clean = (value) => {
+                if (value === null || value === undefined) return '';
+                const text = String(value).trim();
+                return ['none', 'null', 'undefined'].includes(text.toLowerCase()) ? '' : text;
+            };
+            const addField = (parent, label, value, modifier = '') => {
+                const text = clean(value);
+                if (!text) return;
+                const field = document.createElement('div');
+                field.className = `cf-sicor-popup-field${modifier ? ` ${modifier}` : ''}`;
+                const caption = document.createElement('span');
+                caption.textContent = label;
+                const content = document.createElement('strong');
+                content.textContent = text;
+                field.append(caption, content);
+                parent.appendChild(field);
+            };
+            const datePtBr = (value) => {
+                const text = clean(value);
+                if (!text) return null;
+                const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(text);
+                return match ? `${match[3]}/${match[2]}/${match[1]}` : text;
+            };
+            const numberPtBr = (value, options = {}) => {
+                if (!clean(value)) return null;
+                const number = Number(String(value).trim().replace(',', '.'));
+                if (!Number.isFinite(number)) return null;
+                return new Intl.NumberFormat('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                    ...options
+                }).format(number);
+            };
+            const rawCredit = clean(props.vl_parc_credito);
+            const creditValue = rawCredit ? Number(rawCredit.replace(',', '.')) : null;
+            const credit = creditValue !== null && Number.isFinite(creditValue)
+                ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(creditValue)
+                : null;
+            addField(card, 'Instituição financeira', props.nome_instituicao || props.cnpj_if, 'is-wide');
+            const segment = clean(props.segmento_instituicao);
+            if (segment) {
+                const segmentNode = document.createElement('small');
+                segmentNode.className = 'cf-sicor-popup-segment';
+                segmentNode.textContent = segment;
+                card.appendChild(segmentNode);
+            }
+            addField(card, 'Programa', props.nome_programa || props.cd_programa, 'is-wide');
+            const dates = document.createElement('div');
+            dates.className = 'cf-sicor-popup-grid';
+            addField(dates, 'Data de emissão', datePtBr(props.dt_emissao));
+            addField(dates, 'Vencimento', datePtBr(props.dt_vencimento));
+            if (dates.childElementCount) card.appendChild(dates);
+            addField(card, 'Valor do crédito', credit, 'is-credit');
+            const areas = document.createElement('div');
+            areas.className = 'cf-sicor-popup-grid';
+            const areaGleba = numberPtBr(props.area_gleba_sicor_ha);
+            const areaFinanciada = numberPtBr(props.vl_area_financ);
+            addField(areas, 'Área da gleba SICOR', areaGleba ? `${areaGleba} ha` : null);
+            addField(areas, 'Área financiada', areaFinanciada ? `${areaFinanciada} ha` : null);
+            if (areas.childElementCount) card.appendChild(areas);
+            addField(card, 'REF BACEN', props.ref_bacen, 'is-reference');
+            const ref = clean(props.ref_bacen) || 'sem_ref';
+            const exportYear = clean(year) || 'sem_ano';
+            const metadata = {
+                'REF BACEN': clean(props.ref_bacen),
+                'Ano': exportYear === 'sem_ano' ? '' : exportYear,
+                'Instituição financeira': clean(props.nome_instituicao || props.cnpj_if),
+                'Programa': clean(props.nome_programa || props.cd_programa),
+                'Data de emissão': clean(datePtBr(props.dt_emissao)),
+                'Vencimento': clean(datePtBr(props.dt_vencimento)),
+                'Valor do crédito': clean(credit),
+                'Área da gleba SICOR': areaGleba ? `${areaGleba} ha` : '',
+                'Área financiada': areaFinanciada ? `${areaFinanciada} ha` : ''
+            };
+            appendCardAction(card, 'Baixar KML', 'cf-context-car-popup-action is-secondary cf-sicor-popup-download', () => {
+                downloadFeatureKml(
+                    feature,
+                    `Crédito Rural SICOR - REF ${ref}`,
+                    { filename: `sicor_${ref}_${exportYear}`, metadata }
+                );
+            });
+            return card;
+        }
+
         if (layerKey === 'ext_outros_car') {
             const props = feature?.properties || {};
             const card = document.createElement('section');
@@ -892,16 +1001,26 @@
     function addGeoJsonLayer(key, layerData, visibleByDefault) {
         if (!layerData || !layerData.disponivel || !Array.isArray(layerData.features) || !layerData.features.length) return;
         // O resultado analítico conserva a interseção; apenas a feição desenhada usa o imóvel inteiro.
-        const displayFeatures = key === 'ext_outros_car'
-            ? layerData.features.map((feature) => ({
+        const displayFeatures = key === 'ext_sicor'
+            ? layerData.features.filter((feature) => {
+                const geometry = feature && feature.geometry;
+                return geometry && ['Polygon', 'MultiPolygon'].includes(geometry.type) && Array.isArray(geometry.coordinates);
+            })
+            : (key === 'ext_outros_car'
+                ? layerData.features.map((feature) => ({
                 ...feature,
                 geometry: feature.properties?._confronta_full_geometry || feature.geometry
-            }))
-            : layerData.features;
+                }))
+                : layerData.features);
+        if (!displayFeatures.length) return;
         const group = L.geoJSON({ type: 'FeatureCollection', features: displayFeatures }, {
-            pane: key === 'ext_outros_car'
-                ? 'overlappingCarsPane'
-                : (key.startsWith('ext_') ? 'overlayPane' : 'workingCarLayersPane'),
+            pane: key === 'ext_sicor'
+                ? 'sicorGlebasPane'
+                : (key === 'ext_outros_car'
+                    ? 'overlappingCarsPane'
+                    : (key.startsWith('ext_') ? 'overlayPane' : 'workingCarLayersPane')),
+            bubblingMouseEvents: key !== 'ext_sicor',
+            interactive: true,
             style: function () {
                 return styleForKey(key);
             },
@@ -910,6 +1029,31 @@
             },
             onEachFeature: function (feature, layer) {
                 applyStyleToFeatureLayer(layer, key, false);
+                if (key === 'ext_sicor') {
+                    const restoreSicorFeatureStyle = (featureLayer) => {
+                        if (!featureLayer) return;
+                        applyStyleToFeatureLayer(featureLayer, 'ext_sicor', false);
+                    };
+                    layer.on('click', function () {
+                        if (selectedSicorFeatureLayer && selectedSicorFeatureLayer !== layer) {
+                            restoreSicorFeatureStyle(selectedSicorFeatureLayer);
+                        }
+                        selectedSicorFeatureLayer = layer;
+                        layer.setStyle({
+                            color: '#1D4ED8',
+                            weight: 3,
+                            opacity: 0.9,
+                            fillColor: '#3B82F6',
+                            fillOpacity: 0.35
+                        });
+                    });
+                    layer.on('popupclose', function () {
+                        if (selectedSicorFeatureLayer === layer) {
+                            selectedSicorFeatureLayer = null;
+                            restoreSicorFeatureStyle(layer);
+                        }
+                    });
+                }
                 layer.bindPopup(() => buildTerritorialPopup(
                     feature,
                     layerData.label || key,
@@ -919,26 +1063,33 @@
                     key,
                     layer
                 ), {
-                    maxWidth: 360,
-                    minWidth: 270,
+                    maxWidth: key === 'ext_sicor' ? 410 : 360,
+                    minWidth: key === 'ext_sicor' ? 0 : 270,
                     closeButton: true,
                     autoPan: true,
             keepInView: true,
             autoPanPaddingTopLeft: [24, 24],
             autoPanPaddingBottomRight: [24, 92],
-                    className: !key.startsWith('ext_')
-                        ? 'confronta-feature-leaflet-popup confronta-context-car-popup'
-                        : 'confronta-feature-leaflet-popup'
+                    className: key === 'ext_sicor'
+                        ? 'confronta-feature-leaflet-popup confronta-sicor-leaflet-popup'
+                        : (!key.startsWith('ext_')
+                            ? 'confronta-feature-leaflet-popup confronta-context-car-popup'
+                            : 'confronta-feature-leaflet-popup')
                 });
             }
         });
         layers[key] = group;
         applyLayerStyleObject(group, styleForKey(key));
-        if (visibleByDefault) group.addTo(map);
+        if (visibleByDefault || key === 'ext_sicor') group.addTo(map);
     }
 
     const overlappingCarsPane = map.createPane('overlappingCarsPane');
     overlappingCarsPane.style.zIndex = '410';
+    const sicorGlebasPane = map.createPane('sicorGlebasPane');
+    // Above working polygons/CAR so the SICOR feature receives its own click;
+    // Leaflet controls live in a separate, higher control pane.
+    sicorGlebasPane.style.zIndex = '470';
+    sicorGlebasPane.style.pointerEvents = 'auto';
     const workingCarLayersPane = map.createPane('workingCarLayersPane');
     workingCarLayersPane.style.zIndex = '461';
     const selectedCarPane = map.createPane('selectedCarPane');
@@ -981,6 +1132,7 @@
 
     const visibleLayers = new Map();
     if (perimeter) visibleLayers.set('perimetro', true);
+    if (layers.ext_sicor) visibleLayers.set('ext_sicor', map.hasLayer(layers.ext_sicor));
 
     // Perímetros contextuais independentes das camadas da consulta atual.
     // O pane abaixo dos overlays preserva os desenhos e o CAR pesquisado em destaque.
@@ -1120,6 +1272,12 @@
         }
         const layer = layers[key];
         if (!layer) return;
+        if (key === 'ext_sicor') {
+            if (visible && !map.hasLayer(layer)) layer.addTo(map);
+            else if (!visible && map.hasLayer(layer)) map.removeLayer(layer);
+            visibleLayers.set(key, Boolean(visible));
+            return;
+        }
         if (visible) {
             if (!map.hasLayer(layer)) layer.addTo(map);
         } else if (map.hasLayer(layer)) {

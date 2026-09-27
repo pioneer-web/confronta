@@ -3,7 +3,7 @@ import logging
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
-from django.db import DatabaseError, connection
+from django.db import DatabaseError, connection, transaction
 from psycopg import sql
 
 from administracao.constants import FonteDados
@@ -582,30 +582,35 @@ class RepositorioTerritorial:
             )
         return resultado
 
-    def buscar_analises_externas(self, car):
+    def buscar_analises_externas(self, car, uf_car=None):
         resultado = {}
         resultados_apa = {}
         resultados_sicor = {}
 
         for chave, cfg in self.ANALISES_EXTERNAS.items():
-            if not self._camada_externa_ativa(cfg['fonte'], cfg['schema'], cfg['tabela']):
-                item = self._resultado_externo_indisponivel(
-                    cfg['label'], 'Base ainda não está ativa no Módulo 1.'
-                )
-            else:
-                srid = self._table_srid(cfg['schema'], cfg['tabela'])
-                if not srid:
-                    item = self._resultado_externo_indisponivel(
-                        cfg['label'], 'A tabela operacional não possui SRID válido para confronto espacial.'
-                    )
-                else:
-                    try:
-                        item = self._buscar_intersecoes_externas(car, cfg, srid)
-                    except DatabaseError:
-                        logger.exception('Falha ao consultar análise externa %s para o CAR %s.', chave, car)
+            try:
+                # Cada fonte é independente. O atomic interno cria um savepoint
+                # sob a transação externa do serviço, isolando falhas PostgreSQL.
+                with transaction.atomic():
+                    if not self._camada_externa_ativa(cfg['fonte'], cfg['schema'], cfg['tabela']):
                         item = self._resultado_externo_indisponivel(
-                            cfg['label'], 'Não foi possível consultar esta base territorial neste momento.'
+                            cfg['label'], 'Base ainda não está ativa no Módulo 1.'
                         )
+                    else:
+                        srid = self._table_srid(cfg['schema'], cfg['tabela'])
+                        if not srid:
+                            item = self._resultado_externo_indisponivel(
+                                cfg['label'], 'A tabela operacional não possui SRID válido para confronto espacial.'
+                            )
+                        elif chave in {'sicor_wkt', 'sicor_contratadas'}:
+                            item = self._buscar_glebas_sicor(car, cfg, srid)
+                        else:
+                            item = self._buscar_intersecoes_externas(car, cfg, srid)
+            except DatabaseError:
+                logger.exception('Falha ao consultar análise externa %s para o CAR %s.', chave, car)
+                item = self._resultado_externo_indisponivel(
+                    cfg['label'], 'Não foi possível consultar esta base territorial neste momento.'
+                )
 
             if chave.startswith('apa_'):
                 resultados_apa[chave] = item
@@ -621,6 +626,8 @@ class RepositorioTerritorial:
         resultado['sicor'] = self._combinar_sicor_fontes(
             resultados_sicor.get('sicor_wkt'),
             resultados_sicor.get('sicor_contratadas'),
+            car=car,
+            uf_car=uf_car,
         )
         return resultado
 
@@ -629,78 +636,203 @@ class RepositorioTerritorial:
         ref_bacen = str(registro.get('ref_bacen') or '').strip().upper()
         nu_ordem = str(registro.get('nu_ordem') or '').strip()
         indice = str(registro.get('nu_indice') or registro.get('nu_indice_gleba') or '').strip()
+        year = str(registro.get('ano_sicor') or registro.get('_ano_arquivo') or '').strip()
         if ref_bacen and nu_ordem:
-            return f'{ref_bacen}:{nu_ordem}:{indice or "SEM_INDICE"}'
+            return f'{ref_bacen}:{nu_ordem}:{year}:{indice or "SEM_INDICE"}'
         return f'{origem}:{ref_bacen}:{nu_ordem}:{indice}:{id(registro)}'
 
     def _buscar_dados_operacoes_sicor(self, registros):
         """Complementa glebas SICOR com dados não sensíveis da operação básica.
 
-        A camada espacial continua sendo a evidência para o alerta. O vínculo com
-        a operação usa somente ``ref_bacen`` + ``nu_ordem`` e não expõe dados de
-        mutuário/CPF/CNPJ. A ausência da tabela complementar não bloqueia o mapa.
+        A camada espacial permanece independente da operação. O vínculo é
+        resolvido em lote por ``ref_bacen`` + ``nu_ordem`` e ano quando ambos existem;
+        a ausência de uma operação nunca bloqueia a exibição da geometria.
         """
         if not registros:
             return {}
-        schema = 'dados_sicor'
-        tabela = 'sicor_operacao_basica'
-        if not self._camada_externa_ativa(FonteDados.SICOR, schema, tabela):
-            return {}
-
+        schema, tabela = 'dados_sicor', 'sicor_operacoes'
+        # sicor_operacoes is tabular enrichment, not a spatial layer. Its
+        # catalog activation must not control whether the data can be joined.
         existentes = self._table_columns(schema, tabela)
-        if not {'ref_bacen', 'nu_ordem'} <= existentes:
+        if not {'ref_bacen', 'nu_ordem', '_ano_arquivo'} <= existentes:
             return {}
 
-        refs = sorted({str(r.get('ref_bacen') or '').strip() for r in registros if str(r.get('ref_bacen') or '').strip()})
-        if not refs:
+        requested = []
+        for registro in registros:
+            ref = str(registro.get('ref_bacen') or '').strip()
+            try:
+                ordem = int(registro.get('nu_ordem'))
+            except (TypeError, ValueError):
+                continue
+            raw_year = registro.get('ano_sicor') or registro.get('_ano_arquivo')
+            try:
+                year = int(raw_year) if raw_year not in (None, '') else None
+            except (TypeError, ValueError):
+                year = None
+            if ref:
+                requested.append({'ref_bacen': ref, 'nu_ordem': ordem, 'ano': year})
+        if not requested:
             return {}
 
-        opcionais = (
-            '_ano_arquivo', 'dt_emissao', 'dt_vencimento', 'cd_estado',
-            'cd_fonte_recurso', 'cd_empreendimento', 'cd_programa',
-            'vl_parc_credito', 'vl_area_financ', 'vl_area_informada', 'vl_juros',
+        fields = (
+            'dt_emissao', 'dt_vencimento', 'cnpj_if', 'cd_inst_credito', 'cd_estado',
+            'vl_parc_credito', 'vl_area_financ', 'cd_programa',
+            '_ano_arquivo', '_numero_linha',
         )
-        campos = tuple(c for c in opcionais if c in existentes)
-        select_campos = [sql.Identifier('ref_bacen'), sql.Identifier('nu_ordem')]
-        select_campos.extend(sql.Identifier(c) for c in campos)
-        order_extra = sql.SQL('')
-        if '_ano_arquivo' in existentes:
-            order_extra = sql.SQL(', {} DESC NULLS LAST').format(sql.Identifier('_ano_arquivo'))
-        if '_numero_linha' in existentes:
-            order_extra += sql.SQL(', {} DESC NULLS LAST').format(sql.Identifier('_numero_linha'))
+        selected = tuple(field for field in fields if field in existentes)
+        order = sql.SQL('op._numero_linha DESC NULLS LAST') if '_numero_linha' in existentes else sql.SQL('op.ctid DESC')
+        selected_inner = [sql.SQL('op.{}').format(sql.Identifier(field)) for field in selected]
+        selected_names = list(selected)
+        joins = []
 
+        institution_columns = self._table_columns(schema, 'sicor_instituicoes')
+        if (
+            'cnpj_if' in existentes
+            and {'cnpj_if', 'nome_if'} <= institution_columns
+        ):
+            joins.append(sql.SQL(
+                ' LEFT JOIN {} i ON i.cnpj_if::text = op.cnpj_if::text'
+            ).format(sql.Identifier(schema, 'sicor_instituicoes')))
+            selected_inner.append(sql.SQL('i.nome_if::text AS nome_instituicao'))
+            selected_names.append('nome_instituicao')
+            if 'segmento_if' in institution_columns:
+                selected_inner.append(sql.SQL('i.segmento_if::text AS segmento_instituicao'))
+                selected_names.append('segmento_instituicao')
+
+        program_columns = self._table_columns(schema, 'sicor_programas')
+        if 'cd_programa' in existentes and {'cd_programa', 'descricao'} <= program_columns:
+            joins.append(sql.SQL(
+                ' LEFT JOIN {} p ON p.cd_programa::text = op.cd_programa::text'
+            ).format(sql.Identifier(schema, 'sicor_programas')))
+            selected_inner.append(sql.SQL('p.descricao::text AS nome_programa'))
+            selected_names.append('nome_programa')
+
+        selected_inner_sql = sql.SQL(', ').join(selected_inner)
+        selected_outer_sql = sql.SQL(', ').join(sql.Identifier(field) for field in selected_names)
+        joins_sql = sql.SQL(' ').join(joins)
         query = sql.SQL(
-            'SELECT {} FROM {} WHERE ref_bacen = ANY(%s) '
-            'ORDER BY ref_bacen, nu_ordem{}'
+            'WITH requested AS ( '
+            ' SELECT * FROM jsonb_to_recordset(%s::jsonb) '
+            ' AS r(ref_bacen text, nu_ordem bigint, ano integer) '
+            '), ranked AS ( '
+            ' SELECT r.ref_bacen AS requested_ref, r.nu_ordem AS requested_order, r.ano AS requested_year, '
+            ' {selected_inner}, row_number() OVER ( '
+            '   PARTITION BY r.ref_bacen, r.nu_ordem, r.ano ORDER BY {order} '
+            ' ) AS rn '
+            ' FROM requested r JOIN {table} op '
+            '   ON op.ref_bacen = r.ref_bacen AND op.nu_ordem = r.nu_ordem '
+            '  AND op._ano_arquivo = r.ano {joins} '
+            ') SELECT requested_ref, requested_order, requested_year, {selected_outer} '
+            'FROM ranked WHERE rn = 1'
         ).format(
-            sql.SQL(', ').join(select_campos),
-            sql.Identifier(schema, tabela),
-            order_extra,
+            selected_inner=selected_inner_sql,
+            selected_outer=selected_outer_sql,
+            joins=joins_sql,
+            order=order,
+            table=sql.Identifier(schema, tabela),
         )
         with connection.cursor() as cursor:
-            cursor.execute(query, [refs])
+            cursor.execute(query, [json.dumps(requested)])
             rows = cursor.fetchall()
 
-        resultado = {}
+        result = {}
         for row in rows:
-            ref = str(row[0] or '').strip().upper()
-            ordem = str(row[1] or '').strip()
-            chave = (ref, ordem)
-            if chave in resultado:
-                continue
-            dados = {}
-            for idx, campo in enumerate(campos, start=2):
-                valor = row[idx]
-                if valor in (None, ''):
+            ref, order_value, requested_year = row[:3]
+            data = {}
+            for index, field in enumerate(selected_names, start=3):
+                value = row[index]
+                if value in (None, ''):
                     continue
-                if campo.startswith('vl_'):
-                    dados[campo] = self._numero(valor)
-                else:
-                    dados[campo] = self._serializar(valor)
-            resultado[chave] = dados
-        return resultado
+                data[field] = self._numero(value) if field.startswith('vl_') else self._serializar(value)
+            try:
+                normalized_order = int(order_value)
+                normalized_year = int(requested_year)
+            except (TypeError, ValueError):
+                continue
+            key = (str(ref).strip(), normalized_order, normalized_year)
+            result[key] = data
+        return result
 
-    def _combinar_sicor_fontes(self, wkt, contratadas):
+    @staticmethod
+    def _resolver_instituicao_sicor(registro):
+        """Use the joined official name, falling back to the textual CNPJ."""
+        return registro.get('nome_instituicao') or registro.get('cnpj_if') or ''
+
+    @staticmethod
+    def _resolver_programa_sicor(registro):
+        """Use the joined official program description, falling back to its code."""
+        return registro.get('nome_programa') or registro.get('cd_programa') or ''
+
+    def _buscar_glebas_sicor(self, car, cfg, srid):
+        """Returns original SICOR glebas intersecting the CAR, never clipped geometries."""
+        schema, table = cfg['schema'], cfg['tabela']
+        geometry_column = cfg.get('geometry_column', 'geom')
+        existing = self._table_columns(schema, table)
+        fields = tuple(field for field in cfg['campos'] if field in existing)
+        table_sql = sql.Identifier(schema, table)
+        geom_sql = sql.Identifier(geometry_column)
+        geom_reference = sql.SQL('g.{}').format(geom_sql)
+        props_sql = sql.SQL(', ').join(sql.SQL('g.{}').format(sql.Identifier(field)) for field in fields)
+        props_prefix = sql.SQL('{}, ').format(props_sql) if fields else sql.SQL('')
+        # Build this fragment as a psycopg composable: placeholders embedded in
+        # a value passed to SQL.format() are not recursively interpolated.
+        area_expression = sql.SQL('ST_Area(ST_Transform({}, 4326)::geography)').format(geom_reference)
+        query = sql.SQL(
+            'WITH alvo AS MATERIALIZED ( '
+            ' SELECT geometry AS geom FROM {car_table} WHERE cod_imovel = %s LIMIT 1 '
+            ') SELECT {props_prefix}'
+            ' {area_expression} / 10000.0 AS area_gleba_sicor_ha, '
+            ' ST_AsGeoJSON(ST_Force2D(ST_Transform(g.{geom}, 4326)), 6) AS geojson '
+            ' FROM {table} g CROSS JOIN alvo a '
+            ' WHERE g.{geom} IS NOT NULL AND a.geom IS NOT NULL '
+            '   AND ST_SRID(g.{geom}) = {srid} AND ST_SRID(a.geom) > 0 '
+            '   AND g.{geom} && CASE WHEN ST_SRID(a.geom) = {srid} '
+            '        THEN a.geom ELSE ST_Transform(a.geom, {srid}) END '
+            '   AND ST_Intersects(g.{geom}, CASE WHEN ST_SRID(a.geom) = {srid} '
+            '        THEN a.geom ELSE ST_Transform(a.geom, {srid}) END) '
+            ' ORDER BY ' + ('g._ano_arquivo DESC NULLS LAST, ' if '_ano_arquivo' in existing else '') +
+            ' g.ref_bacen, g.nu_ordem'
+        ).format(
+            props_prefix=props_prefix,
+            area_expression=area_expression,
+            geom=geom_sql,
+            table=table_sql,
+            car_table=sql.Identifier(self.SCHEMA_SICAR, self.TABELA_IMOVEIS),
+            srid=sql.Literal(srid),
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(query, [car])
+            rows = cursor.fetchall()
+
+        features, records = [], []
+        for row in rows:
+            props = {
+                field: self._serializar(row[index])
+                for index, field in enumerate(fields)
+            }
+            offset = len(fields)
+            props['area_gleba_sicor_ha'] = self._numero(row[offset])
+            geojson = row[offset + 1]
+            if geojson:
+                # Keep the record/feature arrays aligned. The frontend only
+                # displays features with an original SICOR geometry.
+                records.append(props.copy())
+                features.append({
+                    'type': 'Feature',
+                    'properties': props,
+                    'geometry': json.loads(geojson),
+                })
+        return {
+            'label': cfg['label'],
+            'disponivel': True,
+            'quantidade': len(records),
+            'features': features,
+            'registros': records,
+            'truncada': False,
+            'motivo': '',
+        }
+
+    def _combinar_sicor_fontes(self, wkt, contratadas, *, car='', uf_car=None):
         wkt = wkt or self._resultado_externo_indisponivel(
             'SICOR / Glebas financiadas — WKT', 'Base SICOR WKT indisponível.'
         )
@@ -717,22 +849,49 @@ class RepositorioTerritorial:
         merged = {}
         feature_by_key = {}
         origem_por_chave = {}
+        wkt_keys_by_gleba = {}
         for origem, fonte in (('WKT', wkt), ('COORDENADAS', contratadas)):
             if not fonte.get('disponivel'):
                 continue
-            registros = fonte.get('registros', [])
             features = fonte.get('features', [])
-            for index, registro in enumerate(registros):
-                item = dict(registro)
+            for feature in features:
+                # Each feature carries the properties produced alongside its
+                # own source geometry; do not zip two independently ordered lists.
+                item = dict(feature.get('properties') or {})
                 item['origem_gleba_sicor'] = 'Glebas WKT' if origem == 'WKT' else 'Glebas por coordenadas'
                 if item.get('_ano_arquivo') not in (None, ''):
-                    item['ano_sicor'] = item.pop('_ano_arquivo')
+                    item['ano_sicor'] = item['_ano_arquivo']
                 indice = item.get('nu_indice')
                 if indice in (None, ''):
                     indice = item.get('nu_indice_gleba')
                 if indice not in (None, ''):
                     item['indice_gleba'] = indice
                 chave = self._chave_sicor(item, origem)
+
+                if origem == 'COORDENADAS':
+                    # O produto por pontos é um snapshot sem ano. Se a mesma
+                    # gleba já veio do WKT, ele apenas completa seus atributos.
+                    lookup = (
+                        str(item.get('ref_bacen') or '').strip().upper(),
+                        str(item.get('nu_ordem') or '').strip(),
+                        str(item.get('nu_indice_gleba') or item.get('nu_indice') or '').strip(),
+                    )
+                    matching_wkt_keys = wkt_keys_by_gleba.get(lookup, [])
+                    # The points snapshot has no year. Join it to a WKT record
+                    # only when that operation/index identifies one year
+                    # unambiguously; never collapse multiple yearly geometries.
+                    if len(matching_wkt_keys) == 1:
+                        chave = matching_wkt_keys[0]
+                elif origem == 'WKT':
+                    lookup = (
+                        str(item.get('ref_bacen') or '').strip().upper(),
+                        str(item.get('nu_ordem') or '').strip(),
+                        str(item.get('nu_indice') or item.get('nu_indice_gleba') or '').strip(),
+                    )
+                    if all(lookup):
+                        keys = wkt_keys_by_gleba.setdefault(lookup, [])
+                        if chave not in keys:
+                            keys.append(chave)
 
                 atual = merged.get(chave)
                 if atual is None:
@@ -754,25 +913,63 @@ class RepositorioTerritorial:
                             if atual.get(campo) in (None, '') and valor not in (None, ''):
                                 atual[campo] = valor
 
-                if index < len(features):
-                    feature = features[index]
-                    if chave not in feature_by_key or origem == 'WKT':
-                        feature_by_key[chave] = feature
+                if chave not in feature_by_key or origem == 'WKT':
+                    feature_by_key[chave] = feature
 
         registros = list(merged.values())
-        operacoes = self._buscar_dados_operacoes_sicor(registros)
+        try:
+            # Operation metadata enriches spatial SICOR results but is not
+            # required to display the contracted gleba itself.
+            with transaction.atomic():
+                operacoes = self._buscar_dados_operacoes_sicor(registros)
+        except DatabaseError:
+            logger.exception('Falha na camada sicor_operacoes ao complementar o CAR %s.', car)
+            operacoes = {}
+        uf_car_normalizada = str(uf_car or '').strip().upper()
+        if not uf_car_normalizada:
+            prefixo_car = str(car or '').strip().split('-', 1)[0]
+            uf_car_normalizada = prefixo_car.upper() if len(prefixo_car) == 2 else ''
+
+        registros_validados = []
+        ids_registros_validados = set()
         for item in registros:
-            ref = str(item.get('ref_bacen') or '').strip().upper()
-            ordem = str(item.get('nu_ordem') or '').strip()
-            dados = operacoes.get((ref, ordem), {})
+            ref = str(item.get('ref_bacen') or '').strip()
+            try:
+                ordem = int(item.get('nu_ordem'))
+            except (TypeError, ValueError):
+                ordem = None
+            raw_year = item.get('ano_sicor') or item.get('_ano_arquivo')
+            try:
+                year = int(raw_year) if raw_year not in (None, '') else None
+            except (TypeError, ValueError):
+                year = None
+            dados = operacoes.get((ref, ordem, year), {}) if ordem is not None and year is not None else {}
             if dados:
                 for campo, valor in dados.items():
                     if campo == '_ano_arquivo':
+                        item.setdefault('_ano_arquivo', valor)
+                        item.setdefault('ano_sicor', valor)
                         item.setdefault('ano_operacao', valor)
                     else:
                         item.setdefault(campo, valor)
                 if not item.get('ano_sicor') and dados.get('_ano_arquivo') not in (None, ''):
                     item['ano_sicor'] = dados['_ano_arquivo']
+            item['nome_instituicao'] = self._resolver_instituicao_sicor(item)
+            item['nome_programa'] = self._resolver_programa_sicor(item)
+            estado_operacao = str(item.get('cd_estado') or '').strip().upper()
+            if estado_operacao and uf_car_normalizada:
+                if estado_operacao != uf_car_normalizada:
+                    continue
+                item['validacao_uf_sicor'] = 'VALIDADA'
+            else:
+                item['validacao_uf_sicor'] = 'SEM_VALIDACAO'
+            item['uf_car_sicor'] = uf_car_normalizada or ''
+            registros_validados.append(item)
+            ids_registros_validados.add(id(item))
+
+        registros = registros_validados
+        merged = {chave: item for chave, item in merged.items() if id(item) in ids_registros_validados}
+        feature_by_key = {chave: feature for chave, feature in feature_by_key.items() if chave in merged}
 
         features = []
         for chave, item in merged.items():

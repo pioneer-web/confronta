@@ -185,3 +185,30 @@ SICOR_DATASETS = (
         data_kind='sicor_csv',
     ),
 )
+
+
+# Entrada separada das camadas de glebas, publicada em tabela própria.
+SICOR_OPERACOES_DATASETS = (
+    DatasetSpec(
+        'sicor-operacoes', FonteDados.SICOR_OPERACOES, 'sicor_operacoes',
+        'Operações SICOR', 'Operações de crédito rural',
+        'sicor_operacoes', 'raw_sicor_operacoes',
+        ('sicor_operacao_basica_estado',), (),
+        filename_patterns=('sicor_operacao_basica_estado_',),
+        data_kind='sicor_operacoes',
+        year_partitioned=True,
+    ),
+)
+
+SICOR_DOMINIOS_DATASETS = (
+    DatasetSpec(
+        'sicor-instituicoes', FonteDados.SICOR_DOMINIOS, 'sicor-dominios',
+        'Instituições SICOR', 'Domínios SICOR', 'sicor_instituicoes', '',
+        ('instituicoes_sicor',), (), data_kind='sicor_domain_institutions',
+    ),
+    DatasetSpec(
+        'sicor-programas', FonteDados.SICOR_DOMINIOS, 'sicor-dominios',
+        'Programas SICOR', 'Domínios SICOR', 'sicor_programas', '',
+        ('programas_sicor',), (), data_kind='sicor_domain_programs',
+    ),
+)

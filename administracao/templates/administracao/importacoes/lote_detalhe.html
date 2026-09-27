@@ -100,7 +100,7 @@
                     <td><div class="mc-table-file"><strong>{{ item.nome_arquivo }}</strong><small>{{ item.caminho_relativo }}</small></div></td>
                     <td><strong id="batch-item-dataset-{{ item.pk }}">{{ item.dataset_label|default:'A identificar' }}</strong></td>
                     <td class="mc-table-progress"><strong>{{ item.progresso }}%</strong><small id="batch-item-stage-{{ item.pk }}">{{ item.etapa }}</small></td>
-                    <td><span class="mc-badge batch-item-status status-{{ item.status|lower }}" id="batch-item-status-{{ item.pk }}">{{ item.get_status_display }}</span>{% if item.motivo %}<small class="mc-item-reason" id="batch-item-message-{{ item.pk }}">{{ item.motivo }}</small>{% endif %}</td>
+                    <td><span class="mc-badge batch-item-status status-{{ item.status|lower }}" id="batch-item-status-{{ item.pk }}">{{ item.get_status_display }}</span>{% if item.importacao %}{% with stats=item.importacao.resultado.sicor_dominios %}<small>Importados: {{ stats.registros_importados|default:0 }} · rejeitados: {{ stats.registros_rejeitados|default:0 }}</small>{% endwith %}{% endif %}{% if item.motivo %}<small class="mc-item-reason" id="batch-item-message-{{ item.pk }}">{{ item.motivo }}</small>{% endif %}</td>
                     <td class="text-end">{% if item.importacao %}<a class="btn btn-outline-primary btn-sm" href="{% url 'administracao:importacao_detalhe' item.importacao.pk %}">Abrir relatório</a>{% else %}<span class="text-secondary">—</span>{% endif %}</td>
                 </tr>
             {% empty %}<tr><td colspan="5" class="mc-table-empty">Nenhum item no lote.</td></tr>{% endfor %}

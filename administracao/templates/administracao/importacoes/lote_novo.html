@@ -9,7 +9,7 @@
         <div>
             <div class="mc-eyebrow">Importação de dados</div>
             <h1>Importação em lote{% if fonte_locked_label %} — {{ fonte_locked_label }}{% endif %}</h1>
-            <p class="mc-page-subtitle">Selecione os arquivos. O Manage envia e processa um arquivo por vez, libera o temporário após sucesso e só então inicia o próximo.</p>
+            <p class="mc-page-subtitle">{% if dataset_locked %}Dataset selecionado: <strong>{{ dataset_locked.label }}</strong>. Este lote só poderá importar esse dataset.{% else %}Selecione os arquivos. O Manage envia e processa um arquivo por vez, libera o temporário após sucesso e só então inicia o próximo.{% endif %}</p>
         </div>
     </div>
 </div>
@@ -30,6 +30,7 @@
                 {% csrf_token %}
                 {{ form.non_field_errors }}
                 {% if fonte_locked %}{{ form.fonte }}{% endif %}
+                {% if dataset_locked %}<input type="hidden" name="dataset_slug" value="{{ dataset_locked.slug }}">{% endif %}
 
                 {% if not fonte_locked %}
                 <div class="mc-form-group">
@@ -358,6 +359,7 @@
             const startData = new FormData();
             startData.append('csrfmiddlewaretoken', csrfToken());
             startData.append('fonte', source);
+            {% if dataset_locked %}startData.append('dataset_slug', '{{ dataset_locked.slug }}');{% endif %}
             startData.append('total_arquivos', String(files.length));
             startData.append('nomes_arquivos', JSON.stringify(files.map(function(file){ return file.name; })));
             if (ufSelect && !ufSelect.disabled) startData.append('uf', ufSelect.value || '');

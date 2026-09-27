@@ -21,6 +21,7 @@ urlpatterns = [
     path('importacoes/lotes/', importacoes.lotes_recentes, name='lotes_recentes'),
     path('importacoes/lote/novo/', importacoes.novo_lote_importacao, name='novo_lote_importacao'),
     path('importacoes/lote/novo/<slug:fonte_slug>/', importacoes.novo_lote_importacao, name='novo_lote_importacao_fonte'),
+    path('importacoes/lote/novo/<slug:fonte_slug>/<slug:dataset_slug>/', importacoes.novo_lote_importacao, name='novo_lote_importacao_fonte_dataset'),
     path('importacoes/lote/novo/<slug:fonte_slug>/<slug:uf>/', importacoes.novo_lote_importacao, name='novo_lote_importacao_fonte_uf'),
     path('importacoes/lote/sequencial/iniciar/', importacoes.iniciar_lote_sequencial, name='iniciar_lote_sequencial'),
     path('importacoes/lote/<int:pk>/sequencial/upload/', importacoes.upload_lote_sequencial, name='upload_lote_sequencial'),

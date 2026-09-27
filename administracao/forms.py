@@ -13,6 +13,10 @@ from administracao.services.batch_upload import (
     BatchUploadLimitError,
     validate_upload_limits,
 )
+from administracao.services.sicor_operations import (
+    validate_operations_filename,
+    validate_operations_header,
+)
 
 
 def _apply_tabler_form_classes(form):
@@ -89,6 +93,19 @@ class UploadBaseForm(forms.Form):
             self.fields['arquivo'].widget.attrs['accept'] = '.gz,.csv'
             self.fields['arquivo'].label = 'Arquivo SICOR (.gz ou .csv)'
             self.fields['arquivo'].help_text = 'Envie o arquivo oficial correspondente ao perfil selecionado. O cabeçalho real será validado antes de qualquer escrita.'
+        elif spec and spec.data_kind in {'sicor_domain_institutions', 'sicor_domain_programs'}:
+            self.fields['arquivo'].widget.attrs['accept'] = '.csv'
+            self.fields['arquivo'].label = 'Arquivo CSV oficial'
+            self.fields['arquivo'].help_text = 'O cabeçalho identifica o tipo de domínio e é validado antes da substituição dos dados.'
+        elif spec and spec.data_kind == 'sicor_operacoes':
+            # HTML accept cannot describe a file without an extension.
+            self.fields['arquivo'].widget.attrs.pop('accept', None)
+            self.fields['arquivo'].label = 'Arquivo de Operações SICOR'
+            self.fields['arquivo'].help_text = (
+                'Formatos aceitos: .gz, .csv ou arquivo SICOR descompactado sem extensão. '
+                'Exemplo: SICOR_OPERACAO_BASICA_ESTADO_2026. Ano de referência identificado pelo nome (2013 a 2026). '
+                'Destino previsto: banco PostgreSQL do CONFRONTA.'
+            )
         elif spec and spec.mode == 'raw_only' and spec.data_kind == 'tabular_flexible':
             self.fields['arquivo'].widget.attrs['accept'] = '.csv,.gz,.zip'
             self.fields['arquivo'].label = 'Arquivo CSV, GZIP ou ZIP'
@@ -113,6 +130,12 @@ class UploadBaseForm(forms.Form):
         if self.source_slug == 'sicar':
             allowed = {'.zip', '.gpkg'}
             expected = '.zip ou .gpkg'
+        elif self.source_slug == 'sicor_operacoes':
+            allowed = {'', '.gz', '.csv'}
+            expected = 'sem extensão, .gz ou .csv'
+        elif spec and spec.data_kind in {'sicor_domain_institutions', 'sicor_domain_programs'}:
+            allowed = {'.csv'}
+            expected = '.csv'
         elif self.source_slug == 'sicor':
             allowed = {'.gz', '.csv'}
             expected = '.gz ou .csv'
@@ -127,6 +150,12 @@ class UploadBaseForm(forms.Form):
             expected = '.zip'
         if suffix not in allowed:
             raise forms.ValidationError(f'Envie um arquivo com extensão {expected}.')
+        if self.dataset_slug == 'sicor-operacoes':
+            try:
+                validate_operations_filename(arquivo.name)
+                validate_operations_header(arquivo, arquivo.name)
+            except ValueError as exc:
+                raise forms.ValidationError(str(exc)) from exc
         return arquivo
 
     def clean_ano_inicial(self):
@@ -162,8 +191,14 @@ def _batch_allowed_extensions(source_slug):
         return {'.zip', '.gpkg'}
     allowed = set()
     for spec in datasets_for_source(source_slug):
-        if spec.data_kind in {'sicor_csv', 'sicor_wkt', 'sicor_gleba_points'}:
-            allowed.update({'.gz', '.csv'})
+        if spec.data_kind == 'sicor_operacoes':
+            allowed.update({'', '.gz', '.csv'})
+            continue
+        if spec.data_kind in {'sicor_domain_institutions', 'sicor_domain_programs'}:
+            allowed.add('.csv')
+            continue
+        if spec.data_kind in {'sicor_csv', 'sicor_wkt', 'sicor_gleba_points', 'sicor_operacoes'}:
+            allowed.update({'', '.gz', '.csv'})
         elif spec.data_kind == 'tabular_flexible':
             allowed.update({'.csv', '.gz', '.zip'})
         elif spec.data_kind == 'spatial_flexible':
@@ -231,18 +266,25 @@ class ImportacaoLoteForm(forms.Form):
         if self.fonte_locked:
             allowed = _batch_allowed_extensions(self.fonte_locked)
             self.fields['arquivos'].label = 'Arquivos do lote'
-            self.fields['arquivos'].help_text = (
-                'Selecione um ou mais arquivos oficiais. O navegador envia e o Manage processa um por vez. '
-                f'Formatos permitidos: {", ".join(sorted(allowed))}.'
-            )
-            self.fields['arquivos'].widget.attrs['accept'] = _batch_accept(self.fonte_locked)
+            if self.fonte_locked == 'sicor_operacoes':
+                self.fields['arquivos'].help_text = (
+                    'Formatos aceitos: .gz, .csv ou arquivo SICOR descompactado sem extensão. '
+                    'O nome deve identificar ano entre 2013 e 2026.'
+                )
+                self.fields['arquivos'].widget.attrs.pop('accept', None)
+            else:
+                self.fields['arquivos'].help_text = (
+                    'Selecione um ou mais arquivos oficiais. O navegador envia e o Manage processa um por vez. '
+                    f'Formatos permitidos: {", ".join(sorted(allowed))}.'
+                )
+                self.fields['arquivos'].widget.attrs['accept'] = _batch_accept(self.fonte_locked)
         else:
             # O JS restringe visualmente conforme a fonte; a validação do servidor
             # continua sendo a autoridade final.
             union = set()
             for source in BATCH_FONTE_SLUGS:
                 union.update(_batch_allowed_extensions(source))
-            self.fields['arquivos'].widget.attrs['accept'] = ','.join(sorted(union))
+            self.fields['arquivos'].widget.attrs['accept'] = ','.join(sorted(value for value in union if value))
         _apply_tabler_form_classes(self)
 
     def clean_fonte(self):
@@ -285,6 +327,12 @@ class ImportacaoLoteForm(forms.Form):
                 raise forms.ValidationError(
                     f'O arquivo {arquivo.name} não possui uma extensão permitida para esta fonte ({expected}).'
                 )
+            if fonte == 'sicor_operacoes':
+                try:
+                    validate_operations_filename(arquivo.name)
+                    validate_operations_header(arquivo, arquivo.name)
+                except ValueError as exc:
+                    raise forms.ValidationError(str(exc)) from exc
         try:
             validate_upload_limits(arquivos)
         except BatchUploadLimitError as exc:

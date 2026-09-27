@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from administracao.constants import FONTE_SLUGS
+from administracao.datasets import datasets_for_source
 from administracao.models import ItemLoteImportacao, LoteImportacao
 
 from .auditoria import registrar_auditoria
@@ -29,6 +30,8 @@ from .partitioning import normalize_uf
 from .prodes_filter import normalize_prodes_start_year
 from .sicar_tracking import hash_file
 from .zip_security import run_antivirus, validate_zip
+from .sicor_operations import validate_operations_filename
+from .sicor_operations import validate_operations_header
 
 
 logger = logging.getLogger(__name__)
@@ -135,14 +138,22 @@ def create_batch(uploaded_file, source_slug, usuario, default_uf='', prodes_star
         return lote
 
 
-def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='', prodes_start_year=None):
+def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='', prodes_start_year=None, dataset_slug=''):
     fonte = FONTE_SLUGS.get(source_slug)
     if not fonte:
         raise ValueError('Fonte não cadastrada para importação em lote.')
     files = list(uploaded_files or [])
     if not files:
         raise ValueError('Nenhum arquivo foi selecionado para o lote.')
+    if dataset_slug and not any(spec.slug == dataset_slug for spec in datasets_for_source(source_slug)):
+        raise ValueError('Dataset não pertence à fonte selecionada.')
     declared_total = validate_upload_limits(files)
+    operations_spec = None
+    if source_slug == 'sicor_operacoes':
+        operations_spec = datasets_for_source(source_slug)[0]
+        for uploaded in files:
+            _validate_input_extension(uploaded.name, source_slug)
+            validate_operations_header(uploaded, uploaded.name)
 
     lote = LoteImportacao.objects.create(
         fonte=fonte, nome_arquivo_original=f'{len(files)} arquivo(s) selecionado(s)',
@@ -191,6 +202,11 @@ def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='
                 lote=lote, caminho_relativo=relative,
                 nome_arquivo=safe_name,
                 uf=(normalize_uf(default_uf) or _detect_uf_hint(safe_name)) if source_slug == 'sicar' else '',
+                dataset_slug=dataset_slug or (operations_spec.slug if operations_spec else ''),
+                dataset_label=(
+                    next((spec.label for spec in datasets_for_source(source_slug) if spec.slug == dataset_slug), '')
+                    if dataset_slug else (operations_spec.label if operations_spec else '')
+                ),
                 hash_sha256=file_hash.hexdigest(),
                 progresso=0, etapa='Aguardando na fila',
                 status=ItemLoteImportacao.Status.AGUARDANDO_FILA,
@@ -233,7 +249,7 @@ def create_batch_from_uploads(uploaded_files, source_slug, usuario, default_uf='
         return lote
 
 
-def create_sequential_batch(source_slug, usuario, expected_files, default_uf='', prodes_start_year=None, filenames=None):
+def create_sequential_batch(source_slug, usuario, expected_files, default_uf='', prodes_start_year=None, filenames=None, dataset_slug=''):
     """Cria o lote lógico sem receber todos os arquivos de uma vez.
 
     O navegador envia um arquivo, aguarda o worker terminar aquele item e só
@@ -243,6 +259,8 @@ def create_sequential_batch(source_slug, usuario, expected_files, default_uf='',
     fonte = FONTE_SLUGS.get(source_slug)
     if not fonte:
         raise ValueError('Fonte não cadastrada para importação em lote.')
+    if dataset_slug and not any(spec.slug == dataset_slug for spec in datasets_for_source(source_slug)):
+        raise ValueError('Dataset não pertence à fonte selecionada.')
     expected = int(expected_files or 0)
     if expected < 1:
         raise ValueError('O lote sequencial precisa conter pelo menos um arquivo.')
@@ -251,6 +269,12 @@ def create_sequential_batch(source_slug, usuario, expected_files, default_uf='',
         raise BatchUploadLimitError('O lote contém mais arquivos que o permitido.')
 
     names = [Path(str(value)).name for value in (filenames or [])][:expected]
+    if source_slug == 'sicor_operacoes':
+        if len(names) != expected:
+            raise ValueError('Informe os nomes de todos os arquivos antes de iniciar o lote.')
+        for name in names:
+            _validate_input_extension(name, source_slug)
+            validate_operations_filename(name)
     lote = LoteImportacao.objects.create(
         fonte=fonte,
         nome_arquivo_original=f'{expected} arquivo(s) — envio sequencial',
@@ -266,6 +290,7 @@ def create_sequential_batch(source_slug, usuario, expected_files, default_uf='',
             'arquivos_esperados': expected,
             'arquivos_recebidos': 0,
             'nomes_selecionados': names,
+            'dataset_slug': dataset_slug,
             'filtros': ({
                 'ano_inicial': normalize_prodes_start_year(prodes_start_year),
             } if source_slug == 'prodes' else {}),

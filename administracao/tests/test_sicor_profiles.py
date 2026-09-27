@@ -62,9 +62,12 @@ class SicorProfileTests(SimpleTestCase):
         form = UploadBaseForm(files={'arquivo': zip_file}, source_slug='sicor', dataset_slug='sicor-propriedades')
         self.assertFalse(form.is_valid())
 
-    def test_sicor_is_not_offered_in_generic_gis_batch(self):
+    def test_operations_sicor_has_a_separate_batch_source_from_existing_sicor(self):
         choices = dict(ImportacaoLoteForm().fields['fonte'].choices)
-        self.assertNotIn('sicor', choices)
+        self.assertIn('sicor_operacoes', choices)
+        from administracao.datasets import get_dataset
+        self.assertEqual(get_dataset('sicor-glebas-wkt').fonte_slug, 'sicor')
+        self.assertEqual(get_dataset('sicor-operacoes').fonte_slug, 'sicor_operacoes')
 
 from pathlib import Path
 from tempfile import TemporaryDirectory

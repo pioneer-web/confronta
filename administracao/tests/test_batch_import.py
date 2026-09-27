@@ -128,7 +128,7 @@ class BatchImportUnitTests(SimpleTestCase):
         values = {value for value, _label in form.fields['fonte'].choices}
         self.assertEqual(
             values,
-            {'sicar','ibama','icmbio','cnuc','prodes','incra','sicor','sigef','sncr','funai'},
+            {'sicar','ibama','icmbio','cnuc','prodes','incra','sicor','sicor_operacoes','sigef','sncr','funai'},
         )
         self.assertIn('arquivos', form.fields)
 

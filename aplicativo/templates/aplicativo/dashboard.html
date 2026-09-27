@@ -293,7 +293,7 @@
 
                 {% for chave, camada in consulta.camadas_externas.items %}
                 {% if camada.disponivel and camada.features %}
-                <button type="button" class="map-layer-eye" data-layer-eye="ext_{{ chave }}" aria-pressed="false">
+                <button type="button" class="map-layer-eye{% if chave == 'sicor' %} is-active{% endif %}" data-layer-eye="ext_{{ chave }}" aria-pressed="{% if chave == 'sicor' %}true{% else %}false{% endif %}">
                     <span class="map-layer-swatch"></span>
                     <span class="map-layer-name">{{ camada.label }}</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>

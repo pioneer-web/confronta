@@ -28,6 +28,10 @@ from administracao.services.batch_upload import (
     MAX_FILE_MESSAGE,
 )
 from administracao.services.batch_sequential import reject_empty_sequential_batch
+from administracao.services.sicor_operations import (
+    SicorOperationsValidationError,
+    operations_reference_year,
+)
 from administracao.services.pipeline import process_import
 from administracao.services.sicar_tracking import state_rows
 from administracao.services.partitioning import normalize_uf, UF_NAMES
@@ -159,6 +163,10 @@ def importar_dataset(request, fonte_slug, dataset_slug):
             import_context = {}
             if fonte_slug == 'prodes':
                 import_context['prodes_ano_inicial'] = form.cleaned_data.get('ano_inicial')
+            elif fonte_slug == 'sicor_operacoes':
+                import_context['ano_referencia'] = operations_reference_year(
+                    form.cleaned_data['arquivo'].name
+                )
             if progress_request:
                 # O pipeline já possui callbacks reais de progresso. Neste modo a
                 # resposta é transmitida em NDJSON para a tela acompanhar cada etapa
@@ -234,6 +242,7 @@ def iniciar_lote_sequencial(request):
             default_uf=default_uf,
             prodes_start_year=prodes_year,
             filenames=filenames,
+            dataset_slug=str(request.POST.get('dataset_slug') or ''),
         )
     except BatchUploadLimitError as exc:
         return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
@@ -259,6 +268,9 @@ def upload_lote_sequencial(request, pk):
     try:
         item = append_sequential_upload(pk, uploaded, request.user, index=request.POST.get('indice'))
     except BatchUploadLimitError as exc:
+        reject_empty_sequential_batch(pk, request.user, str(exc))
+        return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    except SicorOperationsValidationError as exc:
         reject_empty_sequential_batch(pk, request.user, str(exc))
         return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
     except Exception:
@@ -288,11 +300,14 @@ def finalizar_lote_sequencial(request, pk):
     })
 
 @admin_required
-def novo_lote_importacao(request, fonte_slug=None, uf=None):
+def novo_lote_importacao(request, fonte_slug=None, uf=None, dataset_slug=None):
     route_source = str(fonte_slug or '').strip().lower()
+    selected_spec = get_dataset(dataset_slug) if dataset_slug else None
 
     if route_source and route_source not in BATCH_FONTE_SLUGS:
         return redirect('administracao:novo_lote_importacao')
+    if dataset_slug and (not selected_spec or selected_spec.fonte_slug != route_source):
+        return redirect('administracao:central_dados')
 
     route_uf = normalize_uf(uf) if route_source == 'sicar' else ''
 
@@ -321,10 +336,9 @@ def novo_lote_importacao(request, fonte_slug=None, uf=None):
                 uf=route_uf,
             )
         if route_source:
-            return redirect(
-                'administracao:novo_lote_importacao_fonte',
-                fonte_slug=route_source,
-            )
+            if dataset_slug:
+                return redirect('administracao:novo_lote_importacao_fonte_dataset', fonte_slug=route_source, dataset_slug=dataset_slug)
+            return redirect('administracao:novo_lote_importacao_fonte', fonte_slug=route_source)
         return redirect('administracao:novo_lote_importacao')
 
     if uf and route_source != 'sicar':
@@ -364,6 +378,7 @@ def novo_lote_importacao(request, fonte_slug=None, uf=None):
                     arquivos, form.cleaned_data['fonte'], request.user,
                     default_uf=form.cleaned_data.get('uf', ''),
                     prodes_start_year=prodes_start_year,
+                    dataset_slug=dataset_slug or '',
                 )
             except BatchUploadLimitError as exc:
                 form.add_error(None, str(exc))
@@ -395,6 +410,7 @@ def novo_lote_importacao(request, fonte_slug=None, uf=None):
             'uf_locked': locked_uf,
             'uf_locked_label': UF_NAMES.get(locked_uf, '') if locked_uf else '',
             'fonte_locked_label': (FONTE_SLUGS[locked_source].label if locked_source else ''),
+            'dataset_locked': selected_spec,
             'maintenance_sources': maintenance_sources,
             'batch_source_accepts': {
                 slug: ','.join(sorted(allowed_input_extensions(slug)))

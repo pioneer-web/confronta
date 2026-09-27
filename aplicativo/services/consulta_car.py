@@ -107,7 +107,12 @@ class ConsultaCarService:
                 imovel = self.repositorio.buscar_imovel_por_car(car)
                 imovel['situacao_apresentacao'] = self._situacao_car_apresentacao(imovel)
                 camadas = self.repositorio.buscar_camadas_sicar(imovel['cod_imovel'])
-                analises_externas = self.repositorio.buscar_analises_externas(imovel['cod_imovel'])
+                if isinstance(self.repositorio, RepositorioTerritorial):
+                    analises_externas = self.repositorio.buscar_analises_externas(
+                        imovel['cod_imovel'], uf_car=imovel.get('uf')
+                    )
+                else:
+                    analises_externas = self.repositorio.buscar_analises_externas(imovel['cod_imovel'])
                 analises_externas['prodes'] = self._preparar_prodes(analises_externas.get('prodes'))
                 outros_cars = self.repositorio.buscar_sobreposicoes_outros_cars(imovel['cod_imovel'])
         except (CamadaIndisponivel, ImovelNaoEncontrado, ImovelDuplicado) as exc:
@@ -347,23 +352,6 @@ class ConsultaCarService:
         )
         apa['area_unica_sobreposta_ha'] = apa_raw.get('area_unica_sobreposta_ha')
 
-        sicor_raw = analises_externas.get('sicor') or {}
-        sicor = cls._alerta_padrao(
-            sicor_raw,
-            titulo='SICOR / Crédito Rural',
-            identificado=(
-                'Gleba vinculada a registro de crédito rural do SICOR identificada por interseção espacial. '
-                'A ocorrência não confirma, isoladamente, que a operação esteja ativa.'
-            ),
-            nao_identificado='Nenhuma gleba SICOR foi identificada por interseção espacial nas bases carregadas.',
-            layer_key='ext_sicor',
-        )
-        sicor['registros'] = [cls._registro_sicor_publico(r) for r in sicor_raw.get('registros', [])]
-        sicor['anos'] = cls._valores_unicos_ordenados(
-            r.get('ano_operacao') or r.get('ano_sicor') for r in sicor_raw.get('registros', [])
-        )
-        sicor['area_unica_sobreposta_ha'] = sicor_raw.get('area_unica_sobreposta_ha')
-
         outros = cls._alerta_padrao(
             outros_cars,
             titulo='Sobreposição com outros CARs',
@@ -380,7 +368,6 @@ class ConsultaCarService:
             'quilombolas': quilombolas,
             'funai': funai,
             'apa': apa,
-            'sicor': sicor,
             'outros_cars': outros,
         }
 
@@ -392,7 +379,6 @@ class ConsultaCarService:
             ('assentamentos', 'Sobreposição com Assentamento'),
             ('quilombolas', 'Sobreposição com Área Quilombola'),
             ('funai', 'Sobreposição com Terra Indígena'),
-            ('sicor', 'Crédito rural — SICOR'),
             ('prodes', 'Ocorrência PRODES'),
             ('ibama', 'Embargo IBAMA'),
             ('icmbio_embargo', 'Embargo ICMBio'),
@@ -496,12 +482,15 @@ class ConsultaCarService:
     @staticmethod
     def _registro_sicor_publico(registro):
         campos = (
-            'ref_bacen', 'nu_ordem', 'indice_gleba', 'ano_sicor', 'ano_operacao',
+            'ref_bacen', 'nu_ordem', 'nu_indice', 'nu_indice_gleba', 'indice_gleba',
+            'ano_sicor', '_ano_arquivo', 'ano_operacao',
             'dt_emissao', 'dt_vencimento', 'cd_estado', 'cd_fonte_recurso',
-            'cd_empreendimento', 'cd_programa', 'vl_parc_credito', 'vl_area_financ',
-            'vl_area_informada', 'vl_juros', 'origem_gleba_sicor',
-            'area_geometria_ha', 'area_sobreposta_ha', 'percentual_car',
-            'percentual_fonte',
+            'cd_empreendimento', 'cd_programa', 'cnpj_if', 'cd_inst_credito',
+            'nome_instituicao', 'segmento_instituicao', 'nome_programa',
+            'vl_parc_credito', 'vl_area_financ', 'vl_area_informada', 'vl_juros',
+            'origem_gleba_sicor', 'area_gleba_sicor_ha', 'area_geometria_ha',
+            'area_sobreposta_ha', 'percentual_car', 'percentual_fonte',
+            'uf_car_sicor', 'validacao_uf_sicor',
         )
         return {campo: registro.get(campo) for campo in campos if registro.get(campo) not in (None, '')}
 

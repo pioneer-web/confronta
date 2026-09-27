@@ -177,6 +177,16 @@ def process_import(uploaded_file, dataset_slug, usuario, context=None, progress_
 
     context = dict(context or {})
 
+    if spec.data_kind == 'sicor_operacoes':
+        from .sicor_operations_import import process_sicor_operations_import
+        return process_sicor_operations_import(
+            uploaded_file, spec, usuario, context=context,
+            progress_callback=progress_callback,
+        )
+    if spec.data_kind in {'sicor_domain_institutions', 'sicor_domain_programs'}:
+        from .sicor_domain_import import process_sicor_domain_import
+        return process_sicor_domain_import(uploaded_file, spec, usuario, context=context)
+
     # SICOR é tabular (CSV/GZIP) e possui um fluxo dedicado. Não forçamos
     # estes arquivos pelo pipeline GIS genérico, preservando o mesmo contrato
     # de Importacao, auditoria, RAW e publicação transacional.

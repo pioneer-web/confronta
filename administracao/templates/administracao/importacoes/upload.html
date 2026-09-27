@@ -4,7 +4,7 @@
     <div>
         <div class="eyebrow">{{ spec.fonte }} / {{ spec.grupo }}</div>
         <h1>{{ spec.label }}</h1>
-        <p>{% if spec.fonte_slug == 'sicar' %}Envie o ZIP ou GPKG correspondente a este dataset.{% elif spec.fonte_slug == 'sicor' %}Envie o arquivo oficial GZIP (.gz) ou CSV correspondente a este perfil SICOR.{% else %}Envie somente o ZIP correspondente a este dataset.{% endif %} O nome do arquivo, sozinho, não confirma sua identidade.</p>
+        <p>{% if spec.data_kind == 'sicor_operacoes_pending' %}Formatos aceitos: .gz, .csv ou arquivo SICOR descompactado sem extensão. Exemplo: SICOR_OPERACAO_BASICA_ESTADO_2026. Ano de referência: 2013–2026. O destino previsto é o banco PostgreSQL do CONFRONTA.{% elif spec.fonte_slug == 'sicar' %}Envie o ZIP ou GPKG correspondente a este dataset.{% elif spec.fonte_slug == 'sicor' %}Envie o arquivo oficial GZIP (.gz) ou CSV correspondente a este perfil SICOR.{% else %}Envie somente o ZIP correspondente a este dataset.{% endif %} O nome do arquivo, sozinho, não confirma sua identidade.</p>
     </div>
     <a class="button" href="{% url 'administracao:fonte_datasets' spec.fonte_slug %}">Voltar</a>
 </div>
@@ -13,8 +13,8 @@
     <div class="card">
         <h2>Novo envio</h2>
         <div class="info-box">
-            <strong>Validação de identidade obrigatória.</strong><br>
-            {% if spec.fonte_slug == 'sicor' %}O CONFRONTA valida cabeçalho, campos oficiais, formato e, nas glebas WKT, a geometria antes de publicar. Campos adicionais permanecem na RAW para suportar mudanças do leiaute oficial.{% else %}O CONFRONTA analisa estrutura, geometria, campos e sinais semânticos. Arquivos incompatíveis ou não confirmados são bloqueados antes do PostGIS operacional.{% endif %}
+            <strong>{% if spec.data_kind == 'sicor_operacoes_pending' %}O arquivo será recebido, mas ainda não será importado.{% else %}Validação de identidade obrigatória.{% endif %}</strong><br>
+            {% if spec.data_kind == 'sicor_operacoes_pending' %}O ano de referência e o cabeçalho de 47 colunas são validados. O registro ou item do lote terminará como Falhou com a mensagem “Importador de Operações SICOR ainda não configurado.” Nenhum registro será importado.{% elif spec.fonte_slug == 'sicor' %}O CONFRONTA valida cabeçalho, campos oficiais, formato e, nas glebas WKT, a geometria antes de publicar. Campos adicionais permanecem na RAW para suportar mudanças do leiaute oficial.{% else %}O CONFRONTA analisa estrutura, geometria, campos e sinais semânticos. Arquivos incompatíveis ou não confirmados são bloqueados antes do PostGIS operacional.{% endif %}
         </div>
         <form method="post" enctype="multipart/form-data" class="form" id="dataset-import-form">
             {% csrf_token %}
@@ -30,7 +30,7 @@
             {% for field in form %}
                 {% if field.name == 'arquivo' %}<label>{{ field.label }}{{ field }}{{ field.errors }}</label>{% endif %}
             {% endfor %}
-            <button class="button primary" type="submit" id="dataset-import-submit">Validar identidade e importar</button>
+            <button class="button primary" type="submit" id="dataset-import-submit">{% if spec.data_kind == 'sicor_operacoes_pending' %}Enviar arquivo{% else %}Validar identidade e importar{% endif %}</button>
         </form>
 
         <div class="import-progress-card" id="dataset-import-progress" hidden aria-live="polite">
@@ -227,7 +227,7 @@
                     serverStage.textContent = 'Processamento interrompido';
                     showResult(data.message, false);
                     submit.disabled = false;
-                    submit.textContent = 'Validar identidade e importar';
+                    submit.textContent = {% if spec.data_kind == 'sicor_operacoes_pending' %}'Enviar arquivo';{% else %}'Validar identidade e importar';{% endif %}
                 }
             });
         }
@@ -255,7 +255,7 @@
             if (xhr.status >= 500) {
                 showResult('O servidor não conseguiu concluir a importação. Consulte os logs antes de tentar novamente.', false);
                 submit.disabled = false;
-                submit.textContent = 'Validar identidade e importar';
+                submit.textContent = {% if spec.data_kind == 'sicor_operacoes_pending' %}'Enviar arquivo';{% else %}'Validar identidade e importar';{% endif %}
             }
         });
         xhr.addEventListener('error', function () {
@@ -263,7 +263,7 @@
             serverStage.textContent = 'Falha de comunicação';
             showResult('A conexão com o servidor foi interrompida durante a importação. Verifique o serviço antes de reenviar.', false);
             submit.disabled = false;
-            submit.textContent = 'Validar identidade e importar';
+            submit.textContent = {% if spec.data_kind == 'sicor_operacoes_pending' %}'Enviar arquivo';{% else %}'Validar identidade e importar';{% endif %}
         });
         xhr.send(new FormData(form));
     });

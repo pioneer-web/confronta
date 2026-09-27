@@ -361,7 +361,7 @@ def classify_archive(archive_path, source_slug, relative_path='', archive_sha256
             shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def _preclassify_input_name(source_slug, input_path):
+def _preclassify_input_name(source_slug, input_path, dataset_slug=''):
     """Define apenas um rótulo preliminar quando o nome é inequívoco.
 
     A promoção continua exigindo a classificação estrutural completa no worker.
@@ -377,6 +377,18 @@ def _preclassify_input_name(source_slug, input_path):
             'status': 'PRE_CLASSIFICADO', 'dataset_slug': spec.slug,
             'dataset_label': spec.label, 'criterio': 'PERFIL_UNICO_DA_FONTE',
         }
+    if source_slug == 'sicor-dominios':
+        from .sicor_domain_import import identify_domain_header
+        try:
+            domain_slug, columns = identify_domain_header(input_path, dataset_slug or None)
+        except ValueError as exc:
+            return None, {'status': 'NAO_CLASSIFICADO', 'motivo': str(exc), 'classificador_versao': BATCH_CLASSIFIER_VERSION}
+        spec = next((candidate for candidate in specs if candidate.slug == domain_slug), None)
+        if spec:
+            return spec, {'status': 'CLASSIFICADO', 'dataset_slug': spec.slug, 'dataset_label': spec.label,
+                          'criterio': 'CABECALHO_REAL_SICOR_DOMINIOS', 'colunas': columns,
+                          'classificador_versao': BATCH_CLASSIFIER_VERSION}
+        return None, {'status': 'NAO_CLASSIFICADO', 'motivo': 'Arquivo SICOR não reconhecido.', 'classificador_versao': BATCH_CLASSIFIER_VERSION}
     if source_slug == 'sicor':
         return _classify_sicor_input(input_path, specs)
     if source_slug == 'sicar':
@@ -521,7 +533,7 @@ def _classify_sicor_input(input_path, specs):
     }
 
 
-def _classify_batch_input(input_path, source_slug, relative_path='', archive_sha256=''):
+def _classify_batch_input(input_path, source_slug, relative_path='', archive_sha256='', dataset_slug=''):
     """Escolhe o perfil técnico do item sem assumir estrutura inexistente.
 
     - uma fonte com um único dataset não precisa de heurística;
@@ -545,6 +557,18 @@ def _classify_batch_input(input_path, source_slug, relative_path='', archive_sha
             'criterio': 'PERFIL_UNICO_DA_FONTE',
             'classificador_versao': BATCH_CLASSIFIER_VERSION,
         }
+    if source_slug == 'sicor-dominios':
+        from .sicor_domain_import import identify_domain_header
+        try:
+            domain_slug, columns = identify_domain_header(input_path, dataset_slug or None)
+        except ValueError as exc:
+            return None, {'status': 'NAO_CLASSIFICADO', 'motivo': str(exc), 'classificador_versao': BATCH_CLASSIFIER_VERSION}
+        spec = next((candidate for candidate in specs if candidate.slug == domain_slug), None)
+        if spec:
+            return spec, {'status': 'CLASSIFICADO', 'dataset_slug': spec.slug, 'dataset_label': spec.label,
+                          'criterio': 'CABECALHO_REAL_SICOR_DOMINIOS', 'colunas': columns,
+                          'classificador_versao': BATCH_CLASSIFIER_VERSION}
+        return None, {'status': 'NAO_CLASSIFICADO', 'motivo': 'Arquivo SICOR não reconhecido.', 'classificador_versao': BATCH_CLASSIFIER_VERSION}
     if source_slug == 'sicor':
         return _classify_sicor_input(input_path, specs)
     return classify_archive(
