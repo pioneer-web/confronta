@@ -444,8 +444,9 @@ class ConsultaCarService:
     @staticmethod
     def _registro_ibama_publico(registro):
         campos = (
-            'numero_embargo', 'serie_embargo', 'auto_infracao', 'processo',
-            'data_embargo', 'tipo_area', 'bioma', 'municipio', 'uf',
+            'numero_embargo', 'serie_embargo', 'auto_infracao', 'processo', 'situacao',
+            'data_embargo', 'tipo_area', 'bioma', 'municipio', 'uf', 'nome_imovel',
+            'unidade_ibama', 'descricao_infracao', 'descricao_termo',
             'area_embargo_informada_ha', 'area_geometria_ha',
             'area_sobreposta_ha', 'percentual_car',
         )
@@ -536,6 +537,10 @@ class ConsultaCarService:
                 'label': label,
                 'disponivel': bool(resultado.get('disponivel')),
                 'features': feats,
+                'visible_por_padrao': chave in {
+                    'ibama', 'icmbio_embargo', 'funai', 'quilombolas',
+                    'apa', 'assentamentos', 'sicor', 'prodes',
+                },
             }
 
         ibama = analises_externas.get('ibama') or {}
@@ -547,8 +552,16 @@ class ConsultaCarService:
                 'geometry': feature.get('geometry'),
             })
         adicionar('ibama', 'Embargo IBAMA', ibama, ibama_features)
-        adicionar('assentamentos', 'Assentamentos INCRA', analises_externas.get('assentamentos'))
-        adicionar('quilombolas', 'Territórios Quilombolas', analises_externas.get('quilombolas'))
+
+        icmbio_embargo = analises_externas.get('icmbio_embargo') or {}
+        icmbio_features = []
+        for feature in icmbio_embargo.get('features', []):
+            raw_props = feature.get('properties') or {}
+            props = cls._registro_icmbio_publico(raw_props)
+            if raw_props.get('_confronta_full_geometry'):
+                props['_confronta_full_geometry'] = raw_props['_confronta_full_geometry']
+            icmbio_features.append({'type': 'Feature', 'properties': props, 'geometry': feature.get('geometry')})
+        adicionar('icmbio_embargo', 'Embargos ICMBio', icmbio_embargo, icmbio_features)
 
         funai = analises_externas.get('funai') or {}
         funai_features = []
@@ -563,22 +576,9 @@ class ConsultaCarService:
                 'geometry': feature.get('geometry'),
             })
         adicionar('funai', 'Terras Indígenas — FUNAI', funai, funai_features)
-
-        icmbio_embargo = analises_externas.get('icmbio_embargo') or {}
-        icmbio_features = []
-        for feature in icmbio_embargo.get('features', []):
-            raw_props = feature.get('properties') or {}
-            props = cls._registro_icmbio_publico(raw_props)
-            if raw_props.get('_confronta_full_geometry'):
-                props['_confronta_full_geometry'] = raw_props['_confronta_full_geometry']
-            icmbio_features.append({
-                'type': 'Feature',
-                'properties': props,
-                'geometry': feature.get('geometry'),
-            })
-        adicionar('icmbio_embargo', 'Embargos ICMBio', icmbio_embargo, icmbio_features)
-
+        adicionar('quilombolas', 'Territórios Quilombolas', analises_externas.get('quilombolas'))
         adicionar('apa', 'APA / Unidade de Conservação', analises_externas.get('apa'))
+        adicionar('assentamentos', 'Assentamentos INCRA', analises_externas.get('assentamentos'))
 
         sicor = analises_externas.get('sicor') or {}
         sicor_features = []
@@ -593,13 +593,9 @@ class ConsultaCarService:
                 'geometry': feature.get('geometry'),
             })
         adicionar('sicor', 'SICOR / Glebas', sicor, sicor_features)
-        adicionar('outros_car', 'Sobreposição com outros CARs', outros_cars)
-
-        # Uma única camada PRODES evita descartar classes não previstas e mantém
-        # o mapa alinhado ao layer_key do alerta ('ext_prodes'). A classificação
-        # original permanece disponível nas propriedades de cada feição/popup.
         prodes = analises_externas.get('prodes') or {}
         adicionar('prodes', 'INPE / PRODES', prodes)
+        adicionar('outros_car', 'Sobreposição com outros CARs', outros_cars)
         return camadas
 
     @staticmethod

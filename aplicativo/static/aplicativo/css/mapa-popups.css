@@ -1,1195 +1,461 @@
-/* =========================================================
-   CONFRONTA — MAPA / POPUPS
-   Popup do CAR, camadas e polígonos.
-   Extraído do mapa-base sem alteração visual.
-   ========================================================= */
-
-/* =========================================================
-   CONFRONTA — MAPA CLEAN V1
-   Interface leve, simples e orientada ao mapa.
-   Somente visual: não altera regras GIS ou funcionalidades.
-   ========================================================= */
-
-@media screen {
-
-
-    /* ---------- POPUPS ---------- */
-
-    .confronta-feature-leaflet-popup .leaflet-popup-content-wrapper {
-        overflow: hidden !important;
-        border: 1px solid rgba(39,65,74,.12) !important;
-        border-radius: 13px !important;
-        background: #fff !important;
-        box-shadow: 0 16px 42px rgba(5,27,35,.20) !important;
-    }
-
-    .confronta-feature-leaflet-popup .leaflet-popup-content {
-        margin: 0 !important;
-    }
-
-    .confronta-feature-leaflet-popup .leaflet-popup-tip {
-        background: #fff !important;
-    }
-
-    .cf-feature-popup-head {
-        padding: 13px 14px !important;
-        background: #f8faf9 !important;
-        border-bottom: 1px solid #e5ebe8 !important;
-    }
-
-    .cf-feature-popup-title strong {
-        color: #18353f !important;
-    }
-
-    .cf-feature-popup-title span {
-        color: #7a8c91 !important;
-    }}
-
-
-/* =========================================================
-   MAPA CLEAN V1.1
-   Topo escuro + popup enxuto + relatório editorial
-   ========================================================= */
-
-@media screen {
-
-
-    /* =====================================================
-       POPUP DA GLEBA
-       Menos informação. Mais ação.
-       ===================================================== */
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
-        border: 1px solid rgba(40,64,72,.14) !important;
-        border-radius: 6px !important;
-        background: #fff !important;
-        box-shadow: 0 12px 34px rgba(5,25,32,.20) !important;
-    }
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-content {
-        margin: 0 !important;
-        min-width: 280px !important;
-    }
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-tip {
-        background: #fff !important;
-    }
-
-    .cf-gleba-popup {
-        min-width: 280px !important;
-    }
-
-    .cf-gleba-popup-head {
-        min-height: 52px !important;
-        padding: 10px 38px 10px 13px !important;
-        gap: 9px !important;
-        border-bottom: 1px solid #e5ebe8 !important;
-        background: #fff !important;
-    }
-
-    .cf-gleba-popup-dot {
-        width: 9px !important;
-        height: 9px !important;
-        border-width: 1px !important;
-    }
-
-    .cf-gleba-popup-title strong {
-        color: #173640 !important;
-        font-size: 13px !important;
-        font-weight: 600 !important;
-    }
-
-    .cf-gleba-popup-title span {
-        margin-top: 1px !important;
-        color: #819095 !important;
-        font-size: 9px !important;
-    }
-
-    .cf-gleba-popup-body {
-        padding: 12px 13px 13px !important;
-    }
-
-    /* área vira o dado principal */
-    .cf-gleba-popup-metrics {
-        display: block !important;
-    }
-
-    .cf-gleba-popup-metric:first-child {
-        padding: 0 0 10px !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-    }
-
-    .cf-gleba-popup-metric:first-child span {
-        color: #819095 !important;
-        font-size: 8px !important;
-        font-weight: 500 !important;
-    }
-
-    .cf-gleba-popup-metric:first-child strong {
-        margin-top: 3px !important;
-        color: #153944 !important;
-        font-size: 21px !important;
-        font-weight: 600 !important;
-    }
-
-    /* origem e CAR são redundantes no contexto da gleba */
-    .cf-gleba-popup-metric:nth-child(2),
-    .cf-gleba-popup-car-line {
-        display: none !important;
-    }
-
-    .cf-gleba-popup-alert {
-        margin: 0 0 11px !important;
-        padding: 8px 9px !important;
-        border: 0 !important;
-        border-left: 3px solid #d5a74c !important;
-        border-radius: 0 !important;
-        background: #fffaf0 !important;
-        color: #78520e !important;
-        font-size: 9px !important;
-        line-height: 1.45 !important;
-    }
-
-    .cf-gleba-popup-alert.is-clear {
-        border-left-color: #4b9b68 !important;
-        background: #f5faf6 !important;
-        color: #316846 !important;
-    }
-
-    .cf-gleba-popup-actions {
-        margin-top: 0 !important;
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 6px !important;
-    }
-
-    .cf-gleba-popup-action {
-        min-height: 34px !important;
-        padding: 7px 8px !important;
-        border-radius: 4px !important;
-        box-shadow: none !important;
-        font-size: 9px !important;
-        font-weight: 500 !important;
-    }
-
-    .cf-gleba-popup-action svg {
-        width: 14px !important;
-        height: 14px !important;
-    }
-
-    .cf-gleba-popup-action.is-primary {
-        background: #0b5960 !important;
-        color: #fff !important;
-    }
-
-    .cf-gleba-popup-action.is-secondary {
-        border: 1px solid #dce5e2 !important;
-        background: #fff !important;
-        color: #33545d !important;
-    }
-
-    .cf-gleba-popup-action.is-cancel {
-        border: 1px solid #e1e5e3 !important;
-        background: #f8faf9 !important;
-        color: #66797f !important;
-    }
-
-    .cf-gleba-popup-action.is-danger {
-        border: 1px solid #ecd8d8 !important;
-        background: #fff !important;
-        color: #a14646 !important;
-    }}
-
-
-/* =========================================================
-   MAPA CLEAN V1.2 — LEGIBILIDADE + POPUP SAFE
-   ========================================================= */
-
-@media screen {
-
-
-    /* =====================================================
-       POPUPS — base comum
-       ===================================================== */
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper,
-    .confronta-feature-leaflet-popup .leaflet-popup-content-wrapper {
-        border: 1px solid rgba(36,59,67,.16) !important;
-        border-radius: 6px !important;
-        background: #fff !important;
-        box-shadow: 0 16px 38px rgba(4,25,32,.22) !important;
-    }
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-content,
-    .confronta-feature-leaflet-popup .leaflet-popup-content {
-        min-width: 320px !important;
-        max-height: calc(100vh - 145px) !important;
-        margin: 0 !important;
-        overflow-y: auto !important;
-        scrollbar-width: thin;
-    }
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-tip,
-    .confronta-feature-leaflet-popup .leaflet-popup-tip {
-        background: #fff !important;
-    }
-
-    .client-content-app .leaflet-popup-close-button {
-        top: 9px !important;
-        right: 9px !important;
-        width: 29px !important;
-        height: 29px !important;
-        font-size: 22px !important;
-        line-height: 27px !important;
-        color: #687d84 !important;
-    }
-
-
-    /* =====================================================
-       POPUP DA GLEBA
-       ===================================================== */
-
-    .cf-gleba-popup {
-        min-width: 320px !important;
-    }
-
-    .cf-gleba-popup-head {
-        min-height: 58px !important;
-        padding: 11px 42px 11px 15px !important;
-    }
-
-    .cf-gleba-popup-dot {
-        width: 11px !important;
-        height: 11px !important;
-    }
-
-    .cf-gleba-popup-title strong {
-        font-size: 15px !important;
-        line-height: 1.25 !important;
-    }
-
-    .cf-gleba-popup-title span {
-        margin-top: 2px !important;
-        font-size: 10.5px !important;
-    }
-
-    .cf-gleba-popup-body {
-        padding: 14px 15px 15px !important;
-    }
-
-    .cf-gleba-popup-metric:first-child {
-        padding-bottom: 12px !important;
-    }
-
-    .cf-gleba-popup-metric:first-child span {
-        font-size: 9.5px !important;
-    }
-
-    .cf-gleba-popup-metric:first-child strong {
-        margin-top: 4px !important;
-        font-size: 25px !important;
-        line-height: 1.1 !important;
-    }
-
-    .cf-gleba-popup-alert {
-        margin-bottom: 13px !important;
-        padding: 10px 11px !important;
-        font-size: 10.5px !important;
-        line-height: 1.5 !important;
-    }
-
-    .cf-gleba-popup-actions {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 7px !important;
-    }
-
-    .cf-gleba-popup-action {
-        min-height: 39px !important;
-        padding: 8px 10px !important;
-        font-size: 10.5px !important;
-    }
-
-    
-
-    
-
-
-    /* =====================================================
-       POPUP DE CAR / CAMADAS
-       ===================================================== */
-
-    .cf-feature-popup {
-        min-width: 320px !important;
-    }
-
-    .cf-feature-popup-head {
-        min-height: 58px !important;
-        padding: 11px 42px 11px 15px !important;
-        background: #fff !important;
-    }
-
-    .cf-feature-popup-dot {
-        width: 11px !important;
-        height: 11px !important;
-    }
-
-    .cf-feature-popup-title strong {
-        color: #173640 !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-    }
-
-    .cf-feature-popup-title span {
-        margin-top: 2px !important;
-        color: #778b91 !important;
-        font-size: 10px !important;
-    }
-
-    .cf-feature-popup-body {
-        padding: 13px 15px 15px !important;
-    }
-
-    .cf-feature-popup-metrics {
-        gap: 8px !important;
-    }
-
-    .cf-feature-popup-metric {
-        padding: 9px 10px !important;
-        border-radius: 4px !important;
-    }
-
-    .cf-feature-popup-metric span {
-        font-size: 9px !important;
-    }
-
-    .cf-feature-popup-metric strong {
-        margin-top: 4px !important;
-        font-size: 11.5px !important;
-    }
-
-    .cf-feature-popup-car-line {
-        margin-top: 9px !important;
-        padding: 8px 2px !important;
-        border: 0 !important;
-        border-bottom: 1px solid #e7ecea !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-    }
-
-    .cf-feature-popup-car-line span {
-        font-size: 9px !important;
-    }
-
-    .cf-feature-popup-car-line strong {
-        margin-top: 3px !important;
-        font-size: 10.5px !important;
-        text-align: left !important;
-    }
-
-    .cf-feature-popup-details {
-        margin-top: 7px !important;
-    }
-
-    .cf-feature-popup-details > div {
-        padding: 7px 1px !important;
-        border-bottom: 1px solid #edf1ef !important;
-        font-size: 10px !important;
-    }
-
-    .cf-feature-popup-details span {
-        font-size: 9.5px !important;
-    }
-
-    .cf-feature-popup-details strong {
-        font-size: 10.5px !important;
-    }
-
-    .cf-feature-popup-color-section {
-        margin-top: 11px !important;
-        padding-top: 10px !important;
-        border-top: 1px solid #e6ece9 !important;
-    }
-
-    .cf-feature-popup-color-label {
-        margin-bottom: 7px !important;
-        font-size: 10px !important;
-    }
-
-    .cf-feature-popup-swatches {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 7px !important;
-    }
-
-    .cf-feature-popup-swatch {
-        width: 25px !important;
-        height: 25px !important;
-    }
-
-    .cf-feature-popup-actions {
-        margin-top: 12px !important;
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 7px !important;
-    }
-
-    .cf-feature-popup-action {
-        min-height: 38px !important;
-        padding: 7px 8px !important;
-        border-radius: 4px !important;
-        font-size: 10px !important;
-    }
-
-    .cf-feature-popup-action svg {
-        width: 15px !important;
-        height: 15px !important;
-    }
-
-    .cf-feature-popup-kml {
-        min-height: 40px !important;
-        margin-top: 8px !important;
-        border-radius: 4px !important;
-        font-size: 10.5px !important;
-    }}
-
-
-/* =========================================================
-   MAPA CLEAN V1.3 — TIPOGRAFIA + TOPO COMPLETO
-   ========================================================= */
-
-@media screen {
-
-
-    /* =====================================================
-       POPUP — tipografia mais limpa e legível
-       ===================================================== */
-
-    .cf-feature-popup,
-    .cf-gleba-popup {
-        color: #243f48 !important;
-        font-weight: 400 !important;
-    }
-
-    .cf-feature-popup-title strong,
-    .cf-gleba-popup-title strong {
-        color: #12343f !important;
-        font-size: 15px !important;
-        font-weight: 600 !important;
-        line-height: 1.3 !important;
-    }
-
-    .cf-feature-popup-title span,
-    .cf-gleba-popup-title span {
-        color: #526b73 !important;
-        font-size: 10.5px !important;
-        font-weight: 400 !important;
-    }
-
-
-    /* dados principais */
-
-    .cf-feature-popup-metric span,
-    .cf-gleba-popup-metric span {
-        color: #526a72 !important;
-        font-size: 10px !important;
-        font-weight: 500 !important;
-        letter-spacing: 0 !important;
-        text-transform: none !important;
-    }
-
-    .cf-feature-popup-metric strong {
-        margin-top: 5px !important;
-        color: #183943 !important;
-        font-size: 12.5px !important;
-        font-weight: 600 !important;
-    }
-
-    .cf-gleba-popup-metric:first-child span {
-        color: #536b73 !important;
-        font-size: 10px !important;
-        font-weight: 500 !important;
-        text-transform: none !important;
-    }
-
-    .cf-gleba-popup-metric:first-child strong {
-        color: #123943 !important;
-        font-size: 25px !important;
-        font-weight: 600 !important;
-    }
-
-
-    /* CAR consultado */
-
-    .cf-feature-popup-car-line span {
-        color: #506970 !important;
-        font-size: 10px !important;
-        font-weight: 500 !important;
-        letter-spacing: 0 !important;
-        text-transform: none !important;
-    }
-
-    .cf-feature-popup-car-line strong {
-        color: #183943 !important;
-        font-size: 11px !important;
-        font-weight: 500 !important;
-        line-height: 1.45 !important;
-    }
-
-
-    /* município, UF, situação etc */
-
-    .cf-feature-popup-details > div {
-        min-height: 34px !important;
-        align-items: center !important;
-    }
-
-    .cf-feature-popup-details span {
-        color: #526a72 !important;
-        font-size: 10.5px !important;
-        font-weight: 400 !important;
-    }
-
-    .cf-feature-popup-details strong {
-        color: #213f48 !important;
-        font-size: 10.8px !important;
-        font-weight: 600 !important;
-    }
-
-
-    /* cores */
-
-    .cf-feature-popup-color-label {
-        color: #405d66 !important;
-        font-size: 10.5px !important;
-        font-weight: 500 !important;
-    }
-
-
-    /* botões */
-
-    .cf-feature-popup-action,
-    .cf-gleba-popup-action,
-    .cf-feature-popup-kml {
-        font-size: 10.5px !important;
-        font-weight: 500 !important;
-    }}
-
-
-/* =========================================================
-   MAPA CLEAN V1.4 — popup legível + topo sem canto branco
-   ========================================================= */
-
-@media screen {
-
-
-    /* -----------------------------------------------------
-       popup da gleba — tipografia realmente legível
-       ----------------------------------------------------- */
-    .confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
-        border-radius: 6px !important;
-        box-shadow: 0 16px 40px rgba(0,0,0,.24) !important;
-    }
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-content {
-        min-width: 340px !important;
-        max-width: 340px !important;
-    }
-
-    .cf-gleba-popup {
-        min-width: 340px !important;
-        color: #1e3c45 !important;
-        font-family: inherit !important;
-    }
-
-    .cf-gleba-popup-head {
-        padding: 14px 42px 12px 16px !important;
-        border-bottom: 1px solid #dfe6e4 !important;
-    }
-
-    .cf-gleba-popup-title strong {
-        color: #173a44 !important;
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        line-height: 1.2 !important;
-        letter-spacing: 0 !important;
-    }
-
-    .cf-gleba-popup-title span {
-        color: #667d85 !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-        line-height: 1.25 !important;
-    }
-
-    .cf-gleba-popup-body {
-        padding: 16px !important;
-    }
-
-    .cf-gleba-popup-metric:first-child span {
-        color: #6a8087 !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        line-height: 1.2 !important;
-        text-transform: none !important;
-        letter-spacing: 0 !important;
-    }
-
-    .cf-gleba-popup-metric:first-child strong {
-        display: block !important;
-        margin-top: 6px !important;
-        color: #163944 !important;
-        font-size: 24px !important;
-        font-weight: 700 !important;
-        line-height: 1.1 !important;
-        letter-spacing: -.02em !important;
-    }
-
-    .cf-gleba-popup-alert,
-    .cf-gleba-popup-alert.is-clear {
-        padding: 11px 12px !important;
-        margin: 0 0 14px !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        line-height: 1.45 !important;
-        color: #456a57 !important;
-        background: #f5faf6 !important;
-        border-left: 3px solid #4a9a67 !important;
-    }
-
-    .cf-gleba-popup-actions {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
-    }
-
-    .cf-gleba-popup-action {
-        min-height: 42px !important;
-        padding: 10px 12px !important;
-        border-radius: 4px !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        line-height: 1.2 !important;
-        letter-spacing: 0 !important;
-    }
-
-    .cf-gleba-popup-action svg {
-        width: 16px !important;
-        height: 16px !important;
-    }
-
-    .cf-gleba-popup-action.is-danger,
-    .cf-gleba-popup-action.is-cancel {
-        grid-column: 1 / -1 !important;
-    }
-
-    .cf-gleba-popup-action.is-primary {
-        background: #0f6467 !important;
-        color: #ffffff !important;
-        border: 1px solid #0f6467 !important;
-    }
-
-    .cf-gleba-popup-action.is-secondary {
-        background: #f7f9f8 !important;
-        color: #395660 !important;
-        border: 1px solid #d7e0de !important;
-    }
-
-    .cf-gleba-popup-action.is-danger {
-        background: #fff !important;
-        color: #b45656 !important;
-        border: 1px solid #ead1d1 !important;
-    }
-
-
-    /* -----------------------------------------------------
-       popup do CAR / camadas — melhora geral de leitura
-       ----------------------------------------------------- */
-    .confronta-feature-leaflet-popup .leaflet-popup-content {
-        min-width: 340px !important;
-        max-width: 340px !important;
-    }
-
-    .cf-feature-popup {
-        min-width: 340px !important;
-        color: #1f3d46 !important;
-    }
-
-    .cf-feature-popup-title strong {
-        color: #173a44 !important;
-        font-size: 17px !important;
-        font-weight: 700 !important;
-    }
-
-    .cf-feature-popup-title span {
-        color: #667d85 !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-    }
-
-    .cf-feature-popup-metric span,
-    .cf-feature-popup-car-line span,
-    .cf-feature-popup-details span,
-    .cf-feature-popup-color-label {
-        color: #687e85 !important;
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        line-height: 1.25 !important;
-        text-transform: none !important;
-        letter-spacing: 0 !important;
-    }
-
-    .cf-feature-popup-metric strong,
-    .cf-feature-popup-car-line strong,
-    .cf-feature-popup-details strong {
-        color: #1b3e48 !important;
-        font-size: 13px !important;
-        font-weight: 700 !important;
-        line-height: 1.35 !important;
-    }
-
-    .cf-feature-popup-action,
-    .cf-feature-popup-kml {
-        font-size: 12px !important;
-        font-weight: 600 !important;
-    }}
-
-@media screen and (max-width: 720px) {
-
-    .confronta-gleba-leaflet-popup .leaflet-popup-content,
-    .confronta-feature-leaflet-popup .leaflet-popup-content,
-    .cf-gleba-popup,
-    .cf-feature-popup {
-        min-width: 300px !important;
-        max-width: 300px !important;
-    }}
-
-/* CARs visíveis no viewport: popup próprio, sem modificar os cards da consulta. */
-.confronta-selected-car-pane path {
-    filter: drop-shadow(0 1px 2px rgba(4, 22, 25, .9));
+/* Cards dos popups do mapa — base petróleo compartilhada pelo Confronta. */
+:root {
+    --map-popup-bg: #103a43;
+    --map-popup-border: rgba(126, 218, 177, .34);
+    --map-popup-text: #effbf5;
+    --map-popup-value: #ffffff;
+    --map-popup-label: #a7c9bd;
+    --map-popup-muted: #bdd6cc;
+    --map-popup-mint: #89deb2;
+    --map-popup-divider: rgba(194, 226, 213, .16);
 }
 
-.confronta-context-car-popup .leaflet-popup-content-wrapper {
+/* Toda moldura Leaflet vetorial usa o mesmo cartão, tip, close e scroll. */
+.confronta-feature-leaflet-popup .leaflet-popup-content-wrapper,
+.confronta-context-car-popup .leaflet-popup-content-wrapper,
+.confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
     overflow: hidden;
-    border: 1px solid rgba(126, 218, 177, .34) !important;
-    border-radius: 0 !important;
-    background: #103a43 !important;
-    color: #effbf5 !important;
-    box-shadow: 0 18px 42px rgba(4, 23, 32, .4) !important;
+    border: 1px solid var(--map-popup-border);
+    border-radius: 0;
+    background: var(--map-popup-bg);
+    color: var(--map-popup-text);
+    box-shadow: 0 18px 42px rgba(4, 23, 32, .4);
 }
 
-.confronta-context-car-popup .leaflet-popup-content {
-    width: 290px !important;
-    min-width: 0 !important;
-    margin: 0 !important;
+.confronta-feature-leaflet-popup .leaflet-popup-tip,
+.confronta-context-car-popup .leaflet-popup-tip,
+.confronta-gleba-leaflet-popup .leaflet-popup-tip {
+    background: var(--map-popup-bg);
+}
+
+.client-content-app .confronta-feature-leaflet-popup .leaflet-popup-close-button,
+.client-content-app .confronta-context-car-popup .leaflet-popup-close-button,
+.client-content-app .confronta-gleba-leaflet-popup .leaflet-popup-close-button {
+    z-index: 2;
+    top: 8px;
+    right: 9px;
+    width: 28px;
+    height: 28px;
+    color: #bdd6cc;
+    font-size: 20px;
+    line-height: 26px;
+}
+
+.client-content-app .confronta-feature-leaflet-popup .leaflet-popup-close-button:hover,
+.client-content-app .confronta-context-car-popup .leaflet-popup-close-button:hover,
+.client-content-app .confronta-gleba-leaflet-popup .leaflet-popup-close-button:hover {
+    color: #fff;
+}
+
+.confronta-feature-leaflet-popup .leaflet-popup-content,
+.confronta-context-car-popup .leaflet-popup-content,
+.confronta-gleba-leaflet-popup .leaflet-popup-content {
+    width: min(340px, calc(100vw - 52px));
+    min-width: 0;
+    max-width: calc(100vw - 36px);
+    max-height: min(620px, calc(100vh - 120px));
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(137, 222, 178, .5) transparent;
 }
 
 .confronta-sicor-leaflet-popup .leaflet-popup-content {
-    width: 370px !important;
-    min-width: 320px !important;
-    max-width: 390px !important;
+    width: min(370px, calc(100vw - 52px));
 }
 
-.confronta-sicor-leaflet-popup .leaflet-popup-content-wrapper {
-    overflow: hidden;
-    border: 1px solid rgba(126, 218, 177, .34) !important;
-    border-radius: 0 !important;
-    background: #103a43 !important;
-    box-shadow: 0 18px 42px rgba(4, 23, 32, .4) !important;
-}
-
-.cf-gleba-popup-alert > strong { display: block; margin-bottom: 3px; }
-.cf-gleba-popup-alert ul { margin: 3px 0 0; padding-left: 16px; }
-.cf-gleba-popup-alert li { margin: 1px 0; }
-.cf-gleba-popup-alert > span { display: block; }
-
-.confronta-sicor-leaflet-popup .leaflet-popup-tip {
-    background: #103a43 !important;
-}
-
-.confronta-sicor-leaflet-popup .leaflet-popup-close-button {
-    top: 9px !important;
-    right: 9px !important;
-    color: #d1eee0 !important;
-}
-
-.confronta-context-car-popup .leaflet-popup-tip {
-    background: #103a43 !important;
-    border-radius: 0 !important;
-}
-
-.confronta-context-car-popup .leaflet-popup-content-wrapper,
-.confronta-context-car-popup .leaflet-popup-content,
-.confronta-context-car-popup .cf-context-car-popup,
-.confronta-feature-leaflet-popup .leaflet-popup-content-wrapper,
-.confronta-feature-leaflet-popup .leaflet-popup-content,
-.confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
-    border-radius: 0 !important;
-}
-
-.confronta-context-car-popup .leaflet-popup-close-button {
-    top: 10px !important;
-    right: 10px !important;
-    color: #d1eee0 !important;
-}
-
-.cf-context-car-popup {
-    padding: 20px 20px 18px;
-    color: #effbf5 !important;
+/* Componente raiz comum a cards de área, CAR, SICOR e glebas. */
+.cf-map-popup {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 18px 19px 17px;
+    overflow-wrap: anywhere;
+    background: var(--map-popup-bg);
+    color: var(--map-popup-text);
     font-family: inherit;
-    background: #103a43 !important;
 }
 
-.cf-context-car-popup-heading {
-    margin: 0 22px 17px 0;
-    color: #89deb2 !important;
+.cf-map-popup *,
+.cf-map-popup *::before,
+.cf-map-popup *::after {
+    box-sizing: border-box;
+}
+
+.cf-context-car-popup-heading,
+.cf-sicor-popup-heading {
+    margin: 0 24px 14px 0;
+    color: var(--map-popup-mint);
     font-size: 11px;
     font-weight: 750;
-    letter-spacing: .1em;
+    letter-spacing: .08em;
+    line-height: 1.35;
     text-transform: uppercase;
+    overflow-wrap: anywhere;
 }
 
 .cf-sicor-popup-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin: 0 0 17px;
-    padding-right: 34px;
-    color: #89deb2;
-    font-size: 11px;
-    font-weight: 750;
-    letter-spacing: .1em;
+    gap: 10px;
+    padding-right: 24px;
 }
+
+.cf-sicor-popup-heading strong { color: inherit; }
 
 .cf-sicor-popup-year {
     flex: 0 0 auto;
-    padding: 4px 8px;
+    padding: 3px 7px;
     border: 1px solid rgba(137, 222, 178, .3);
-    border-radius: 3px;
     background: rgba(137, 222, 178, .1);
     color: #c8f2dc;
     font-size: 11px;
     font-weight: 650;
-    letter-spacing: .02em;
 }
 
+/* Campos em fluxo vertical: nenhum atributo vira um cartão/caixa interna. */
+.cf-map-popup-field,
+.cf-context-car-popup-row,
 .cf-sicor-popup-field {
     display: grid;
-    gap: 4px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
     min-width: 0;
-    padding: 9px 0;
-    border-bottom: 1px solid rgba(194, 226, 213, .14);
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    border-radius: 0;
+    background: transparent;
 }
 
-.cf-sicor-popup-field > span {
-    color: #a7c9bd;
+.cf-map-popup-label,
+.cf-context-car-popup-row strong,
+.cf-sicor-popup-field > span,
+.cf-gleba-popup-metric span,
+.cf-gleba-popup-car-line span {
+    color: var(--map-popup-label);
     font-size: 11px;
     font-weight: 550;
+    line-height: 1.35;
 }
 
-.cf-sicor-popup-field > strong {
-    color: #fff;
+.cf-map-popup-value,
+.cf-context-car-popup-row span,
+.cf-sicor-popup-field > strong,
+.cf-gleba-popup-metric strong,
+.cf-gleba-popup-car-line strong {
+    min-width: 0;
+    color: var(--map-popup-value);
     font-size: 13px;
     font-weight: 650;
     line-height: 1.4;
     overflow-wrap: anywhere;
-}
-
-.cf-sicor-popup-field.is-wide {
-    width: 100%;
-}
-
-.cf-sicor-popup-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 16px;
-}
-
-.cf-sicor-popup-field.is-credit {
-    margin: 7px 0 2px;
-    padding: 12px 13px;
-    border: 1px solid rgba(137, 222, 178, .22);
-    background: rgba(137, 222, 178, .08);
-}
-
-.cf-sicor-popup-field.is-credit > strong {
-    color: #baf0cf;
-    font-size: 19px;
-    font-weight: 750;
-}
-
-.cf-sicor-popup-field.is-reference {
-    margin-top: 8px;
-    padding: 9px 0 0;
-    border: 0;
-}
-
-.cf-sicor-popup-field.is-reference > span {
-    color: #8eaaa0;
-    font-size: 10px;
-}
-
-.cf-sicor-popup-field.is-reference > strong {
-    color: #b8cec6;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.cf-sicor-popup-segment {
-    margin-top: -2px;
-    color: #bdd6cc;
-    font-size: 11px;
-}
-
-.cf-sicor-popup-download {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 13px !important;
-    min-height: 40px !important;
-}
-
-@media screen and (max-width: 720px) {
-    .confronta-sicor-leaflet-popup .leaflet-popup-content {
-        width: 300px !important;
-        min-width: 0 !important;
-        max-width: calc(100vw - 40px) !important;
-    }
-}
-
-@media screen and (max-width: 420px) {
-    .cf-sicor-popup-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
+    word-break: normal;
 }
 
 .cf-context-car-popup-details {
     display: grid;
-    gap: 13px;
-}
-
-.cf-context-car-popup-row {
-    display: grid;
-    gap: 3px;
-    min-width: 0;
+    gap: 0;
 }
 
 .cf-context-car-popup-row strong {
-    color: #a7c9bd !important;
-    font-size: 11px;
-    font-weight: 600;
+    margin: 0;
 }
 
 .cf-context-car-popup-row span {
-    color: #fff !important;
-    font-size: 14px;
-    font-weight: 650;
-    line-height: 1.4;
+    font-size: 13px;
+}
+
+/* Métricas resumidas também são campos, não painéis de dashboard. */
+.cf-feature-popup-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 0 22px 11px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    background: transparent;
+}
+
+.cf-feature-popup-dot,
+.cf-gleba-popup-dot {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 50%;
+}
+
+.cf-feature-popup-title,
+.cf-gleba-popup-title { min-width: 0; flex: 1; }
+
+.cf-feature-popup-title strong,
+.cf-gleba-popup-title strong {
+    display: block;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    color: var(--map-popup-value);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
     overflow-wrap: anywhere;
 }
 
-.cf-context-car-popup-action {
-    width: 100%;
-    min-height: 42px;
-    margin-top: 20px;
-    padding: 10px 16px;
-    border: 1px solid #a1edbc;
-    border-radius: 0;
-    background: #89deb2;
-    color: #103a43;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 750;
-    cursor: pointer;
-}
-
-.cf-context-car-popup-action.is-secondary {
-    margin-top: 9px;
-    border-color: rgba(137, 222, 178, .58);
-    background: transparent;
-    color: #effbf5;
-}
-
-.cf-context-car-popup-action.is-secondary:hover,
-.cf-context-car-popup-action.is-secondary:focus-visible {
-    background: rgba(137, 222, 178, .14);
-}
-
-.cf-context-car-popup-action:hover,
-.cf-context-car-popup-action:focus-visible {
-    background: #b1f2cb;
-}
-
-.cf-context-car-popup-action:disabled {
-    opacity: .55;
-    cursor: not-allowed;
-}
-
-.leaflet-control-fullscreen {
+.cf-feature-popup-title span,
+.cf-gleba-popup-title span {
     display: block;
-    width: 30px;
-    height: 30px;
+    margin-top: 2px;
+    color: var(--map-popup-muted);
+    font-size: 11px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.cf-feature-popup-body,
+.cf-gleba-popup-body { padding: 10px 0 0; }
+
+.cf-feature-popup-metrics,
+.cf-feature-popup-details {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+}
+
+.cf-feature-popup-details {
+    margin: 0;
+    padding: 0;
     border: 0;
-    background: #fff;
-    color: #173b45;
-    font: 700 20px/30px Arial, sans-serif;
+    border-radius: 0;
+    background: transparent;
+}
+
+.cf-feature-popup-metric {
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    border-radius: 0;
+    background: transparent;
+}
+
+.cf-feature-popup-metric span,
+.cf-feature-popup-metric strong,
+.cf-feature-popup-details span,
+.cf-feature-popup-details strong { display: block; }
+
+.cf-feature-popup-car-line {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    border-radius: 0;
+    background: transparent;
+}
+
+.cf-feature-popup-details > div {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    background: transparent;
+}
+
+.cf-feature-popup-details strong.cf-map-popup-value {
+    overflow: visible;
+    text-align: left;
+    text-overflow: clip;
+    white-space: normal;
+}
+
+.cf-gleba-popup-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin-top: 12px;
+}
+
+.cf-feature-popup-kml,
+.cf-context-car-popup-action,
+.cf-gleba-popup-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid rgba(137, 222, 178, .48);
+    border-radius: 0;
+    background: rgba(137, 222, 178, .08);
+    color: var(--map-popup-text);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.3;
     text-align: center;
     cursor: pointer;
+    overflow-wrap: anywhere;
 }
 
-.leaflet-control-fullscreen:hover,
-.leaflet-control-fullscreen:focus-visible {
-    background: #eef6f2;
+.cf-feature-popup-kml:hover,
+.cf-gleba-popup-action:hover { background: rgba(137, 222, 178, .17); }
+
+.cf-gleba-popup-action.is-secondary,
+.cf-context-car-popup-action.is-secondary {
+    border-color: rgba(137, 222, 178, .42);
+    background: transparent;
+    color: var(--map-popup-text);
 }
 
-.client-shell:fullscreen {
-    width: 100vw !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    overflow: hidden !important;
-    grid-template-columns: 104px minmax(0, 1fr) !important;
-    background: #102b31 !important;
+.cf-gleba-popup-action.is-danger,
+.cf-gleba-popup-action.is-cancel {
+    border-color: rgba(255, 148, 148, .4);
+    background: rgba(175, 66, 66, .1);
+    color: #ffd0d0;
 }
 
-.client-shell:fullscreen .client-topbar {
-    display: none !important;
+.cf-feature-popup-kml,
+.cf-context-car-popup-action:not(.is-secondary),
+.cf-gleba-popup-action.is-primary {
+    border-color: #a1edbc;
+    background: var(--map-popup-mint);
+    color: var(--map-popup-bg);
 }
 
-.client-shell:fullscreen .client-main,
-.client-shell:fullscreen .client-content-app {
-    height: 100vh !important;
-    min-height: 0 !important;
+.cf-feature-popup-kml svg,
+.cf-gleba-popup-action svg {
+    flex: 0 0 auto;
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
-/* Popup da gleba no padrão escuro dos cards territoriais do mapa. */
-.confronta-gleba-leaflet-popup .leaflet-popup-content-wrapper {
-    overflow: hidden !important;
-    border: 1px solid rgba(137, 222, 178, .28) !important;
-    border-radius: 0 !important;
-    background: #103a43 !important;
-    box-shadow: 0 18px 42px rgba(4, 23, 32, .4) !important;
-}
-.confronta-gleba-leaflet-popup .leaflet-popup-tip {
-    background: #103a43 !important;
-}
-.client-content-app .confronta-gleba-leaflet-popup .leaflet-popup-close-button {
-    color: #d1eee0 !important;
-}
-.cf-gleba-popup {
-    color: #effbf5 !important;
-    background: #103a43 !important;
-}
+.cf-feature-popup-kml { width: 100%; margin-top: 8px; }
+.cf-context-car-popup-action { width: 100%; margin-top: 10px; }
+.cf-context-car-popup-action + .cf-context-car-popup-action { margin-top: 7px; }
+
+/* Glebas mantêm alerta e ações, sem o antigo painel claro interno. */
+.cf-gleba-popup { padding: 16px 18px; }
 .cf-gleba-popup-head {
-    border-bottom: 1px solid rgba(194, 226, 213, .16) !important;
-    background: #103a43 !important;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 0 22px 10px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    background: transparent;
 }
-.cf-gleba-popup-title strong {
-    color: #fff !important;
+.cf-gleba-popup-metrics { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.cf-gleba-popup-metric {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    border-bottom: 1px solid var(--map-popup-divider);
+    background: transparent;
 }
-.cf-gleba-popup-title span,
-.cf-gleba-popup-metric:first-child span {
-    color: #a7c9bd !important;
-}
-.cf-gleba-popup-metric:first-child strong {
-    color: #fff !important;
-}
-.cf-gleba-popup-metric:first-child {
-    background: transparent !important;
+.cf-gleba-popup-metric strong { font-size: 15px; }
+.cf-gleba-popup-car-line {
+    display: grid;
+    gap: 3px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--map-popup-divider);
 }
 .cf-gleba-popup-alert,
 .cf-gleba-popup-alert.is-clear {
-    border: 1px solid rgba(137, 222, 178, .2) !important;
-    border-left: 3px solid #89deb2 !important;
-    background: rgba(137, 222, 178, .08) !important;
-    color: #effbf5 !important;
+    margin: 10px 0 0;
+    padding: 9px 10px;
+    border: 1px solid rgba(137, 222, 178, .2);
+    border-left: 3px solid var(--map-popup-mint);
+    background: rgba(137, 222, 178, .07);
+    color: var(--map-popup-text);
+    font-size: 11px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
 }
-.cf-gleba-popup-alert > strong { color: #89deb2 !important; }
-.cf-gleba-popup-action.is-primary {
-    border: 1px solid #a1edbc !important;
-    background: #89deb2 !important;
-    color: #103a43 !important;
-}
-.cf-gleba-popup-action.is-secondary {
-    border: 1px solid rgba(137, 222, 178, .58) !important;
-    background: transparent !important;
-    color: #effbf5 !important;
-}
-.cf-gleba-popup-action.is-danger {
-    border: 1px solid rgba(255, 148, 148, .48) !important;
-    background: rgba(175, 66, 66, .12) !important;
-    color: #ffb6b6 !important;
-}
-.cf-gleba-popup-action.is-primary:hover,
-.cf-gleba-popup-action.is-primary:focus-visible {
-    background: #b1f2cb !important;
-    color: #103a43 !important;
-}
-.cf-gleba-popup-action.is-secondary:hover,
-.cf-gleba-popup-action.is-secondary:focus-visible {
-    background: rgba(137, 222, 178, .14) !important;
-    color: #fff !important;
-}
-.cf-gleba-popup-action.is-danger:hover,
-.cf-gleba-popup-action.is-danger:focus-visible {
-    background: rgba(175, 66, 66, .24) !important;
-    color: #ffd0d0 !important;
-}
+.cf-gleba-popup-alert > strong { display: block; margin-bottom: 3px; color: var(--map-popup-mint); }
+.cf-gleba-popup-alert ul { margin: 3px 0 0; padding-left: 17px; }
+.cf-gleba-popup-alert li { margin: 2px 0; }
+.cf-gleba-popup-alert > span { display: block; }
+.cf-gleba-popup-actions { margin-top: 11px; }
+.cf-gleba-popup-action.is-danger,
+.cf-gleba-popup-action.is-cancel { grid-column: 1 / -1; }
+.cf-gleba-popup-action[hidden] { display: none; }
 
-.client-shell:fullscreen .territorial-screen {
-    height: 100vh !important;
-    min-height: 100vh !important;
-}
+/* SICOR preserva campos, REF BACEN, dados financeiros e download sem subcards. */
+.cf-sicor-popup-field.is-credit { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--map-popup-divider); }
+.cf-sicor-popup-field.is-credit > strong { color: #baf0cf; font-size: 16px; }
+.cf-sicor-popup-field.is-reference { margin: 0; padding: 8px 0; border-bottom: 1px solid var(--map-popup-divider); }
+.cf-sicor-popup-field.is-reference > span { color: var(--map-popup-label); font-size: 10px; }
+.cf-sicor-popup-field.is-reference > strong { color: var(--map-popup-muted); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.cf-sicor-popup-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+.cf-sicor-popup-segment { display: block; margin: -1px 0 4px; color: var(--map-popup-muted); font-size: 11px; overflow-wrap: anywhere; }
+.cf-sicor-popup-download { margin-top: 11px; }
 
+/* Elementos do mapa que compartilham este stylesheet, fora dos popups. */
+.confronta-selected-car-pane path { filter: drop-shadow(0 1px 2px rgba(4, 22, 25, .9)); }
+.leaflet-control-fullscreen {
+    display: block; width: 30px; height: 30px; border: 0;
+    background: #fff; color: #173b45; font: 700 20px/30px Arial, sans-serif;
+    text-align: center; cursor: pointer;
+}
+.leaflet-control-fullscreen:hover,
+.leaflet-control-fullscreen:focus-visible { background: #eef6f2; }
+.client-shell:fullscreen {
+    width: 100vw !important; height: 100vh !important; min-height: 100vh !important;
+    overflow: hidden !important; grid-template-columns: 104px minmax(0, 1fr) !important;
+    background: #102b31 !important;
+}
+.client-shell:fullscreen .client-topbar { display: none !important; }
+.client-shell:fullscreen .client-main,
+.client-shell:fullscreen .client-content-app { height: 100vh !important; min-height: 0 !important; }
+.client-shell:fullscreen .territorial-screen { height: 100vh !important; min-height: 100vh !important; }
 .client-shell:fullscreen .territorial-map-column,
-.client-shell:fullscreen #map {
-    height: 100% !important;
-    min-height: 0 !important;
-}
-
-.client-shell:fullscreen .leaflet-control-fullscreen {
-    width: 30px;
-    height: 30px;
-}
-
-/* O resumo do CAR compartilha o sistema visual petróleo dos popups. */
+.client-shell:fullscreen #map { height: 100% !important; min-height: 0 !important; }
+.client-shell:fullscreen .leaflet-control-fullscreen { width: 30px; height: 30px; }
 .client-content-app .map-top-insight-bar {
-    border: 1px solid rgba(126, 218, 177, .28) !important;
-    border-radius: 0 !important;
-    background: rgba(16, 58, 67, .97) !important;
-    box-shadow: 0 18px 42px rgba(4, 23, 32, .38) !important;
+    border: 1px solid rgba(126, 218, 177, .28) !important; border-radius: 0 !important;
+    background: rgba(16, 58, 67, .97) !important; box-shadow: 0 18px 42px rgba(4, 23, 32, .38) !important;
     backdrop-filter: blur(10px);
 }
-
 .client-content-app .map-top-insight-item,
 .client-content-app button.map-top-insight-item,
-.client-content-app .map-top-insight-alert {
-    color: #effbf5 !important;
-    background: transparent !important;
-}
-
-.client-content-app .map-top-insight-item:not(:last-child) {
-    border-right: 1px solid rgba(194, 226, 213, .18) !important;
-}
-
-.client-content-app .map-top-insight-label {
-    color: #a7c9bd !important;
-}
-
+.client-content-app .map-top-insight-alert { color: #effbf5 !important; background: transparent !important; }
+.client-content-app .map-top-insight-item:not(:last-child) { border-right: 1px solid rgba(194, 226, 213, .18) !important; }
+.client-content-app .map-top-insight-label { color: #a7c9bd !important; }
 .client-content-app .map-top-insight-item strong,
 .client-content-app .map-top-insight-item .is-positive,
-.client-content-app .map-top-insight-alert strong {
-    color: #f2fbf7 !important;
-}
+.client-content-app .map-top-insight-alert strong { color: #f2fbf7 !important; }
+.client-content-app .map-top-insight-alert:hover { background: rgba(255, 255, 255, .06) !important; }
+.client-content-app .map-overlap-alert { display: none !important; }
 
-.client-content-app .map-top-insight-alert:hover {
-    background: rgba(255, 255, 255, .06) !important;
-}
-
-/* Mensagens de sobreposição permanecem nos dados/fluxos internos, sem faixa fixa no mapa. */
-.client-content-app .map-overlap-alert {
-    display: none !important;
+@media (max-width: 720px) {
+    .confronta-feature-leaflet-popup .leaflet-popup-content,
+    .confronta-context-car-popup .leaflet-popup-content,
+    .confronta-gleba-leaflet-popup .leaflet-popup-content,
+    .confronta-sicor-leaflet-popup .leaflet-popup-content {
+        width: min(320px, calc(100vw - 48px));
+        max-width: calc(100vw - 32px);
+    }
+    .cf-map-popup { padding: 15px 16px; }
+    .cf-sicor-popup-grid { grid-template-columns: minmax(0, 1fr); }
+    .cf-gleba-popup-actions {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
 }

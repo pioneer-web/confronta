@@ -73,7 +73,7 @@
     const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
     const MAX_IMPORT_POLYGONS = 100;
 
-    const glebasPane = map.createPane('confrontaGlebasPane');
+    const glebasPane = map.getPane('confrontaGlebasPane') || map.createPane('confrontaGlebasPane');
     // Acima de todas as camadas vetoriais do mapa (até o SICOR em 470),
     // mas abaixo do markerPane padrão para manter os vértices arrastáveis.
     glebasPane.style.zIndex = '590';
@@ -82,6 +82,15 @@
         ? L.svg({ pane: 'confrontaGlebasPane' })
         : L.canvas({ pane: 'confrontaGlebasPane' });
     const drawnItems = new L.FeatureGroup().addTo(map);
+    window.addEventListener('confronta:glebas-visibility', function (event) {
+        const visible = Boolean(event.detail && event.detail.visible);
+        if (visible) {
+            if (!map.hasLayer(drawnItems)) drawnItems.addTo(map);
+        } else {
+            drawnItems.eachLayer((layer) => layer.closePopup && layer.closePopup());
+            if (map.hasLayer(drawnItems)) map.removeLayer(drawnItems);
+        }
+    });
     let selectedColor = DEFAULT_COLOR;
     let pendingLayer = null;
     let editingLayer = null;
@@ -343,7 +352,7 @@
         const alerts = warningLabels(feature, layer);
 
         const root = document.createElement('section');
-        root.className = 'cf-gleba-popup';
+        root.className = 'cf-map-popup cf-gleba-popup';
 
         const head = document.createElement('header');
         head.className = 'cf-gleba-popup-head';
@@ -475,7 +484,6 @@
         layer.options.bubblingMouseEvents = false;
         layer.off('click', stopGlebaClickPropagation);
         layer.on('click', stopGlebaClickPropagation);
-        if (typeof layer.bringToFront === 'function') layer.bringToFront();
         try { layer.unbindPopup(); } catch (error) { /* noop */ }
         layer.bindPopup(() => buildGlebaPopup(layer), {
             maxWidth: 330,

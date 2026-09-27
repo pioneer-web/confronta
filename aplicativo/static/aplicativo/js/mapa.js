@@ -160,7 +160,7 @@
     // Ficam acima da imagem e abaixo das camadas GIS/desenhos do usuário.
     // pointerEvents desativado garante que a camada não bloqueie desenho,
     // edição, medição ou clique nas feições do CONFRONTA.
-    const referencePane = map.createPane('referenceLabelsPane');
+    const referencePane = map.getPane('referenceLabelsPane') || map.createPane('referenceLabelsPane');
     referencePane.style.zIndex = '250';
     referencePane.style.pointerEvents = 'none';
 
@@ -248,7 +248,6 @@
     const carCode = (configElement && configElement.dataset.car) || 'CAR';
     const layers = {};
     let perimeter = null;
-    let activeFullFeaturePreview = null;
     let selectedSicorFeatureLayer = null;
 
     const palette = {
@@ -274,18 +273,6 @@
         ext_outros_car: { color: '#0891b2', weight: 2.55, fillOpacity: 0.22, opacity: 0.99 }
     };
 
-    const GIS_STANDARD_COLORS = [
-        { value: '#FFFFFF', label: 'Branco' },
-        { value: '#1D4ED8', label: 'Azul' },
-        { value: '#0F8FD6', label: 'Azul claro' },
-        { value: '#16A34A', label: 'Verde' },
-        { value: '#D4A017', label: 'Amarelo' },
-        { value: '#F97316', label: 'Laranja' },
-        { value: '#DC2626', label: 'Vermelho' },
-        { value: '#7C3AED', label: 'Roxo' },
-        { value: '#0891B2', label: 'Ciano' }
-    ];
-
     function normalizeHexColor(value, fallback) {
         const raw = String(value || fallback || '').trim().toUpperCase();
         return /^#[0-9A-F]{6}$/.test(raw) ? raw : String(fallback || '#0B7567').toUpperCase();
@@ -295,11 +282,6 @@
         const base = palette[key] || { color: '#4FA36A', weight: 1.9, fillOpacity: 0.16, opacity: 0.92 };
         return { ...base };
     }
-
-    function currentLayerColor(key, fallback) {
-        return normalizeHexColor((palette[key] && palette[key].color) || fallback || '#0B7567', '#0B7567');
-    }
-
 
     // A legenda usa exatamente a mesma cor da camada desenhada no mapa.
     // palette é a única fonte de verdade para a simbologia.
@@ -365,94 +347,11 @@
         }
     }
 
-    function applyLayerColor(key, color) {
-        if (!key || !layers[key]) return;
-        const hex = normalizeHexColor(color, currentLayerColor(key, '#0B7567'));
-        if (!palette[key]) palette[key] = { color: hex, weight: 1.9, fillOpacity: 0.16, opacity: 0.92 };
-        palette[key].color = hex;
-        const style = styleForKey(key);
-        applyLayerStyleObject(layers[key], style);
-        syncLayerSwatches();
-    }
-
-    function fitLayer(key) {
-        const layer = layers[key];
-        if (!layer || typeof layer.getBounds !== 'function') return;
-        const bounds = layer.getBounds();
-        if (!bounds || !bounds.isValid()) return;
-        map.fitBounds(bounds, { padding: [22, 22], maxZoom: MAX_SATELLITE_ZOOM, animate: false });
-    }
-
-    function styleForFeatureLayer(layerKey, featureLayer, emphasize) {
-        const style = styleForKey(layerKey);
-        const custom = featureLayer && featureLayer._confrontaCustomColor ? normalizeHexColor(featureLayer._confrontaCustomColor, style.color) : style.color;
-        style.color = custom;
-        if (!('fillColor' in style) || !style.fillColor) style.fillColor = custom;
-        else if (layerKey !== 'perimetro' && layerKey !== 'ext_sicor') style.fillColor = custom;
-        if (emphasize) {
-            style.weight = Number(style.weight || 2) + 0.45;
-            style.fillOpacity = Math.min(0.42, Number(style.fillOpacity || 0.2) + 0.08);
-        }
-        if (featureLayer && featureLayer._confrontaHidden) {
-            style.opacity = 0;
-            style.fillOpacity = 0;
-        }
-        return style;
-    }
-
-    function applyStyleToFeatureLayer(featureLayer, layerKey, emphasize) {
+    function applyStyleToFeatureLayer(featureLayer, layerKey) {
         if (!featureLayer || typeof featureLayer.setStyle !== 'function') return;
-        const style = styleForFeatureLayer(layerKey, featureLayer, emphasize);
+        const style = styleForKey(layerKey);
         if (typeof L !== 'undefined' && featureLayer instanceof L.CircleMarker) featureLayer.setStyle(pointStyleFromVectorStyle(style));
         else featureLayer.setStyle(style);
-        if (featureLayer._path) featureLayer._path.style.pointerEvents = featureLayer._confrontaHidden ? 'none' : 'auto';
-    }
-
-    function clearFullFeaturePreview() {
-        if (activeFullFeaturePreview && map.hasLayer(activeFullFeaturePreview)) map.removeLayer(activeFullFeaturePreview);
-        activeFullFeaturePreview = null;
-    }
-
-    function showFullFeaturePreview(featureLayer, layerKey, feature) {
-        clearFullFeaturePreview();
-        const fullGeometry = feature && feature.properties && feature.properties._confronta_full_geometry;
-        if (!fullGeometry) {
-            if (featureLayer && typeof featureLayer.getBounds === 'function') {
-                const bounds = featureLayer.getBounds();
-                if (bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [22, 22], maxZoom: MAX_SATELLITE_ZOOM, animate: false });
-            }
-            return;
-        }
-        activeFullFeaturePreview = L.geoJSON({ type: 'Feature', properties: {}, geometry: fullGeometry }, {
-            style: function () {
-                const style = styleForFeatureLayer(layerKey, featureLayer, true);
-                return style;
-            },
-            pointToLayer: function (ft, latlng) {
-                return L.circleMarker(latlng, pointStyleFromVectorStyle(styleForFeatureLayer(layerKey, featureLayer, true)));
-            }
-        }).addTo(map);
-        if (typeof activeFullFeaturePreview.bringToFront === 'function') activeFullFeaturePreview.bringToFront();
-        const bounds = activeFullFeaturePreview.getBounds();
-        if (bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [22, 22], maxZoom: MAX_SATELLITE_ZOOM, animate: false });
-    }
-
-    function applyFeatureColor(featureLayer, layerKey, color) {
-        if (!featureLayer) return;
-        featureLayer._confrontaCustomColor = normalizeHexColor(color, currentLayerColor(layerKey, '#0B7567'));
-        applyStyleToFeatureLayer(featureLayer, layerKey, false);
-        if (featureLayer._confrontaFullPreviewOpen) showFullFeaturePreview(featureLayer, layerKey, featureLayer.feature || null);
-    }
-
-    function hideFeatureLayer(featureLayer, layerKey) {
-        if (!featureLayer) return;
-        featureLayer._confrontaHidden = true;
-        featureLayer.closePopup && featureLayer.closePopup();
-        applyStyleToFeatureLayer(featureLayer, layerKey, false);
-        if (featureLayer._confrontaFullPreviewOpen) {
-            featureLayer._confrontaFullPreviewOpen = false;
-            clearFullFeaturePreview();
-        }
     }
 
     function escapeHtml(value) {
@@ -470,20 +369,114 @@
             .replace(/\b\w/g, (letter) => letter.toUpperCase());
     }
 
-    function formatValue(value) {
-        if (value === null || value === undefined || value === '') return 'Não informado';
-        if (typeof value === 'number' && Number.isFinite(value)) {
-            return value.toLocaleString('pt-BR', { maximumFractionDigits: 4 });
-        }
-        return String(value);
+    function cleanPopupValue(value) {
+        if (value === null || value === undefined || typeof value === 'object') return '';
+        const text = String(value).trim();
+        return ['null', 'none', 'undefined', 'nan'].includes(text.toLowerCase()) ? '' : text;
     }
 
-    function compactProperties(feature) {
-        const props = (feature && feature.properties) || {};
-        const ignored = new Set(['geom', 'geometry', 'the_geom', 'wkb_geometry']);
-        return Object.entries(props)
-            .filter(([key, value]) => !ignored.has(String(key).toLowerCase()) && value !== null && value !== '')
-            .slice(0, 4);
+    function popupDate(value) {
+        const text = cleanPopupValue(value);
+        if (!text) return '';
+        const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(text);
+        if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+        const br = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text);
+        return br ? text : text;
+    }
+
+    function popupNumber(value, digits = 2) {
+        const text = cleanPopupValue(value);
+        if (!text) return '';
+        const numeric = typeof value === 'number' ? value : Number(text.replace(',', '.'));
+        return Number.isFinite(numeric)
+            ? numeric.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+            : text;
+    }
+
+    function popupArea(value) {
+        const number = popupNumber(value);
+        return number ? `${number} ha` : '';
+    }
+
+    function sourcePopupFields(feature, layerKey, layerData) {
+        const props = feature?.properties || {};
+        const aliases = {
+            ext_ibama: [
+                ['Número do embargo', props.numero_embargo || props.seq_tad], ['Situação', props.situacao],
+                ['Imóvel', props.nome_imovel], ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Data', popupDate(props.data_embargo)], ['Área embargada', popupArea(props.area_embargo_informada_ha || props.area_geometria_ha)],
+                ['Descrição / infração', props.descricao_infracao || props.descricao_termo], ['Processo', props.processo],
+                ['Fonte', 'IBAMA']
+            ],
+            ext_icmbio_embargo: [
+                ['Número do embargo', props.numero_embargo], ['Situação', props.situacao], ['Data', popupDate(props.data_embargo)],
+                ['Área embargada', popupArea(props.area_ha || props.area_geometria_ha)],
+                ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Unidade de Conservação', props.unidade_conservacao || props.nome_uc],
+                ['Motivo / infração', props.motivo || props.descricao_infracao], ['Processo', props.processo], ['Fonte', 'ICMBio']
+            ],
+            ext_funai: [
+                ['Terra Indígena', props.terrai_nom], ['Etnia / povo', props.etnia_nome],
+                ['Município / UF', [props.municipio, props.uf_sigla].filter(Boolean).join(' / ')],
+                ['Fase', props.fase_ti], ['Modalidade', props.modalidade],
+                ['Superfície', popupNumber(props.superficie)], ['Área da geometria', popupArea(props.area_geometria_ha)],
+                ['Atualização', popupDate(props.data_atualizacao)], ['Fonte', 'FUNAI']
+            ],
+            ext_quilombolas: [
+                ['Território / comunidade', props.nome || props.identificacao],
+                ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Situação', props.situacao], ['Fase', props.fase],
+                ['Área', popupArea(props.area_ha || props.area_geometria_ha)], ['Processo', props.processo], ['Fonte', 'INCRA']
+            ],
+            ext_apa: [
+                ['Nome', props.nome_uc], ['Categoria de manejo', props.categoria_manejo || props.sigla_categoria],
+                ['Grupo de manejo', props.grupo_manejo], ['Esfera', props.esfera], ['Órgão gestor', props.orgao_gestor || props.gerencia_regional],
+                ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Área', popupArea(props.area_ha || props.area_geometria_ha)], ['Situação', props.situacao],
+                ['Ano de criação', props.ano_criacao], ['Ato de criação', props.ato_criacao], ['Plano de manejo', props.plano_manejo],
+                ['Fonte', props.fonte_integrada || 'CNUC / ICMBio']
+            ],
+            ext_assentamentos: [
+                ['Assentamento', props.nome], ['Código', props.codigo], ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Área', popupArea(props.area_ha || props.area_calculada_ha || props.area_geometria_ha)],
+                ['Situação', props.situacao], ['Tipo / modalidade', props.modalidade], ['Data de criação', popupDate(props.data_criacao)],
+                ['Famílias', props.quantidade_familias || props.capacidade_familias], ['Fonte', 'INCRA']
+            ],
+            ext_prodes: [
+                ['Ano', props.year], ['Classe', props.class_name || props.main_class], ['Tipo de ocorrência', props.tipo_prodes],
+                ['Área', props.area_km != null ? popupArea(Number(String(props.area_km).replace(',', '.')) * 100) : popupArea(props.area_geometria_ha)],
+                ['UF', props.state], ['Data da detecção', popupDate(props.image_date)], ['Fonte', 'INPE / PRODES']
+            ]
+        };
+        if (aliases[layerKey]) return aliases[layerKey].filter(([, value]) => cleanPopupValue(value));
+
+        if (layerKey === 'ext_outros_car') {
+            return [
+                ['Número do CAR', props.cod_imovel], ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
+                ['Área total', popupArea(props.area_total_ha)], ['Área de sobreposição', popupArea(props.area_sobreposta_ha)],
+                ['Sobreposição do CAR consultado', props.percentual_car_consultado != null ? `${popupNumber(props.percentual_car_consultado)}%` : ''],
+                ['Sobreposição deste CAR', props.percentual_outro_car != null ? `${popupNumber(props.percentual_outro_car)}%` : ''],
+                ['Situação', props.situacao_car || props.condicao]
+            ].filter(([, value]) => cleanPopupValue(value));
+        }
+
+        if (!layerKey.startsWith('ext_')) {
+            const names = { tipo: 'Tipo da área', situacao: 'Situação', nome: 'Nome' };
+            const rows = [];
+            ['tipo', 'situacao', 'nome'].forEach((key) => {
+                if (props[key] !== undefined && props[key] !== null && props[key] !== '') {
+                    rows.push([names[key], props[key]]);
+                }
+            });
+            const area = selectedAreaHa(feature, layerData);
+            const propertyArea = Number(consulta?.imovel?.area_total_ha);
+            if (area !== null && Number.isFinite(propertyArea) && propertyArea > 0) {
+                rows.push(['Percentual do CAR', `${popupNumber((area / propertyArea) * 100)}%`]);
+            }
+            return rows.filter(([, value]) => cleanPopupValue(value));
+        }
+
+        return [];
     }
 
     function selectedAreaHa(feature, layerData) {
@@ -576,13 +569,18 @@
     function appendCarDetails(card, rows) {
         const details = document.createElement('div');
         details.className = 'cf-context-car-popup-details';
+        card.classList.add('cf-map-popup');
         rows.forEach(([label, value]) => {
+            const clean = cleanPopupValue(value);
+            if (!clean) return;
             const row = document.createElement('div');
-            row.className = 'cf-context-car-popup-row';
+            row.className = 'cf-context-car-popup-row cf-map-popup-field';
             const name = document.createElement('strong');
+            name.className = 'cf-map-popup-label';
             name.textContent = label;
             const content = document.createElement('span');
-            content.textContent = value || 'Não informada';
+            content.className = 'cf-map-popup-value';
+            content.textContent = clean;
             row.append(name, content);
             details.appendChild(row);
         });
@@ -602,11 +600,11 @@
         return template ? template.replace('CAMADA_PLACEHOLDER', encodeURIComponent(key)) : null;
     }
 
-    function buildTerritorialPopup(feature, label, color, kind, layerData, layerKey, featureLayer) {
+    function buildTerritorialPopup(feature, label, color, kind, layerData, layerKey) {
         if (layerKey === 'ext_sicor') {
             const props = feature?.properties || {};
             const card = document.createElement('section');
-            card.className = 'cf-context-car-popup cf-layer-feature-popup';
+            card.className = 'cf-map-popup cf-context-car-popup cf-layer-feature-popup';
             const heading = document.createElement('div');
             heading.className = 'cf-sicor-popup-heading';
             const title = document.createElement('strong');
@@ -681,11 +679,15 @@
             addField(areas, 'Área financiada', areaFinanciada ? `${areaFinanciada} ha` : null);
             if (areas.childElementCount) card.appendChild(areas);
             addField(card, 'REF BACEN', props.ref_bacen, 'is-reference');
+            addField(card, 'Ordem da operação', props.nu_ordem);
+            addField(card, 'Origem da geometria', props.origem_gleba_sicor);
             const ref = clean(props.ref_bacen) || 'sem_ref';
             const exportYear = clean(year) || 'sem_ano';
             const metadata = {
                 'REF BACEN': clean(props.ref_bacen),
                 'Ano': exportYear === 'sem_ano' ? '' : exportYear,
+                'Ordem da operação': clean(props.nu_ordem),
+                'Origem da geometria': clean(props.origem_gleba_sicor),
                 'Instituição financeira': clean(props.nome_instituicao || props.cnpj_if),
                 'Programa': clean(props.nome_programa || props.cd_programa),
                 'Data de emissão': clean(datePtBr(props.dt_emissao)),
@@ -716,11 +718,14 @@
             appendCarDetails(card, [
                 ['Código CAR', props.cod_imovel],
                 ['Município / UF', [props.municipio, props.uf].filter(Boolean).join(' / ')],
-                ['Área', props.area_total_ha != null && Number.isFinite(Number(props.area_total_ha))
-                    ? `${Number(props.area_total_ha).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha` : 'Não informada'],
+                ['Área total', popupArea(props.area_total_ha)],
                 ['Situação do CAR', props.situacao_car || props.condicao],
-                ...(Number.isFinite(overlapArea) && props.area_sobreposta_ha != null
-                    ? [['Área de interseção', `${overlapArea.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha`]] : [])
+                ['Área de sobreposição', Number.isFinite(overlapArea) && props.area_sobreposta_ha != null
+                    ? `${popupNumber(overlapArea)} ha` : ''],
+                ['Percentual do CAR consultado', props.percentual_car_consultado != null
+                    ? `${popupNumber(props.percentual_car_consultado)}%` : (props.percentual_car != null ? `${popupNumber(props.percentual_car)}%` : '')],
+                ['Percentual da feição', props.percentual_outro_car != null
+                    ? `${popupNumber(props.percentual_outro_car)}%` : (props.percentual_fonte != null ? `${popupNumber(props.percentual_fonte)}%` : '')]
             ]);
             appendCardAction(card, 'Trabalhar no CAR', 'cf-context-car-popup-action', () => startWorkingWithCar(props.cod_imovel));
             appendCardAction(card, 'Baixar CAR em KML', 'cf-context-car-popup-action is-secondary', () => {
@@ -746,7 +751,7 @@
                 uso_restrito: 'Área de Uso Restrito'
             };
             const card = document.createElement('section');
-            card.className = 'cf-context-car-popup cf-layer-feature-popup';
+            card.className = 'cf-map-popup cf-context-car-popup cf-layer-feature-popup';
             const heading = document.createElement('div');
             heading.className = 'cf-context-car-popup-heading';
             heading.textContent = internalLayerNames[layerKey] || String(label || '').trim() || humanizeKey(layerKey);
@@ -754,12 +759,14 @@
             const totalArea = Number(consulta?.imovel?.area_total_ha);
             appendCarDetails(card, [
                 ['Código CAR', consulta?.imovel?.cod_imovel || carCode],
-                ['Área total do CAR', Number.isFinite(totalArea)
-                    ? `${totalArea.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`
-                    : 'Não informada'],
+                ['Área total do CAR', consulta?.imovel?.area_total_ha !== null
+                    && consulta?.imovel?.area_total_ha !== undefined && Number.isFinite(totalArea) ? popupArea(totalArea) : ''],
                 ['Área da camada selecionada', selectedArea !== null
-                    ? `${selectedArea.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`
-                    : 'Não informada']
+                    ? popupArea(selectedArea) : ''],
+                ['Tipo da área', feature?.properties?.tipo],
+                ['Situação', feature?.properties?.situacao],
+                ['Percentual do CAR', selectedArea !== null && Number.isFinite(totalArea) && totalArea > 0
+                    ? `${popupNumber((selectedArea / totalArea) * 100)}%` : '']
             ]);
             appendCardAction(card, 'Baixar camada em KML', 'cf-context-car-popup-action', () => {
                 const url = layerKmlUrl(layerKey);
@@ -775,9 +782,8 @@
         if (layerKey === 'perimetro') return buildWorkingCarPopup(consulta?.imovel || {}, consulta?.alertas);
 
         const root = document.createElement('section');
-        root.className = 'cf-feature-popup';
-        const isOtherCar = layerKey === 'ext_outros_car';
-        const selectedColor = featureLayer ? normalizeHexColor(featureLayer._confrontaCustomColor || currentLayerColor(layerKey, color || '#0B7567'), currentLayerColor(layerKey, '#0B7567')) : currentLayerColor(layerKey, color || '#0B7567');
+        root.className = 'cf-map-popup cf-feature-popup';
+        const selectedColor = styleForKey(layerKey).color || color || '#0B7567';
 
         const head = document.createElement('header');
         head.className = 'cf-feature-popup-head';
@@ -799,130 +805,63 @@
         metrics.className = 'cf-feature-popup-metrics';
 
         const areaMetric = document.createElement('div');
-        areaMetric.className = 'cf-feature-popup-metric';
+        areaMetric.className = 'cf-feature-popup-metric cf-map-popup-field';
         const areaLabel = document.createElement('span');
-        areaLabel.textContent = isOtherCar ? 'Área de interseção' : 'Área selecionada';
+        areaLabel.className = 'cf-map-popup-label';
+        areaLabel.textContent = layerKey.startsWith('ext_') && feature?.properties?.area_sobreposta_ha != null
+            ? 'Área de sobreposição' : 'Área da feição';
         const areaValue = document.createElement('strong');
+        areaValue.className = 'cf-map-popup-value';
         const overlapArea = Number(feature?.properties?.area_sobreposta_ha);
-        const area = isOtherCar && feature?.properties?.area_sobreposta_ha != null && Number.isFinite(overlapArea)
+        const area = layerKey.startsWith('ext_') && feature?.properties?.area_sobreposta_ha != null && Number.isFinite(overlapArea)
             ? overlapArea : selectedAreaHa(feature, layerData);
         areaValue.textContent = area === null ? 'Geometria disponível' : `${area.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha`;
         areaMetric.append(areaLabel, areaValue);
 
         const sourceMetric = document.createElement('div');
-        sourceMetric.className = 'cf-feature-popup-metric';
+        sourceMetric.className = 'cf-feature-popup-metric cf-map-popup-field';
         const sourceLabel = document.createElement('span');
-        sourceLabel.textContent = isOtherCar ? 'Outro CAR' : 'Tipo';
+        sourceLabel.className = 'cf-map-popup-label';
+        sourceLabel.textContent = layerKey.startsWith('ext_') ? 'Fonte' : 'Tipo';
         const sourceValue = document.createElement('strong');
-        sourceValue.textContent = isOtherCar ? (feature?.properties?.cod_imovel || 'CAR sobreposto') : (kind || 'Camada territorial');
+        sourceValue.className = 'cf-map-popup-value';
+        sourceValue.textContent = layerKey.startsWith('ext_')
+            ? (layerData?.label || label || 'Camada territorial')
+            : (kind || 'Camada territorial');
         sourceMetric.append(sourceLabel, sourceValue);
         metrics.append(areaMetric, sourceMetric);
         body.appendChild(metrics);
 
         const carRow = document.createElement('div');
-        carRow.className = 'cf-feature-popup-car-line';
+        carRow.className = 'cf-feature-popup-car-line cf-map-popup-field';
         const carLabel = document.createElement('span');
-        carLabel.textContent = isOtherCar ? 'CAR consultado' : 'CAR consultado';
+        carLabel.className = 'cf-map-popup-label';
+        carLabel.textContent = 'CAR consultado';
         const carValue = document.createElement('strong');
+        carValue.className = 'cf-map-popup-value';
         carValue.textContent = carCode;
         carValue.title = carCode;
         carRow.append(carLabel, carValue);
         body.appendChild(carRow);
 
-        if (isOtherCar && feature?.properties?.cod_imovel) {
-            const selectedCarRow = document.createElement('div');
-            selectedCarRow.className = 'cf-feature-popup-car-line';
-            const selectedCarLabel = document.createElement('span');
-            selectedCarLabel.textContent = 'CAR selecionado';
-            const selectedCarValue = document.createElement('strong');
-            selectedCarValue.textContent = feature.properties.cod_imovel;
-            selectedCarValue.title = feature.properties.cod_imovel;
-            selectedCarRow.append(selectedCarLabel, selectedCarValue);
-            body.appendChild(selectedCarRow);
-        }
-
-        const props = compactProperties(feature).filter(([key]) => key !== '_confronta_full_geometry');
+        const props = sourcePopupFields(feature, layerKey, layerData);
         if (props.length) {
             const details = document.createElement('div');
             details.className = 'cf-feature-popup-details';
-            props.forEach(([key, value]) => {
+            props.forEach(([popupLabel, value]) => {
                 const row = document.createElement('div');
+                row.className = 'cf-map-popup-field';
                 const name = document.createElement('span');
-                name.textContent = humanizeKey(key);
+                name.className = 'cf-map-popup-label';
+                name.textContent = popupLabel;
                 const content = document.createElement('strong');
-                content.textContent = formatValue(value);
+                content.className = 'cf-map-popup-value';
+                content.textContent = cleanPopupValue(value);
                 row.append(name, content);
                 details.appendChild(row);
             });
             body.appendChild(details);
         }
-
-        const colorSection = document.createElement('div');
-        colorSection.className = 'cf-feature-popup-color-section';
-        const colorSectionLabel = document.createElement('span');
-        colorSectionLabel.className = 'cf-feature-popup-color-label';
-        colorSectionLabel.textContent = isOtherCar ? 'Cor deste CAR' : 'Cor desta área';
-        const swatches = document.createElement('div');
-        swatches.className = 'cf-feature-popup-swatches';
-        GIS_STANDARD_COLORS.forEach((entry) => {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'cf-feature-popup-swatch';
-            if (normalizeHexColor(entry.value, '#0B7567') === selectedColor) button.classList.add('is-active');
-            if (normalizeHexColor(entry.value, '#0B7567') === '#FFFFFF') button.classList.add('is-light');
-            button.style.backgroundColor = entry.value;
-            button.title = `Usar ${entry.label}`;
-            button.setAttribute('aria-label', `Usar cor ${entry.label}`);
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                applyFeatureColor(featureLayer, layerKey, entry.value);
-                dot.style.backgroundColor = normalizeHexColor(entry.value, '#0B7567');
-                swatches.querySelectorAll('.cf-feature-popup-swatch').forEach((item) => {
-                    item.classList.toggle('is-active', item === button);
-                });
-            });
-            swatches.appendChild(button);
-        });
-        colorSection.append(colorSectionLabel, swatches);
-        body.appendChild(colorSection);
-
-        const actions = document.createElement('div');
-        actions.className = 'cf-feature-popup-actions';
-
-        const full = document.createElement('button');
-        full.type = 'button';
-        full.className = 'cf-feature-popup-action is-secondary';
-        full.innerHTML = isOtherCar
-            ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M8 21H3v-5"></path></svg><span>Enquadrar CAR completo</span>'
-            : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5"></path><path d="M16 3h5v5"></path><path d="M21 16v5h-5"></path><path d="M8 21H3v-5"></path></svg><span>Mostrar área completa</span>';
-        full.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (isOtherCar && featureLayer && typeof featureLayer.getBounds === 'function') {
-                const bounds = featureLayer.getBounds();
-                if (bounds.isValid()) map.fitBounds(bounds, { padding: [22, 22], maxZoom: MAX_SATELLITE_ZOOM, animate: false });
-            } else {
-                if (featureLayer) featureLayer._confrontaFullPreviewOpen = true;
-                showFullFeaturePreview(featureLayer, layerKey, feature);
-            }
-        });
-
-        const hide = document.createElement('button');
-        hide.type = 'button';
-        hide.className = 'cf-feature-popup-action is-muted';
-        hide.innerHTML = isOtherCar
-            ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path><path d="M9.9 5.1A10.9 10.9 0 0 1 12 5c5.3 0 9.3 4 10 7-.2.8-.8 2-2 3.2"></path><path d="M6.2 6.3C4 8 2.6 10 2 12c.7 3 4.7 7 10 7 1.5 0 2.8-.3 4-.8"></path></svg><span>Ocultar este CAR</span>'
-            : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path><path d="M9.9 5.1A10.9 10.9 0 0 1 12 5c5.3 0 9.3 4 10 7-.2.8-.8 2-2 3.2"></path><path d="M6.2 6.3C4 8 2.6 10 2 12c.7 3 4.7 7 10 7 1.5 0 2.8-.3 4-.8"></path></svg><span>Ocultar esta área</span>';
-        hide.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            hideFeatureLayer(featureLayer, layerKey);
-            map.closePopup();
-        });
-
-        actions.append(full, hide);
-        body.appendChild(actions);
 
         const kml = document.createElement('button');
         kml.type = 'button';
@@ -946,31 +885,18 @@
         heading.textContent = 'CAR em trabalho';
         popup.appendChild(heading);
 
-        const details = document.createElement('div');
-        details.className = 'cf-context-car-popup-details';
         const area = Number(imovel.area_total_ha);
-        const rows = [
+        const alertCount = Number(alertas?.resumo?.quantidade) || 0;
+        appendCarDetails(popup, [
             ['Código CAR', imovel.cod_imovel],
             ['Município / UF', [imovel.municipio, imovel.uf].filter(Boolean).join(' / ')],
-            ['Área', imovel.area_total_ha != null && Number.isFinite(area)
-                ? `${area.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha` : 'Não informada'],
-            ['Situação do CAR', imovel.situacao_apresentacao]
-        ];
-        const alertCount = Number(alertas?.resumo?.quantidade) || 0;
-        rows.push(['Alertas', alertCount > 0
+            ['Área', imovel.area_total_ha !== null && imovel.area_total_ha !== undefined && Number.isFinite(area)
+                ? popupArea(area) : ''],
+            ['Situação do CAR', imovel.situacao_apresentacao],
+            ['Alertas', alertCount > 0
             ? `${alertCount} identificado${alertCount === 1 ? '' : 's'}`
-            : 'Nenhum alerta identificado']);
-        rows.forEach(([label, value]) => {
-            const row = document.createElement('div');
-            row.className = 'cf-context-car-popup-row';
-            const name = document.createElement('strong');
-            name.textContent = label;
-            const content = document.createElement('span');
-            content.textContent = value || 'Não informado';
-            row.append(name, content);
-            details.appendChild(row);
-        });
-        popup.appendChild(details);
+            : 'Nenhum alerta identificado']
+        ]);
         appendCardAction(popup, 'Baixar CAR em KML', 'cf-context-car-popup-action', () => {
             const url = configElement?.dataset.carExportUrl;
             if (url) window.location.assign(url);
@@ -1001,7 +927,7 @@
     function addGeoJsonLayer(key, layerData, visibleByDefault) {
         if (!layerData || !layerData.disponivel || !Array.isArray(layerData.features) || !layerData.features.length) return;
         // O resultado analítico conserva a interseção; apenas a feição desenhada usa o imóvel inteiro.
-        const displayFeatures = key === 'ext_sicor'
+        const displayFeatures = (key === 'ext_sicor'
             ? layerData.features.filter((feature) => {
                 const geometry = feature && feature.geometry;
                 return geometry && ['Polygon', 'MultiPolygon'].includes(geometry.type) && Array.isArray(geometry.coordinates);
@@ -1011,15 +937,15 @@
                 ...feature,
                 geometry: feature.properties?._confronta_full_geometry || feature.geometry
                 }))
-                : layerData.features);
+                : layerData.features)).filter((feature) => {
+                    const geometry = feature && feature.geometry;
+                    return geometry && Array.isArray(geometry.coordinates)
+                        && ['Polygon', 'MultiPolygon', 'LineString', 'MultiLineString', 'Point', 'MultiPoint'].includes(geometry.type);
+                });
         if (!displayFeatures.length) return;
         const group = L.geoJSON({ type: 'FeatureCollection', features: displayFeatures }, {
-            pane: key === 'ext_sicor'
-                ? 'sicorGlebasPane'
-                : (key === 'ext_outros_car'
-                    ? 'overlappingCarsPane'
-                    : (key.startsWith('ext_') ? 'overlayPane' : 'workingCarLayersPane')),
-            bubblingMouseEvents: key !== 'ext_sicor',
+            pane: paneForLayerKey(key),
+            bubblingMouseEvents: false,
             interactive: true,
             style: function () {
                 return styleForKey(key);
@@ -1028,11 +954,11 @@
                 return L.circleMarker(latlng, pointStyleFromVectorStyle(styleForKey(key)));
             },
             onEachFeature: function (feature, layer) {
-                applyStyleToFeatureLayer(layer, key, false);
+                applyStyleToFeatureLayer(layer, key);
                 if (key === 'ext_sicor') {
                     const restoreSicorFeatureStyle = (featureLayer) => {
                         if (!featureLayer) return;
-                        applyStyleToFeatureLayer(featureLayer, 'ext_sicor', false);
+                        applyStyleToFeatureLayer(featureLayer, 'ext_sicor');
                     };
                     layer.on('click', function () {
                         if (selectedSicorFeatureLayer && selectedSicorFeatureLayer !== layer) {
@@ -1057,11 +983,10 @@
                 layer.bindPopup(() => buildTerritorialPopup(
                     feature,
                     layerData.label || key,
-                    currentLayerColor(key, '#0B7567'),
+                    styleForKey(key).color || '#0B7567',
                     key.startsWith('ext_') ? 'Base territorial externa' : 'Área da camada',
                     layerData,
-                    key,
-                    layer
+                    key
                 ), {
                     maxWidth: key === 'ext_sicor' ? 410 : 360,
                     minWidth: key === 'ext_sicor' ? 0 : 270,
@@ -1080,21 +1005,54 @@
         });
         layers[key] = group;
         applyLayerStyleObject(group, styleForKey(key));
-        if (visibleByDefault || key === 'ext_sicor') group.addTo(map);
+        if (visibleByDefault) group.addTo(map);
     }
 
-    const overlappingCarsPane = map.createPane('overlappingCarsPane');
-    overlappingCarsPane.style.zIndex = '410';
-    const sicorGlebasPane = map.createPane('sicorGlebasPane');
-    // Above working polygons/CAR so the SICOR feature receives its own click;
-    // Leaflet controls live in a separate, higher control pane.
-    sicorGlebasPane.style.zIndex = '470';
-    sicorGlebasPane.style.pointerEvents = 'auto';
-    const workingCarLayersPane = map.createPane('workingCarLayersPane');
-    workingCarLayersPane.style.zIndex = '461';
-    const selectedCarPane = map.createPane('selectedCarPane');
-    selectedCarPane.style.zIndex = '460';
-    selectedCarPane.classList.add('confronta-selected-car-pane');
+    function ensureMapPane(name, zIndex, pointerEvents = 'auto') {
+        const pane = map.getPane(name) || map.createPane(name);
+        pane.style.zIndex = String(zIndex);
+        pane.style.pointerEvents = pointerEvents;
+        return pane;
+    }
+
+    const layerPanes = {
+        confrontaGlebasPane: ensureMapPane('confrontaGlebasPane', 590),
+        ibamaEmbargoPane: ensureMapPane('ibamaEmbargoPane', 560),
+        icmbioEmbargoPane: ensureMapPane('icmbioEmbargoPane', 555),
+        funaiPane: ensureMapPane('funaiPane', 550),
+        quilombolasPane: ensureMapPane('quilombolasPane', 545),
+        apaPane: ensureMapPane('apaPane', 540),
+        assentamentosPane: ensureMapPane('assentamentosPane', 535),
+        sicorGlebasPane: ensureMapPane('sicorGlebasPane', 530),
+        prodesPane: ensureMapPane('prodesPane', 520),
+        overlappingCarsPane: ensureMapPane('overlappingCarsPane', 510),
+        workingCarLayersPane: ensureMapPane('workingCarLayersPane', 480),
+        selectedCarPane: ensureMapPane('selectedCarPane', 470),
+        carsContextuaisPane: ensureMapPane('carsContextuaisPane', 380),
+        referenceLabelsPane: ensureMapPane('referenceLabelsPane', 250, 'none')
+    };
+    layerPanes.selectedCarPane.classList.add('confronta-selected-car-pane');
+
+    function paneForLayerKey(key) {
+        const paneByLayer = {
+            ext_ibama: 'ibamaEmbargoPane',
+            ext_icmbio_embargo: 'icmbioEmbargoPane',
+            ext_funai: 'funaiPane',
+            ext_quilombolas: 'quilombolasPane',
+            ext_apa: 'apaPane',
+            ext_assentamentos: 'assentamentosPane',
+            ext_sicor: 'sicorGlebasPane',
+            ext_prodes: 'prodesPane',
+            ext_outros_car: 'overlappingCarsPane',
+            perimetro: 'selectedCarPane'
+        };
+        return paneByLayer[key] || (key.startsWith('ext_') ? 'prodesPane' : 'workingCarLayersPane');
+    }
+
+    const autoVisibleExternalLayers = new Set([
+        'ext_ibama', 'ext_icmbio_embargo', 'ext_funai', 'ext_quilombolas',
+        'ext_apa', 'ext_assentamentos', 'ext_sicor', 'ext_prodes'
+    ]);
 
     if (consulta && consulta.imovel && consulta.imovel.geometry) {
         perimeter = L.geoJSON({
@@ -1103,9 +1061,11 @@
             geometry: consulta.imovel.geometry
         }, {
             pane: 'selectedCarPane',
+            interactive: true,
+            bubblingMouseEvents: false,
             style: styleForKey('perimetro'),
             onEachFeature: function (feature, layer) {
-                applyStyleToFeatureLayer(layer, 'perimetro', false);
+                applyStyleToFeatureLayer(layer, 'perimetro');
                 layer.bindPopup(() => buildWorkingCarPopup(consulta.imovel, consulta.alertas), {
                     maxWidth: 330,
                     closeButton: true,
@@ -1124,7 +1084,8 @@
         });
 
         Object.entries(consulta.camadas_externas || {}).forEach(([key, layerData]) => {
-            addGeoJsonLayer(`ext_${key}`, layerData, false);
+            const layerKey = `ext_${key}`;
+            addGeoJsonLayer(layerKey, layerData, autoVisibleExternalLayers.has(layerKey));
         });
 
         enquadrarCar();
@@ -1137,10 +1098,10 @@
     // Perímetros contextuais independentes das camadas da consulta atual.
     // O pane abaixo dos overlays preserva os desenhos e o CAR pesquisado em destaque.
     if (configElement && configElement.dataset.carsUrl) {
-        const contextPane = map.createPane('carsContextuaisPane');
-        contextPane.style.zIndex = '380';
         const contextLayer = L.geoJSON(null, {
             pane: 'carsContextuaisPane',
+            interactive: true,
+            bubblingMouseEvents: false,
             style: { color: '#36A970', weight: 2, opacity: 0.94, fillColor: '#63C88D', fillOpacity: 0.14 },
             onEachFeature: function (feature, layer) {
                 if (configElement.dataset.freeMode === 'true') {
@@ -1241,7 +1202,6 @@
                     contextLayer.clearLayers();
                     contextLayer.addData({ type: 'FeatureCollection', features: data.features });
                     if (!visibleLayers.get('cars_contextuais')) map.removeLayer(contextLayer);
-                    if (perimeter && map.hasLayer(perimeter)) perimeter.bringToFront();
                     lastKey = current.key;
                 } catch (error) {
                     // A consulta contextual é opcional; o restante do mapa permanece disponível.
@@ -1267,7 +1227,11 @@
                 if (visible && !map.hasLayer(contextual)) contextual.addTo(map);
                 else if (!visible && map.hasLayer(contextual)) map.removeLayer(contextual);
             }
-            if (perimeter && map.hasLayer(perimeter)) perimeter.bringToFront();
+            return;
+        }
+        if (key === 'glebas_usuario') {
+            window.dispatchEvent(new CustomEvent('confronta:glebas-visibility', { detail: { visible: Boolean(visible) } }));
+            visibleLayers.set(key, Boolean(visible));
             return;
         }
         const layer = layers[key];
@@ -1284,8 +1248,6 @@
             map.removeLayer(layer);
         }
         visibleLayers.set(key, Boolean(visible));
-        if (key !== 'perimetro' && perimeter && map.hasLayer(perimeter)) perimeter.bringToFront();
-
         document.querySelectorAll(`.layer-toggle[data-layer="${CSS.escape(key)}"]`).forEach((toggle) => {
             if (!toggle.disabled) toggle.checked = visible;
         });
@@ -1296,6 +1258,27 @@
             setLayerVisible(this.dataset.layer, this.checked);
         });
     });
+
+    // A organização do menu é independente dos panes e da ordem de desenho.
+    // Move os botões existentes, sem recriá-los nem alterar o estado/toggle.
+    const layerMenuSource = document.querySelector('[data-map-layer-menu-source]');
+    if (layerMenuSource) {
+        const menuOrder = {
+            car: ['cars_contextuais'],
+            areas: ['perimetro', 'area_consolidada', 'reserva_legal', 'app', 'vegetacao_nativa', 'uso_restrito', 'servidao_administrativa', 'area_pousio', 'hidrografia'],
+            glebas: ['glebas_usuario'],
+            externas: ['ext_ibama', 'ext_icmbio_embargo', 'ext_funai', 'ext_quilombolas', 'ext_apa', 'ext_assentamentos', 'ext_sicor', 'ext_prodes', 'ext_outros_car']
+        };
+        Object.entries(menuOrder).forEach(([groupName, orderedKeys]) => {
+            const group = document.querySelector(`[data-layer-menu-group="${groupName}"]`);
+            if (!group) return;
+            orderedKeys.forEach((key) => {
+                const button = layerMenuSource.querySelector(`[data-layer-eye="${CSS.escape(key)}"]`);
+                if (button) group.appendChild(button);
+            });
+            if (!group.querySelector('[data-layer-eye]')) group.hidden = true;
+        });
+    }
 
     const fitButton = document.getElementById('fit-car');
     if (fitButton) fitButton.addEventListener('click', enquadrarCar);

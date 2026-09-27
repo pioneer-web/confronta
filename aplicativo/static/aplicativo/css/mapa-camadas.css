@@ -167,6 +167,41 @@
     stroke: #809297 !important;
 }
 
+/* Grupos da lista são apenas apresentação; os botões mantêm seus próprios estados. */
+.cf-shell-v15 #map-layer-drawer .map-layer-menu-source {
+    display: contents;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-menu-group[hidden] {
+    display: none !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-menu-group h3 {
+    margin: 12px 7px 3px !important;
+    padding: 0 0 5px !important;
+    border-bottom: 1px solid #e8eeeb !important;
+    color: #829397 !important;
+    font-size: 9px !important;
+    font-weight: 750 !important;
+    letter-spacing: .09em !important;
+    line-height: 1.25 !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-menu-group:first-of-type h3 {
+    margin-top: 5px !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye {
+    min-height: 43px !important;
+}
+
+.cf-shell-v15 #map-layer-drawer .map-layer-eye .map-layer-name {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
 
 /* mobile */
 
