@@ -18,12 +18,12 @@
     flex-direction: column !important;
     overflow: hidden !important;
     border: 1px solid rgba(16,58,67,.12) !important;
-    border-radius: 18px !important;
+    border-radius: 0 !important;
     background: #F7F9F9 !important;
     box-shadow: 0 16px 44px rgba(12,35,40,.2) !important;
 }
 
-/* Cabeçalho e navegação são uma peça única, fixa durante o scroll. */
+/* Cabeçalho fixo sobre a lista rolável da análise. */
 .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-drawer-head {
     position: sticky;
     z-index: 3;
@@ -67,34 +67,6 @@
     color: #EAF5F1 !important;
 }
 .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-close:hover { background:rgba(255,255,255,.18) !important; }
-.drawer-view-tabs {
-    position: sticky;
-    z-index: 3;
-    top: 0;
-    display: flex;
-    flex: 0 0 auto;
-    gap: 20px;
-    padding: 0 16px;
-    background: #103A43;
-}
-.drawer-view-tabs button {
-    position: relative;
-    border: 0;
-    border-radius: 0;
-    padding: 9px 1px 11px;
-    background: transparent;
-    color: rgba(239,250,246,.67);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-.drawer-view-tabs button.is-active { color:#fff; background:transparent; }
-.drawer-view-tabs button.is-active::after {
-    position:absolute; right:0; bottom:0; left:0; height:2px;
-    border-radius:2px; background:#89DEB2; content:"";
-}
-.drawer-view-tabs button:focus-visible,
 .territorial-tool-close:focus-visible,
 .property-alert-item summary:focus-visible { outline:2px solid #89DEB2; outline-offset:2px; }
 
@@ -246,59 +218,6 @@
 .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records dt { color:#737B87 !important; font-size:9px !important; }
 .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records dd { margin:0 !important; color:#303A40 !important; font-size:10px !important; overflow-wrap:anywhere; }
 
-/* Relatório editorial, sem tabela/cartões; mesma superfície e tipografia do drawer. */
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-report-view {
-    flex:1 1 auto;
-    min-height:0;
-    overflow:auto !important;
-    padding:16px 19px 24px !important;
-    background:#F7F9F9 !important;
-    scrollbar-width:thin;
-    scrollbar-color:#AFC4BE transparent;
-}
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-head { padding:0 0 10px; border:0; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-head h2 { color:#103A43; font-size:16px; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-section {
-    margin:0 !important;
-    padding:12px 0 !important;
-    border:0 !important;
-    border-bottom:1px solid rgba(16,58,67,.1) !important;
-    background:transparent !important;
-    box-shadow:none !important;
-}
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-section > h3 {
-    margin:0 0 7px !important;
-    color:#103A43 !important;
-    font-size:10px !important;
-    font-weight:800 !important;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-}
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary .report-data {
-    display:flex !important;
-    flex-wrap:wrap;
-    gap:4px 14px !important;
-    margin:0 !important;
-    padding:0 !important;
-    border:0 !important;
-    background:transparent !important;
-}
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary .report-data > div { display:block !important; padding:0 !important; border:0 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary dt { color:#737B87; font-size:9px; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary dd { margin:1px 0 0; color:#20272C; font-size:11px; font-weight:650; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary p { margin:3px 0; color:#4E5A61; font-size:11px; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-map-section { display:none; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-list { display:block !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-card {
-    margin:0 !important;
-    padding:8px 0 !important;
-    border:0 !important;
-    border-bottom:1px solid rgba(16,58,67,.08) !important;
-    border-radius:0 !important;
-    background:transparent !important;
-    box-shadow:none !important;
-}
-.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-record-card { border:0 !important; background:transparent !important; box-shadow:none !important; }
 .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .map-top-insight-alert strong {
     display:block;
     overflow:visible !important;
@@ -330,16 +249,17 @@
         width:auto !important;
         height:min(82vh, 720px) !important;
         max-height:calc(100% - 12px) !important;
-        border-radius:20px 20px 14px 14px !important;
+        border-radius:0 !important;
     }
     .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tab-panel { padding:13px 16px 24px !important; }
     .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item { padding-left:13px !important; }
     .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-actions { flex-wrap:wrap; }
 }
 
-/* Âncora única para análise, relatório e projeto; impede o inset do modo
-   maximizado de deslocar o painel para a esquerda. */
-.cf-shell-v15 .territorial-tool-drawer.is-open {
+/* A análise e Polígonos compartilham o drawer compacto. O Relatório mantém
+   largura e maximização próprias definidas em mapa-relatorio.css. */
+.cf-shell-v15 .territorial-tool-drawer.is-open.is-alerts-mode,
+.cf-shell-v15 .territorial-tool-drawer.is-open.is-glebas-mode {
     box-sizing:border-box !important;
     top:16px !important;
     right:16px !important;
@@ -350,17 +270,11 @@
     overflow:hidden !important;
     border-radius:0 !important;
 }
-.cf-shell-v15 .territorial-tool-drawer.is-open.is-report-maximized {
-    inset:16px 16px 16px auto !important;
-    width:min(450px, calc(100vw - 96px)) !important;
-}
 .cf-shell-v15 .territorial-tool-drawer.is-open .territorial-tool-drawer-head,
 .cf-shell-v15 .territorial-tool-drawer.is-open .territorial-side-body,
-.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-report-view,
-.cf-shell-v15 .territorial-tool-drawer.is-open .drawer-view-tabs { box-sizing:border-box; min-width:0; max-width:100%; }
+.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-report-view { box-sizing:border-box; min-width:0; max-width:100%; }
 .cf-shell-v15 .territorial-tool-drawer.is-open .territorial-side-body,
 .cf-shell-v15 .territorial-tool-drawer.is-open .territorial-report-view { overflow-x:hidden !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-open .drawer-view-tabs[hidden] { display:none !important; }
 
 /* Projeto / Polígonos possui seu próprio cabeçalho claro; não herda os
    contadores nem a navegação das abas Análise / Relatório. */
@@ -389,7 +303,8 @@
 }
 
 @media (max-width:720px) {
-    .cf-shell-v15 .territorial-tool-drawer.is-open {
+    .cf-shell-v15 .territorial-tool-drawer.is-open.is-alerts-mode,
+    .cf-shell-v15 .territorial-tool-drawer.is-open.is-glebas-mode {
         top:8px !important;
         right:8px !important;
         bottom:8px !important;
@@ -397,7 +312,6 @@
         width:auto !important;
         max-width:none !important;
     }
-    .cf-shell-v15 .territorial-tool-drawer.is-open.is-report-maximized { inset:8px !important; width:auto !important; }
 }
 
 @media screen {

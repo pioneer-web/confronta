@@ -536,8 +536,6 @@
     const reportMaximizeButton = document.getElementById('toggle-report-maximize');
     const reportMaximizeLabel = reportMaximizeButton ? reportMaximizeButton.querySelector('.report-maximize-label') : null;
     const reportMaximizeIcon = reportMaximizeButton ? reportMaximizeButton.querySelector('.report-maximize-icon') : null;
-    const drawerViewButtons = document.querySelectorAll('[data-drawer-view]');
-    const drawerViewTabs = document.querySelector('.drawer-view-tabs');
     const drawerAnalysisCounts = document.getElementById('drawer-analysis-counts');
     const analysisItems = Array.from(document.querySelectorAll('[data-analysis-item]'));
 
@@ -566,11 +564,6 @@
         });
     }
     syncAnalysisSummary();
-
-    drawerViewButtons.forEach((button) => button.addEventListener('click', () => {
-        if (button.dataset.drawerView === 'report') openToolDrawer('report');
-        else openToolDrawer('alerts');
-    }));
 
     function setRailPressed(button, active) {
         if (!button) return;
@@ -611,14 +604,13 @@
         toolDrawer.classList.add('is-open');
         toolDrawer.classList.toggle('is-report-mode', mode === 'report');
         toolDrawer.classList.toggle('is-glebas-mode', mode === 'glebas');
-        toolDrawer.classList.toggle('is-alerts-mode', mode !== 'glebas');
+        toolDrawer.classList.toggle('is-alerts-mode', mode === 'alerts');
         if (mode !== 'report') toolDrawer.classList.remove('is-report-maximized');
-        if (drawerViewTabs) drawerViewTabs.hidden = mode === 'glebas';
         if (drawerAnalysisCounts) {
-            drawerAnalysisCounts.hidden = mode === 'glebas';
+            drawerAnalysisCounts.hidden = mode !== 'alerts' && mode !== 'glebas';
             drawerAnalysisCounts.textContent = mode === 'glebas'
                 ? 'Desenhe, importe e gerencie polígonos da sessão.'
-                : `${analysisCountText()}`;
+                : analysisCountText();
         }
 
         if (mode === 'report') {
@@ -649,11 +641,6 @@
                 if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 80);
         }
-        drawerViewButtons.forEach((button) => {
-            const active = mode !== 'glebas' && button.dataset.drawerView === (mode === 'report' ? 'report' : 'analysis');
-            button.classList.toggle('is-active', active);
-            button.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
         if (context && context.map) window.setTimeout(() => context.map.invalidateSize(), 40);
     }
 

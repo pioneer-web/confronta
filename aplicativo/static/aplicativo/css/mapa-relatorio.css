@@ -33,7 +33,7 @@
     border-left: 1px solid var(--cf-report-line) !important;
     border-radius: 0 !important;
 
-    background: #fff !important;
+    background: #F7F9F9 !important;
 
     box-shadow: -12px 0 36px rgba(6, 28, 36, .16) !important;
 }
@@ -59,13 +59,14 @@
 .cf-shell-v15
 .territorial-side-panel.is-report-mode
 .territorial-tool-drawer-head {
-    min-height: 64px !important;
+    min-height: 70px !important;
 
-    padding: 11px 18px !important;
+    padding: 12px 18px !important;
 
-    border-bottom: 1px solid var(--cf-report-line) !important;
+    border-bottom: 1px solid rgba(255,255,255,.14) !important;
 
-    background: #fff !important;
+    background: #103A43 !important;
+    color: #fff !important;
 }
 
 
@@ -88,7 +89,7 @@
 .cf-shell-v15
 .territorial-side-panel.is-report-mode
 .territorial-tool-drawer-title span {
-    color: #667b82 !important;
+    color: #A7D8C7 !important;
 
     font-size: 10px !important;
     font-weight: 600 !important;
@@ -102,7 +103,7 @@
 .territorial-tool-drawer-title strong {
     margin-top: 3px !important;
 
-    color: var(--cf-report-text) !important;
+    color: #fff !important;
 
     font-size: 17px !important;
     font-weight: 600 !important;
@@ -119,11 +120,11 @@
     width: 34px !important;
     height: 34px !important;
 
-    border: 1px solid var(--cf-report-line) !important;
-    border-radius: 4px !important;
+    border: 1px solid rgba(255,255,255,.2) !important;
+    border-radius: 0 !important;
 
-    background: #f4f7f6 !important;
-    color: #526970 !important;
+    background: rgba(255,255,255,.08) !important;
+    color: #EAF5F1 !important;
 }
 
 

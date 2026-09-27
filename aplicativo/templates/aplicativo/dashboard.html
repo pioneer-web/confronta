@@ -23,8 +23,8 @@
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=006-project-workflow-refinement">
 {% endif %}
 
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=002">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=005-map-analysis-drawer-redesign">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=003-report-own-panel">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=006-independent-report-mode">
 {% endif %}
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio-print.css' %}?v=001">
 {% endblock %}
@@ -382,11 +382,6 @@
             </div>
             <button type="button" class="territorial-tool-close" id="territorial-tool-close" title="Fechar painel" aria-label="Fechar painel">×</button>
         </header>
-
-        <nav class="drawer-view-tabs" aria-label="Conteúdo do painel">
-            <button type="button" data-drawer-view="analysis" aria-pressed="true" class="is-active">Análise</button>
-            <button type="button" data-drawer-view="report" aria-pressed="false">Relatório</button>
-        </nav>
 
         <div class="territorial-side-body" data-territorial-view-panel="map">
             <section class="car-summary-card">
