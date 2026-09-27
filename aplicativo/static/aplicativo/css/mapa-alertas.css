@@ -1,472 +1,414 @@
-/* =========================================================
-   CONFRONTA — ALERTAS DO MAPA
-   Módulo isolado.
-   Não altera GIS, dados ou regras territoriais.
-   ========================================================= */
-
+/* Drawer de análise do imóvel — apresentação visual, sem regras GIS. */
 :root {
     --cf-alert: #C9790B;
     --cf-alert-dark: #9B5B05;
-    --cf-alert-soft: #FFF8EB;
-    --cf-alert-border: #E6C183;
-
-    --cf-text: #183943;
-    --cf-text-secondary: #526970;
-    --cf-border: #DCE5E2;
-    --cf-surface: #FFFFFF;
-    --cf-surface-soft: #F7F9F8;
+    --cf-text: #181C22;
+    --cf-text-secondary: #737B87;
+    --cf-border: #E4E9E8;
+    --cf-surface-soft: #F7F9F9;
 }
-
-
-/* =========================================================
-   PAINEL DE ALERTAS
-   ========================================================= */
 
 .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode {
-    width: min(470px, calc(100% - 24px)) !important;
-    border: 1px solid var(--cf-border) !important;
-    border-radius: 6px !important;
-    background: var(--cf-surface) !important;
-    box-shadow: -10px 0 32px rgba(8, 31, 39, .16) !important;
-}
-
-
-/* Cabeçalho */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-tool-drawer-head {
-    min-height: 62px !important;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid var(--cf-border) !important;
-    background: #fff !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-tool-drawer-title span {
-    color: #657a81 !important;
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    letter-spacing: .08em !important;
-    opacity: 1 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-tool-drawer-title strong {
-    margin-top: 3px !important;
-    color: var(--cf-text) !important;
-    font-size: 17px !important;
-    font-weight: 600 !important;
-    line-height: 1.25 !important;
-    opacity: 1 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-tool-close {
-    width: 34px !important;
-    height: 34px !important;
-    border: 1px solid #dce5e2 !important;
-    border-radius: 4px !important;
-    background: #f4f7f6 !important;
-    color: #516970 !important;
-}
-
-
-/* =========================================================
-   ALERTAS = ALERTAS
-   Camadas continuam disponíveis no botão Camadas.
-   ========================================================= */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.car-summary-card,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-tabs,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.car-layer-list,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-[data-side-panel="layers"]
-> .panel-section-title:not(.alert-title) {
-    display: none !important;
-}
-
-
-/* Corpo */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-side-body {
-    padding: 0 !important;
-    background: #fff !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-tab-panel {
-    padding: 18px 16px 24px !important;
-}
-
-
-/* =========================================================
-   TÍTULO DA SEÇÃO
-   ========================================================= */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-title {
-    margin: 0 0 14px !important;
-    padding: 0 0 13px !important;
-    border-bottom: 1px solid var(--cf-border) !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-title h3 {
-    margin: 0 !important;
-    color: var(--cf-text) !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    line-height: 1.3 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-title span {
-    display: block !important;
-    margin-top: 4px !important;
-    color: var(--cf-text-secondary) !important;
-    font-size: 11.5px !important;
-    font-weight: 400 !important;
-    line-height: 1.4 !important;
-    opacity: 1 !important;
-}
-
-
-/* =========================================================
-   LISTA DE ALERTAS
-   ========================================================= */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-list {
-    display: grid !important;
-    gap: 10px !important;
-}
-
-
-/* Card padrão */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item {
-    margin: 0 !important;
-    padding: 13px 14px !important;
-
-    border: 1px solid var(--cf-border) !important;
-    border-left: 3px solid #AEBDB8 !important;
-    border-radius: 4px !important;
-
-    background: #fff !important;
-    box-shadow: none !important;
-
-    color: var(--cf-text) !important;
-}
-
-
-/* Alertas identificados */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item.state-alerta,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item.state-atencao {
-    border-left-color: var(--cf-alert) !important;
-    background: #FFFCF7 !important;
-}
-
-
-/* Estado positivo */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item.state-ok,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item.state-livre {
-    border-left-color: #44875A !important;
-}
-
-
-/* Cabeçalho do alerta */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-head {
+    top: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    width: min(450px, calc(100% - 96px)) !important;
+    min-width: 0;
     display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(16,58,67,.12) !important;
+    border-radius: 18px !important;
+    background: #F7F9F9 !important;
+    box-shadow: 0 16px 44px rgba(12,35,40,.2) !important;
 }
 
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-head strong {
-    color: #173943 !important;
-    font-size: 13.5px !important;
-    font-weight: 600 !important;
-    line-height: 1.35 !important;
-    opacity: 1 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-head span {
-    flex: 0 0 auto !important;
-    color: #64787F !important;
-    font-size: 10.5px !important;
-    font-weight: 600 !important;
-    line-height: 1.35 !important;
-    opacity: 1 !important;
-}
-
-
-/* Status de alerta */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.state-alerta
-.property-alert-head span,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.state-atencao
-.property-alert-head span {
-    color: var(--cf-alert-dark) !important;
-}
-
-
-/* Texto */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item p {
-    margin: 7px 0 0 !important;
-    color: #4B626A !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    line-height: 1.5 !important;
-    opacity: 1 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item p strong {
-    color: #314E57 !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-}
-
-
-/* =========================================================
-   DETALHES
-   ========================================================= */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item details {
-    margin-top: 10px !important;
-    padding-top: 9px !important;
-    border-top: 1px solid #E5EBE8 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.property-alert-item summary {
-    color: #375862 !important;
-    font-size: 11.5px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-}
-
-
-/* registros internos */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-records {
-    margin-top: 10px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-records dl {
-    margin: 0 0 10px !important;
-    padding: 0 !important;
-
-    border: 1px solid #E2E8E5 !important;
-    border-radius: 3px !important;
-
-    background: #FAFBFA !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-records dl > div {
-    display: grid !important;
-    grid-template-columns: minmax(125px, .75fr) minmax(0, 1.25fr) !important;
-    gap: 12px !important;
-
-    padding: 8px 10px !important;
-
-    border-bottom: 1px solid #E8EDEA !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-records dl > div:last-child {
-    border-bottom: 0 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-records dt {
-    color: #61767D !important;
-    font-size: 10.5px !important;
-    font-weight: 500 !important;
-    line-height: 1.4 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.alert-records dd {
-    margin: 0 !important;
-    color: #233F48 !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    line-height: 1.45 !important;
-    overflow-wrap: anywhere !important;
-}
-
-
-/* =========================================================
-   BARRA INFERIOR — ALERTA PADRONIZADO
-   ========================================================= */
-
-.map-top-insight-alert {
-    position: relative !important;
-}
-
-.map-top-insight-alert .map-top-insight-label {
-    color: #5B7077 !important;
-    opacity: 1 !important;
-}
-
-.map-top-insight-alert strong {
-    color: var(--cf-alert) !important;
-    font-weight: 700 !important;
-    opacity: 1 !important;
-}
-
-
-/* leve indicação visual sem poluir */
-.map-top-insight-alert::before {
-    content: "";
-    position: absolute;
+/* Cabeçalho e navegação são uma peça única, fixa durante o scroll. */
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-drawer-head {
+    position: sticky;
+    z-index: 3;
     top: 0;
-    left: 15px;
-    right: 15px;
-    height: 3px;
+    flex: 0 0 auto;
+    min-height: 0 !important;
+    padding: 15px 16px 9px !important;
+    border: 0 !important;
+    background: #103A43 !important;
+    color: #fff !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-drawer-title span {
+    color: #A7D8C7 !important;
+    font-size: 10px !important;
+    font-weight: 750 !important;
+    letter-spacing: .1em !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-drawer-title strong {
+    display: block;
+    max-width: calc(100% - 40px);
+    margin-top: 5px !important;
+    color: #fff !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+.drawer-analysis-counts {
+    display: block;
+    margin-top: 5px;
+    color: #C4E4D9;
+    font-size: 11px;
+    line-height: 1.3;
+}
+.drawer-analysis-counts[hidden] { display:none !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-close {
+    width: 31px !important;
+    height: 31px !important;
+    border: 1px solid rgba(255,255,255,.17) !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,.1) !important;
+    color: #EAF5F1 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tool-close:hover { background:rgba(255,255,255,.18) !important; }
+.drawer-view-tabs {
+    position: sticky;
+    z-index: 3;
+    top: 0;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 20px;
+    padding: 0 16px;
+    background: #103A43;
+}
+.drawer-view-tabs button {
+    position: relative;
+    border: 0;
+    border-radius: 0;
+    padding: 9px 1px 11px;
+    background: transparent;
+    color: rgba(239,250,246,.67);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.drawer-view-tabs button.is-active { color:#fff; background:transparent; }
+.drawer-view-tabs button.is-active::after {
+    position:absolute; right:0; bottom:0; left:0; height:2px;
+    border-radius:2px; background:#89DEB2; content:"";
+}
+.drawer-view-tabs button:focus-visible,
+.territorial-tool-close:focus-visible,
+.property-alert-item summary:focus-visible { outline:2px solid #89DEB2; outline-offset:2px; }
 
-    background: var(--cf-alert);
+/* Conteúdo rolável; mantém visíveis o topo e as abas. */
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-side-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+    background: #F7F9F9 !important;
+    scrollbar-width: thin;
+    scrollbar-color: #AFC4BE transparent;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-side-body::-webkit-scrollbar { width:5px; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-side-body::-webkit-scrollbar-thumb { border-radius:5px; background:#AFC4BE; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .car-summary-card,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tabs,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .car-layer-list,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-side-panel="layers"] > .panel-section-title:not(.alert-title) { display:none !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tab-panel { padding:15px 20px 28px !important; }
+
+/* Seções e linhas — sem cartões, fundos individuais ou caixas aninhadas. */
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .analysis-group + .analysis-group { margin-top:22px; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .analysis-group > .panel-section-title {
+    margin:0 0 5px !important;
+    padding:0 !important;
+    border:0 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .analysis-group > .panel-section-title h3 {
+    margin:0 !important;
+    color:#103A43 !important;
+    font-size:11px !important;
+    font-weight:800 !important;
+    letter-spacing:.09em !important;
+    line-height:1.35 !important;
+    text-transform:uppercase;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .analysis-group > .panel-section-title span {
+    display:block !important;
+    margin-top:2px !important;
+    color:#737B87 !important;
+    font-size:10px !important;
+    line-height:1.35 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-list { display:block !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item {
+    position:relative;
+    margin:0 !important;
+    padding:9px 1px 9px 13px !important;
+    border:0 !important;
+    border-bottom:1px solid rgba(16,58,67,.09) !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+    color:#20272C !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item::before {
+    position:absolute;
+    top:15px;
+    left:0;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#AAB5B2;
+    content:"";
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="alert"].state-alerta::before,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="alert"].state-atencao::before { background:#C9790B; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="territorial"]::before { background:#4D9B83; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="credit"]::before { background:#5486B8; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-head {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:10px !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-head strong {
+    min-width:0;
+    color:#20272C !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    line-height:1.35 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-head span {
+    flex:0 0 auto !important;
+    color:#737B87 !important;
+    font-size:9px !important;
+    font-weight:700 !important;
+    line-height:1.25 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="alert"].state-alerta .property-alert-head span,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="alert"].state-atencao .property-alert-head span { color:#A95D05 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="territorial"] .property-alert-head span { color:#176B60 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode [data-analysis-item="credit"] .property-alert-head span { color:#426F9E !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="ok"] .property-alert-head span,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="livre"] .property-alert-head span,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="nao_verificado"] .property-alert-head span { color:#858D94 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item p {
+    margin:2px 0 0 !important;
+    color:#5C666D !important;
+    font-size:10.5px !important;
+    line-height:1.4 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item .analysis-item-summary { color:#59656B !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item .analysis-item-message { display:none !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="ok"],
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="livre"] { padding-top:6px !important; padding-bottom:6px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="ok"]::before,
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item[data-state="livre"]::before { top:12px; background:#AAB5B2; }
+
+/* Accordion leve: indentação e pares label/valor, sem um segundo card. */
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item details { margin:5px 0 0 !important; padding:0 !important; border:0 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item summary {
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    color:#47766C !important;
+    font-size:10px !important;
+    font-weight:650 !important;
+    list-style:none;
+    cursor:pointer !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item summary::-webkit-details-marker { display:none; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item summary::after { content:"›"; font-size:14px; transition:transform .15s ease; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item details[open] summary::after { transform:rotate(90deg); }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records {
+    margin:7px 0 0 2px !important;
+    padding-left:10px;
+    border-left:2px solid rgba(137,222,178,.55);
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records dl {
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:0;
+    margin:0 0 7px !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records dl > div {
+    display:grid !important;
+    grid-template-columns:minmax(95px,.7fr) minmax(0,1.3fr) !important;
+    gap:8px !important;
+    padding:4px 0 !important;
+    border:0 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records dt { color:#737B87 !important; font-size:9px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .alert-records dd { margin:0 !important; color:#303A40 !important; font-size:10px !important; overflow-wrap:anywhere; }
+
+/* Relatório editorial, sem tabela/cartões; mesma superfície e tipografia do drawer. */
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-report-view {
+    flex:1 1 auto;
+    min-height:0;
+    overflow:auto !important;
+    padding:16px 19px 24px !important;
+    background:#F7F9F9 !important;
+    scrollbar-width:thin;
+    scrollbar-color:#AFC4BE transparent;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-head { padding:0 0 10px; border:0; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-head h2 { color:#103A43; font-size:16px; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-section {
+    margin:0 !important;
+    padding:12px 0 !important;
+    border:0 !important;
+    border-bottom:1px solid rgba(16,58,67,.1) !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-section > h3 {
+    margin:0 0 7px !important;
+    color:#103A43 !important;
+    font-size:10px !important;
+    font-weight:800 !important;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary .report-data {
+    display:flex !important;
+    flex-wrap:wrap;
+    gap:4px 14px !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    background:transparent !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary .report-data > div { display:block !important; padding:0 !important; border:0 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary dt { color:#737B87; font-size:9px; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary dd { margin:1px 0 0; color:#20272C; font-size:11px; font-weight:650; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-summary p { margin:3px 0; color:#4E5A61; font-size:11px; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-map-section { display:none; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-list { display:block !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-analysis-card {
+    margin:0 !important;
+    padding:8px 0 !important;
+    border:0 !important;
+    border-bottom:1px solid rgba(16,58,67,.08) !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-record-card { border:0 !important; background:transparent !important; box-shadow:none !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .map-top-insight-alert strong {
+    display:block;
+    overflow:visible !important;
+    white-space:normal !important;
+    text-overflow:clip !important;
+    color:#103A43 !important;
+    font-size:10px !important;
+    line-height:1.3 !important;
+    overflow-wrap:anywhere;
+}
+.map-top-insight-alert { min-width:0 !important; }
+.map-top-insight-alert strong {
+    display:block !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    overflow:visible !important;
+    white-space:normal !important;
+    text-overflow:clip !important;
+    font-size:10px !important;
+    line-height:1.3 !important;
+    overflow-wrap:anywhere !important;
+}
+@media (max-width:720px) {
+    .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode {
+        top:auto !important;
+        right:6px !important;
+        bottom:6px !important;
+        left:6px !important;
+        width:auto !important;
+        height:min(82vh, 720px) !important;
+        max-height:calc(100% - 12px) !important;
+        border-radius:20px 20px 14px 14px !important;
+    }
+    .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .territorial-tab-panel { padding:13px 16px 24px !important; }
+    .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .property-alert-item { padding-left:13px !important; }
+    .cf-shell-v15 .territorial-tool-drawer.is-alerts-mode .report-actions { flex-wrap:wrap; }
 }
 
+/* Âncora única para análise, relatório e projeto; impede o inset do modo
+   maximizado de deslocar o painel para a esquerda. */
+.cf-shell-v15 .territorial-tool-drawer.is-open {
+    box-sizing:border-box !important;
+    top:16px !important;
+    right:16px !important;
+    bottom:16px !important;
+    left:auto !important;
+    width:min(450px, calc(100vw - 96px)) !important;
+    max-width:calc(100vw - 32px) !important;
+    overflow:hidden !important;
+    border-radius:0 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-open.is-report-maximized {
+    inset:16px 16px 16px auto !important;
+    width:min(450px, calc(100vw - 96px)) !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-tool-drawer-head,
+.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-side-body,
+.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-report-view,
+.cf-shell-v15 .territorial-tool-drawer.is-open .drawer-view-tabs { box-sizing:border-box; min-width:0; max-width:100%; }
+.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-side-body,
+.cf-shell-v15 .territorial-tool-drawer.is-open .territorial-report-view { overflow-x:hidden !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-open .drawer-view-tabs[hidden] { display:none !important; }
 
-/* =========================================================
-   SCROLL
-   ========================================================= */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-alerts-mode
-.territorial-side-body {
-    scrollbar-width: thin !important;
-    scrollbar-color: #B6C5C0 transparent !important;
+/* Projeto / Polígonos possui seu próprio cabeçalho claro; não herda os
+   contadores nem a navegação das abas Análise / Relatório. */
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tool-drawer-head {
+    min-height:78px !important;
+    padding:14px 16px !important;
+    border:0 !important;
+    border-bottom:1px solid #E5ECEA !important;
+    background:#F7F9F9 !important;
+    color:#103A43 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tool-drawer-title span { color:#548078 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tool-drawer-title strong { color:#103A43 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .drawer-analysis-counts { color:#737B87; font-size:10px; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tool-close {
+    border:1px solid #D8E3E0 !important;
+    border-radius:0 !important;
+    background:#fff !important;
+    color:#526970 !important;
+}
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-side-body {
+    flex:1 1 auto;
+    min-height:0;
+    overflow:auto !important;
+    background:#F7F9F9 !important;
 }
 
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 720px) {
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-alerts-mode {
-        width: calc(100% - 8px) !important;
-        border-radius: 4px !important;
+@media (max-width:720px) {
+    .cf-shell-v15 .territorial-tool-drawer.is-open {
+        top:8px !important;
+        right:8px !important;
+        bottom:8px !important;
+        left:8px !important;
+        width:auto !important;
+        max-width:none !important;
     }
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-alerts-mode
-    .territorial-tab-panel {
-        padding: 14px 12px 20px !important;
-    }
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-alerts-mode
-    .property-alert-head {
-        display: block !important;
-    }
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-alerts-mode
-    .property-alert-head span {
-        display: block !important;
-        margin-top: 4px !important;
-    }
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-alerts-mode
-    .alert-records dl > div {
-        grid-template-columns: 1fr !important;
-        gap: 3px !important;
-    }
+    .cf-shell-v15 .territorial-tool-drawer.is-open.is-report-maximized { inset:8px !important; width:auto !important; }
 }
-
-
-/* =========================================================
-   ALERTA FLUTUANTE SOBRE O MAPA
-   ========================================================= */
-
-/* =========================================================
-   CONFRONTA — MAPA CLEAN V1
-   Interface leve, simples e orientada ao mapa.
-   Somente visual: não altera regras GIS ou funcionalidades.
-   ========================================================= */
 
 @media screen {
-
-
-    /* ---------- ALERTA SOBRE O MAPA ---------- */
-
     .map-overlap-alert:not([hidden]) {
-        max-width: min(520px, calc(100% - 40px)) !important;
-        padding: 9px 13px !important;
-        border: 1px solid #efd9b7 !important;
-        border-radius: 9px !important;
-        background: rgba(255,250,240,.96) !important;
-        color: #865518 !important;
-        box-shadow: 0 7px 20px rgba(43,28,7,.12) !important;
-        font-size: 10px !important;
-    }}
+        max-width:min(520px, calc(100% - 40px)) !important;
+        padding:9px 13px !important;
+        border:1px solid #efd9b7 !important;
+        border-radius:9px !important;
+        background:rgba(255,250,240,.96) !important;
+        color:#865518 !important;
+        box-shadow:0 7px 20px rgba(43,28,7,.12) !important;
+        font-size:10px !important;
+    }
+}

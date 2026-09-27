@@ -536,6 +536,41 @@
     const reportMaximizeButton = document.getElementById('toggle-report-maximize');
     const reportMaximizeLabel = reportMaximizeButton ? reportMaximizeButton.querySelector('.report-maximize-label') : null;
     const reportMaximizeIcon = reportMaximizeButton ? reportMaximizeButton.querySelector('.report-maximize-icon') : null;
+    const drawerViewButtons = document.querySelectorAll('[data-drawer-view]');
+    const drawerViewTabs = document.querySelector('.drawer-view-tabs');
+    const drawerAnalysisCounts = document.getElementById('drawer-analysis-counts');
+    const analysisItems = Array.from(document.querySelectorAll('[data-analysis-item]'));
+
+    function syncAnalysisSummary() {
+        const counts = { alert: 0, territorial: 0, credit: 0 };
+        analysisItems.forEach((item) => {
+            if (['alerta', 'atencao'].includes(item.dataset.state)) counts[item.dataset.analysisItem] += 1;
+        });
+        const alertText = `${counts.alert} alerta${counts.alert === 1 ? '' : 's'}`;
+        const header = document.getElementById('drawer-analysis-counts');
+        const summary = document.getElementById('map-analysis-summary');
+        const detail = document.getElementById('map-analysis-summary-detail');
+        if (header) header.textContent = `${alertText} • ${counts.territorial} interferências • ${counts.credit} SICOR`;
+        if (summary) summary.textContent = `${counts.alert} alertas · ${counts.territorial} interferência${counts.territorial === 1 ? '' : 's'} · ${counts.credit} SICOR`;
+        if (detail) detail.textContent = 'Ocorrências, sobreposições e crédito rural';
+        const reportAlerts = document.getElementById('report-alert-count');
+        const reportTerritorial = document.getElementById('report-territorial-count');
+        const reportCredit = document.getElementById('report-credit-count');
+        if (reportAlerts) reportAlerts.textContent = String(counts.alert);
+        if (reportTerritorial) reportTerritorial.textContent = String(counts.territorial);
+        if (reportCredit) reportCredit.textContent = String(counts.credit);
+        document.querySelectorAll('[data-analysis-group]').forEach((group) => {
+            const rows = Array.from(group.querySelectorAll('[data-analysis-item]'));
+            rows.sort((a, b) => Number(['alerta', 'atencao'].includes(b.dataset.state)) - Number(['alerta', 'atencao'].includes(a.dataset.state)));
+            rows.forEach((row) => group.querySelector('.property-alert-list')?.appendChild(row));
+        });
+    }
+    syncAnalysisSummary();
+
+    drawerViewButtons.forEach((button) => button.addEventListener('click', () => {
+        if (button.dataset.drawerView === 'report') openToolDrawer('report');
+        else openToolDrawer('alerts');
+    }));
 
     function setRailPressed(button, active) {
         if (!button) return;
@@ -576,13 +611,20 @@
         toolDrawer.classList.add('is-open');
         toolDrawer.classList.toggle('is-report-mode', mode === 'report');
         toolDrawer.classList.toggle('is-glebas-mode', mode === 'glebas');
-        toolDrawer.classList.toggle('is-alerts-mode', mode === 'alerts');
+        toolDrawer.classList.toggle('is-alerts-mode', mode !== 'glebas');
         if (mode !== 'report') toolDrawer.classList.remove('is-report-maximized');
+        if (drawerViewTabs) drawerViewTabs.hidden = mode === 'glebas';
+        if (drawerAnalysisCounts) {
+            drawerAnalysisCounts.hidden = mode === 'glebas';
+            drawerAnalysisCounts.textContent = mode === 'glebas'
+                ? 'Desenhe, importe e gerencie polígonos da sessão.'
+                : `${analysisCountText()}`;
+        }
 
         if (mode === 'report') {
             setTerritorialView('report');
             if (toolKicker) toolKicker.textContent = 'RELATÓRIO';
-            if (toolTitle) toolTitle.textContent = 'Inteligência do imóvel';
+            if (toolTitle) toolTitle.textContent = 'Resumo do imóvel';
             setRailPressed(railReport, true);
             setRailPressed(railGlebas, false);
             setRailPressed(railAlerts, false);
@@ -597,8 +639,8 @@
         } else if (mode === 'alerts') {
             setTerritorialView('map');
             setSideTab('layers');
-            if (toolKicker) toolKicker.textContent = 'ALERTAS';
-            if (toolTitle) toolTitle.textContent = 'Alertas do imóvel';
+            if (toolKicker) toolKicker.textContent = 'ANÁLISE DO IMÓVEL';
+            if (toolTitle) toolTitle.textContent = context?.consulta?.imovel?.cod_imovel || 'Análise territorial';
             setRailPressed(railAlerts, true);
             setRailPressed(railReport, false);
             setRailPressed(railGlebas, false);
@@ -607,7 +649,19 @@
                 if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 80);
         }
+        drawerViewButtons.forEach((button) => {
+            const active = mode !== 'glebas' && button.dataset.drawerView === (mode === 'report' ? 'report' : 'analysis');
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
         if (context && context.map) window.setTimeout(() => context.map.invalidateSize(), 40);
+    }
+
+    function analysisCountText() {
+        const count = (type) => analysisItems.filter((item) =>
+            item.dataset.analysisItem === type && ['alerta', 'atencao'].includes(item.dataset.state)
+        ).length;
+        return `${count('alert')} alertas • ${count('territorial')} interferências • ${count('credit')} SICOR`;
     }
 
     function syncLayerEye(key, visible) {

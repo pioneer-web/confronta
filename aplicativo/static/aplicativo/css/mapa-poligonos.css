@@ -563,3 +563,49 @@
     .map-live-area.is-editing-gleba > span { width: auto; }
     .gleba-edit-controls { margin-left: auto; }
 }
+
+/* Refinamento da ferramenta: hierarquia de projeto sem alterar seus controles. */
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tab-panel { padding:16px 18px 24px !important; background:#F7F9F9; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro { grid-template-columns:46px minmax(0,1fr) auto !important; gap:11px !important; padding:5px 0 15px !important; border-color:#E2EAE8 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-icon { width:42px !important; height:42px !important; border:1px solid #D6E8E3 !important; border-radius:8px !important; background:#EAF4F1 !important; color:#176B60 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-copy .eyebrow,
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-workflow-title .eyebrow { color:#548078 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-copy h3,
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-workflow-title h3 { color:#103A43 !important; font-weight:750 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-copy p,
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-workflow-title p { color:#737B87 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-new-button { min-height:36px !important; border:0 !important; border-radius:4px !important; background:#103A43 !important; box-shadow:0 3px 9px rgba(16,58,67,.14); }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-new-button:hover { background:#0B2D35 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-session-summary { display:flex; justify-content:space-between; align-items:center; min-height:42px !important; margin:12px 0 !important; padding:9px 11px !important; border:1px solid #E1E9E7 !important; border-radius:4px !important; background:#fff !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-session-summary span { color:#737B87 !important; font-size:10px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-session-summary strong { color:#176B60 !important; font-size:12px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper { gap:5px !important; align-items:center !important; padding:14px 2px 18px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper > i { height:2px !important; margin-top:13px !important; background:#DCE6E3 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item { min-width:54px !important; gap:5px !important; color:#929D9A !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item > span { width:27px !important; height:27px !important; border:1px solid #D7E1DE !important; background:#fff !important; color:#788681 !important; font-size:10px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item.is-done > span { border-color:#87BFAE !important; background:#E8F3EF !important; color:#176B60 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item.is-active { color:#103A43 !important; font-weight:750 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item.is-active > span { border:2px solid #103A43 !important; background:#103A43 !important; color:#fff !important; box-shadow:0 0 0 3px #DDECE7; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item small { color:inherit; font-size:9px !important; font-weight:650; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tabs { gap:6px !important; margin-bottom:12px !important; padding:4px !important; border:1px solid #E0E8E6 !important; border-radius:4px !important; background:#EEF3F1 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tab { display:flex; gap:7px !important; min-height:40px !important; border:0 !important; border-radius:3px !important; background:transparent !important; color:#65736F !important; font-size:10px !important; font-weight:700 !important; transition:background .16s ease,color .16s ease,box-shadow .16s ease; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tab:hover { background:rgba(255,255,255,.7) !important; color:#103A43 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tab.is-active { background:#fff !important; color:#103A43 !important; box-shadow:0 1px 4px rgba(16,58,67,.12) !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper { grid-template-columns:42px minmax(0,1fr) auto !important; gap:11px !important; min-height:84px !important; padding:12px !important; border:1px solid #D5E5E0 !important; border-radius:4px !important; background:linear-gradient(135deg,#fff 0%,#F1F7F5 100%) !important; box-shadow:0 4px 12px rgba(16,58,67,.04); transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper:hover { transform:translateY(-1px); border-color:#83B8A9 !important; box-shadow:0 7px 16px rgba(16,58,67,.09); }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-helper-icon { width:40px !important; height:40px !important; border:0 !important; border-radius:6px !important; background:#E4F1EC !important; color:#176B60 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper strong { color:#17343E; font-size:11px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper span { color:#737B87 !important; font-size:9.5px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper .polygon-helper-action { color:#176B60 !important; font-size:10px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row { grid-template-columns:minmax(0,1fr) auto !important; gap:10px !important; margin-top:12px !important; padding:10px 11px !important; border:1px solid #E1E9E7 !important; border-radius:4px !important; background:#fff !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row strong { color:#34474A; font-size:10px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row span { color:#7B878A !important; font-size:9px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid { grid-template-columns:repeat(4,26px) !important; gap:7px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid .gleba-color-swatch { width:24px !important; height:24px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid .gleba-color-swatch.is-selected { outline:2px solid #103A43 !important; outline-offset:2px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-import-dropzone { border-radius:4px !important; background:#fff !important; }
+@media(max-width:680px) {
+    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro { grid-template-columns:42px minmax(0,1fr) !important; }
+    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row { grid-template-columns:1fr !important; }
+    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid { grid-template-columns:repeat(7,26px) !important; }
+}

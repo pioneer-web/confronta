@@ -17,14 +17,14 @@
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-base.css' %}?v=008">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=001">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=013-complete-uc-action">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=002">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=006-grouped-layer-order">
 
 {% if pode_desenhar_glebas %}
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=005-gleba-edit-controls">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=006-project-workflow-refinement">
 {% endif %}
 
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=002">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=005-map-analysis-drawer-redesign">
 {% endif %}
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio-print.css' %}?v=001">
 {% endblock %}
@@ -366,9 +366,9 @@
                 <strong class="is-positive">{{ consulta.imovel.situacao_apresentacao|default:'Não informada' }}</strong>
             </article>
             <button type="button" class="map-top-insight-item map-top-insight-alert" id="summary-card-alerts">
-                <span class="map-top-insight-label">Alertas</span>
-                <strong>{{ consulta.alertas.resumo.quantidade|default:0 }} identificado{{ consulta.alertas.resumo.quantidade|pluralize:'s' }}</strong>
-                <small>{% if consulta.alertas.resumo.tipos %}{{ consulta.alertas.resumo.tipos|join:' • ' }}{% else %}Nenhum alerta territorial identificado{% endif %}</small>
+                <span class="map-top-insight-label">Análise</span>
+                <strong id="map-analysis-summary">Análise disponível</strong>
+                <small id="map-analysis-summary-detail">Alertas e interferências territoriais</small>
             </button>
         </section>
     </div>
@@ -376,11 +376,17 @@
     <aside class="territorial-side-panel territorial-tool-drawer" id="territorial-side-panel" hidden aria-label="Ferramentas do imóvel">
         <header class="territorial-side-top territorial-tool-drawer-head">
             <div class="territorial-tool-drawer-title">
-                <span id="territorial-tool-kicker">CAR</span>
+                <span id="territorial-tool-kicker">ANÁLISE DO IMÓVEL</span>
                 <strong id="territorial-tool-title">{{ consulta.imovel.cod_imovel }}</strong>
+                <small class="drawer-analysis-counts" id="drawer-analysis-counts"></small>
             </div>
             <button type="button" class="territorial-tool-close" id="territorial-tool-close" title="Fechar painel" aria-label="Fechar painel">×</button>
         </header>
+
+        <nav class="drawer-view-tabs" aria-label="Conteúdo do painel">
+            <button type="button" data-drawer-view="analysis" aria-pressed="true" class="is-active">Análise</button>
+            <button type="button" data-drawer-view="report" aria-pressed="false">Relatório</button>
+        </nav>
 
         <div class="territorial-side-body" data-territorial-view-panel="map">
             <section class="car-summary-card">
@@ -417,19 +423,18 @@
                     {% endfor %}
                 </div>
 
-                <div class="panel-section-title alert-title">
-                    <h3>Alertas no imóvel</h3>
-                    <span>Resultado das verificações territoriais disponíveis.</span>
-                </div>
-                <div class="property-alert-list">
+                <section class="analysis-group" data-analysis-group="alerts">
+                    <div class="panel-section-title alert-title"><h3>Alertas</h3><span>Ocorrências ambientais e fiscalizatórias</span></div>
+                    <div class="property-alert-list">
                     {% for chave, alerta in consulta.alertas.items %}
-                    {% if chave != 'tem_alerta' and chave != 'resumo_mapa' and chave != 'restricoes' and chave != 'resumo' %}
-                    <article class="property-alert-item state-{{ alerta.estado }}">
+                    {% if chave == 'ibama' or chave == 'icmbio_embargo' or chave == 'prodes' %}
+                    <article class="property-alert-item state-{{ alerta.estado }}" data-analysis-item="alert" data-state="{{ alerta.estado }}">
                         <div class="property-alert-head">
-                            <strong>{{ alerta.titulo }}</strong>
+                            <strong>{% if chave == 'prodes' %}INPE / PRODES{% else %}{{ alerta.titulo }}{% endif %}</strong>
                             <span>{{ alerta.status }}</span>
                         </div>
-                        <p>{{ alerta.mensagem }}</p>
+                        <p class="analysis-item-summary">{% if alerta.quantidade %}{{ alerta.quantidade }} ocorrência{{ alerta.quantidade|pluralize:'s' }}{% elif alerta.estado == 'nao_verificado' %}Base indisponível para verificação{% else %}Sem ocorrência identificada{% endif %}{% if chave == 'prodes' and alerta.anos %} • {{ alerta.anos|first }}–{{ alerta.anos|last }}{% endif %}</p>
+                        {% if alerta.mensagem %}<p class="analysis-item-message">{{ alerta.mensagem }}</p>{% endif %}
                         {% if alerta.anos %}<p><strong>Ano(s):</strong> {{ alerta.anos|join:', ' }}</p>{% endif %}
                         {% if alerta.nomes %}<p><strong>Local:</strong> {{ alerta.nomes|join:', ' }}</p>{% endif %}
                         {% if alerta.registros %}
@@ -449,7 +454,40 @@
                     </article>
                     {% endif %}
                     {% endfor %}
-                </div>
+                    </div>
+                </section>
+                <section class="analysis-group" data-analysis-group="territorial">
+                    <div class="panel-section-title"><h3>Interferências territoriais</h3><span>Contextos e sobreposições identificados</span></div>
+                    <div class="property-alert-list">
+                    {% for chave, alerta in consulta.alertas.items %}
+                    {% if chave == 'funai' or chave == 'quilombolas' or chave == 'assentamentos' or chave == 'apa' or chave == 'outros_cars' %}
+                    <article class="property-alert-item state-{{ alerta.estado }}" data-analysis-item="territorial" data-state="{{ alerta.estado }}">
+                        <div class="property-alert-head"><strong>{% if chave == 'funai' %}Terra Indígena — FUNAI{% elif chave == 'quilombolas' %}Território Quilombola — INCRA{% elif chave == 'assentamentos' %}Projeto de Assentamento — INCRA{% elif chave == 'apa' %}Unidade de Conservação{% else %}Outros CARs sobrepostos{% endif %}</strong><span>{% if alerta.estado == 'alerta' or alerta.estado == 'atencao' %}Identificada{% elif alerta.estado == 'nao_verificado' %}Não verificada{% else %}Sem ocorrência{% endif %}</span></div>
+                        {% if alerta.nomes %}<p class="analysis-item-summary">{{ alerta.nomes|join:', ' }}</p>{% elif alerta.quantidade %}<p class="analysis-item-summary">{{ alerta.quantidade }} ocorrência{{ alerta.quantidade|pluralize:'s' }}</p>{% else %}<p class="analysis-item-summary">Sem sobreposição territorial identificada</p>{% endif %}
+                        {% if alerta.mensagem %}<p class="analysis-item-message">{{ alerta.mensagem }}</p>{% endif %}
+                        {% if alerta.anos %}<p><strong>Ano(s):</strong> {{ alerta.anos|join:', ' }}</p>{% endif %}
+                        {% if alerta.registros %}<details><summary>Ver detalhes{% if alerta.quantidade %} ({{ alerta.quantidade }}){% endif %}</summary><div class="alert-records">{% for registro in alerta.registros %}<dl>{% for campo, valor in registro.items %}<div><dt>{{ campo|field_label }}</dt><dd>{{ valor|display_value }}</dd></div>{% endfor %}</dl>{% endfor %}</div></details>{% endif %}
+                    </article>
+                    {% endif %}
+                    {% endfor %}
+                    </div>
+                </section>
+                <section class="analysis-group" data-analysis-group="credit">
+                    <div class="panel-section-title"><h3>Crédito rural</h3><span>SICOR / operações de crédito rural</span></div>
+                    <div class="property-alert-list">
+                    {% for chave, alerta in consulta.alertas.items %}
+                    {% if chave == 'sicor' %}
+                    <article class="property-alert-item state-{{ alerta.estado }}" data-analysis-item="credit" data-state="{{ alerta.estado }}">
+                        <div class="property-alert-head"><strong>SICOR / Glebas com operações de crédito rural</strong><span>{% if alerta.estado == 'alerta' or alerta.estado == 'atencao' %}Identificado{% elif alerta.estado == 'nao_verificado' %}Não verificado{% else %}Sem ocorrência{% endif %}</span></div>
+                        {% if alerta.nomes %}<p class="analysis-item-summary">{{ alerta.nomes|join:', ' }}</p>{% elif alerta.quantidade %}<p class="analysis-item-summary">{{ alerta.quantidade }} ocorrência{{ alerta.quantidade|pluralize:'s' }}</p>{% else %}<p class="analysis-item-summary">Nenhuma operação identificada</p>{% endif %}
+                        {% if alerta.mensagem %}<p class="analysis-item-message">{{ alerta.mensagem }}</p>{% endif %}
+                        {% if alerta.anos %}<p><strong>Ano(s):</strong> {{ alerta.anos|join:', ' }}</p>{% endif %}
+                        {% if alerta.registros %}<details><summary>Ver detalhes{% if alerta.quantidade %} ({{ alerta.quantidade }}){% endif %}</summary><div class="alert-records">{% for registro in alerta.registros %}<dl>{% for campo, valor in registro.items %}<div><dt>{{ campo|field_label }}</dt><dd>{{ valor|display_value }}</dd></div>{% endfor %}</dl>{% endfor %}</div></details>{% endif %}
+                    </article>
+                    {% endif %}
+                    {% endfor %}
+                    </div>
+                </section>
             </section>
 
             {% if pode_desenhar_glebas %}
@@ -570,7 +608,7 @@
             <div class="report-head">
                 <div>
                     <span class="eyebrow">Relatório atual</span>
-                    <h2>Inteligência do imóvel</h2>
+                    <h2>Resumo do imóvel</h2>
                 </div>
                 <div class="report-actions">
                     <button type="button" class="button button-secondary button-compact report-maximize-button" id="toggle-report-maximize" aria-pressed="false" title="Maximizar relatório">
@@ -608,20 +646,16 @@
                 </div>
             </section>
 
-            <section class="report-section">
-                <h3>Alertas</h3>
-                {% if consulta.alertas.resumo.quantidade %}
-                <div class="report-restriction-summary">
-                    <strong>{{ consulta.alertas.resumo.quantidade }} alerta{{ consulta.alertas.resumo.quantidade|pluralize }} identificado{{ consulta.alertas.resumo.quantidade|pluralize }}</strong>
-                    <span>{{ consulta.alertas.resumo.tipos|join:' • ' }}</span>
-                </div>
-                {% else %}
-                <p class="muted">Nenhum alerta foi identificado nas verificações disponíveis para esta consulta.</p>
-                {% endif %}
+            <section class="report-section report-analysis-summary">
+                <h3>RESUMO DO IMÓVEL</h3>
+                <div class="report-data"><div><dt>Área</dt><dd>{% if consulta.imovel.area_total_ha != None %}{{ consulta.imovel.area_total_ha|floatformat:2 }} ha{% else %}Não informada{% endif %}</dd></div><div><dt>Município</dt><dd>{{ consulta.imovel.municipio|default:'Não informado' }}{% if consulta.imovel.uf %} - {{ consulta.imovel.uf }}{% endif %}</dd></div><div><dt>Situação do CAR</dt><dd>{{ consulta.imovel.situacao_apresentacao|default:'Não informada' }}</dd></div></div>
+                <h3>ALERTAS</h3><p><strong id="report-alert-count">—</strong> identificados</p>
+                <h3>INTERFERÊNCIAS TERRITORIAIS</h3><p><strong id="report-territorial-count">—</strong> identificadas</p>
+                <h3>CRÉDITO RURAL</h3><p><strong id="report-credit-count">—</strong> identificado</p>
             </section>
 
             <section class="report-section">
-                <h3>Detalhes dos alertas e informações</h3>
+                <h3>Detalhes da análise territorial</h3>
                 <div class="report-analysis-list">
                     {% for chave, alerta in consulta.alertas.items %}
                     {% if chave != 'tem_alerta' and chave != 'resumo_mapa' and chave != 'restricoes' and chave != 'resumo' %}
@@ -647,7 +681,7 @@
                                 {% endif %}
                             </span>
                             <div class="report-intel-title">
-                                <strong>{{ alerta.titulo }}</strong>
+                                <strong>{% if chave == 'prodes' %}INPE / PRODES{% elif chave == 'apa' %}Unidade de Conservação{% elif chave == 'assentamentos' %}Projeto de Assentamento — INCRA{% elif chave == 'quilombolas' %}Território Quilombola — INCRA{% elif chave == 'funai' %}Terra Indígena — FUNAI{% else %}{{ alerta.titulo }}{% endif %}</strong>
                                 <p>{{ alerta.mensagem }}</p>
                             </div>
                             <span class="report-status-badge state-{{ alerta.estado }}">
