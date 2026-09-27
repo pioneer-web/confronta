@@ -7,6 +7,7 @@ from .exportacao import exportar_camada_kml, exportar_car_kml
 from .planos import planos_view
 from .public import home_publica
 from .support import ajuda_view
+from .unidades_conservacao import geometria_completa_uc
 
 __all__ = [
     'chat_marcar_lido',
@@ -19,6 +20,7 @@ __all__ = [
     'exportar_camada_kml',
     'exportar_car_kml',
     'home_publica',
+    'geometria_completa_uc',
     'inicio',
     'nova_consulta',
     'nova_consulta_arquivo',

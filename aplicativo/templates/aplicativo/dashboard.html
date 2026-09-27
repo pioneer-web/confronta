@@ -16,7 +16,7 @@
 {# Overrides visuais do mapa — sempre carregados por último #}
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-base.css' %}?v=008">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=001">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=012-removed-legacy-feature-controls">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=013-complete-uc-action">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=002">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=006-grouped-layer-order">
 
@@ -725,6 +725,7 @@
      {% if pode_explorar_mapa %}data-cars-url="{% url 'aplicativo:cars_visiveis' %}"{% endif %}
      data-car-export-url="{% url 'aplicativo:exportar_car_kml' %}"
      data-layer-export-url="{% url 'aplicativo:exportar_camada_kml' 'CAMADA_PLACEHOLDER' %}"
+      data-uc-full-geometry-url="{% url 'aplicativo:geometria_completa_uc' %}"
      data-car="{% if consulta %}{{ consulta.imovel.cod_imovel }}{% endif %}"
      data-user-id="{{ request.user.pk|default:'' }}"></div>
 {% if not possui_plano %}
@@ -746,7 +747,7 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
 {% endif %}
-<script src="{% static 'aplicativo/js/mapa.js' %}?v=073-no-territorial-feature-controls"></script>
+<script src="{% static 'aplicativo/js/mapa.js' %}?v=074-complete-uc-on-demand"></script>
 <script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
 <script src="{% static 'aplicativo/js/car-ocr.js' %}?v=003-reset-preview-crop"></script>
 {% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}

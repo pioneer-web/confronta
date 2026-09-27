@@ -11,6 +11,7 @@ from aplicativo.views import (
     chat_marcar_lido,
     exportar_camada_kml,
     exportar_car_kml,
+    geometria_completa_uc,
     inicio,
     login_view,
     marcar_aviso_lido,
@@ -27,6 +28,7 @@ app_name = 'aplicativo'
 
 urlpatterns = [
     path('api/cars-visiveis/', cars_visiveis, name='cars_visiveis'),
+    path('api/unidade-conservacao/geometria-completa/', geometria_completa_uc, name='geometria_completa_uc'),
     path('login/', login_view, name='login'),
 
     # Recuperação de senha por e-mail.

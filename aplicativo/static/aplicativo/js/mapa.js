@@ -249,6 +249,10 @@
     const layers = {};
     let perimeter = null;
     let selectedSicorFeatureLayer = null;
+    let fullConservationUnitLayer = null;
+    let fullConservationUnitKey = null;
+    let fullConservationUnitRequestId = 0;
+    let fullConservationUnitPendingButton = null;
 
     const palette = {
         perimetro: { color: '#FFFFFF', weight: 4.4, fillOpacity: 0.02, opacity: 1, fillColor: '#FFFFFF' },
@@ -600,6 +604,125 @@
         return template ? template.replace('CAMADA_PLACEHOLDER', encodeURIComponent(key)) : null;
     }
 
+    function conservationUnitIdentity(feature) {
+        const props = feature?.properties || {};
+        const source = String(props._confronta_uc_source || '').toLowerCase();
+        const field = String(props._confronta_uc_identifier_field || '');
+        const identifier = String(props._confronta_uc_identifier || '').trim();
+        if (!['cnuc', 'icmbio'].includes(source) || !field || !identifier) return null;
+        return { source, field, identifier, key: `${source}:${field}:${identifier}` };
+    }
+
+    function removeFullConservationUnit() {
+        fullConservationUnitRequestId += 1;
+        if (fullConservationUnitPendingButton) {
+            fullConservationUnitPendingButton.disabled = false;
+            fullConservationUnitPendingButton.textContent = 'Visualizar UC completa';
+            fullConservationUnitPendingButton = null;
+        }
+        if (fullConservationUnitLayer && map.hasLayer(fullConservationUnitLayer)) {
+            map.removeLayer(fullConservationUnitLayer);
+        }
+        fullConservationUnitLayer = null;
+        fullConservationUnitKey = null;
+    }
+
+    async function toggleFullConservationUnit(feature, layerData, button) {
+        const identity = conservationUnitIdentity(feature);
+        if (!identity) return;
+        if (fullConservationUnitKey === identity.key && fullConservationUnitLayer) {
+            removeFullConservationUnit();
+            button.textContent = 'Visualizar UC completa';
+            button.disabled = false;
+            return;
+        }
+
+        removeFullConservationUnit();
+        const requestId = ++fullConservationUnitRequestId;
+        const endpoint = configElement?.dataset.ucFullGeometryUrl;
+        if (!endpoint) return;
+        button.disabled = true;
+        button.textContent = 'Carregando UC completa…';
+        fullConservationUnitPendingButton = button;
+
+        try {
+            const url = new URL(endpoint, window.location.href);
+            url.searchParams.set('fonte', identity.source);
+            url.searchParams.set('campo', identity.field);
+            url.searchParams.set('identificador', identity.identifier);
+            const response = await fetch(url.toString(), {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json' }
+            });
+            const payload = await response.json();
+            if (!response.ok || !payload?.feature?.geometry) {
+                throw new Error(payload?.erro || 'Não foi possível carregar a UC completa.');
+            }
+            if (requestId !== fullConservationUnitRequestId) return;
+
+            const fullFeature = {
+                ...payload.feature,
+                properties: { ...feature.properties, ...(payload.feature.properties || {}) }
+            };
+            const baseStyle = styleForKey('ext_apa');
+            const fullStyle = {
+                ...baseStyle,
+                weight: Math.max(3, Number(baseStyle.weight || 2) + 0.7),
+                fillOpacity: 0.10,
+                dashArray: '6 4'
+            };
+            fullConservationUnitKey = identity.key;
+            fullConservationUnitLayer = L.geoJSON(fullFeature, {
+                pane: paneForLayerKey('ext_apa'),
+                bubblingMouseEvents: false,
+                interactive: true,
+                style: () => fullStyle,
+                onEachFeature: (completeFeature, featureLayer) => {
+                    featureLayer.bindPopup(
+                        () => buildTerritorialPopup(
+                            completeFeature,
+                            layerData?.label || 'Unidade de Conservação',
+                            fullStyle.color,
+                            'Unidade de Conservação',
+                            layerData,
+                            'ext_apa'
+                        ),
+                        {
+                            maxWidth: 360,
+                            minWidth: 270,
+                            closeButton: true,
+                            autoPan: true,
+                            keepInView: true,
+                            autoPanPaddingTopLeft: [24, 24],
+                            autoPanPaddingBottomRight: [24, 92],
+                            className: 'confronta-feature-leaflet-popup'
+                        }
+                    );
+                }
+            }).addTo(map);
+
+            const bounds = fullConservationUnitLayer.getBounds();
+            if (bounds && bounds.isValid()) {
+                map.fitBounds(bounds, {
+                    paddingTopLeft: [60, 40],
+                    paddingBottomRight: [44, 112],
+                    maxZoom: MAX_SATELLITE_ZOOM,
+                    animate: false
+                });
+            }
+            button.textContent = 'Ocultar UC completa';
+            button.disabled = false;
+            fullConservationUnitPendingButton = null;
+        } catch (error) {
+            if (requestId !== fullConservationUnitRequestId) return;
+            button.textContent = 'Visualizar UC completa';
+            button.disabled = false;
+            fullConservationUnitPendingButton = null;
+            showLocationMessage(error?.message || 'Não foi possível carregar a UC completa.', 5000);
+        }
+    }
+
     function buildTerritorialPopup(feature, label, color, kind, layerData, layerKey) {
         if (layerKey === 'ext_sicor') {
             const props = feature?.properties || {};
@@ -873,6 +996,20 @@
             downloadFeatureKml(feature, label);
         });
         body.appendChild(kml);
+        if (layerKey === 'ext_apa' && conservationUnitIdentity(feature)) {
+            const completeUc = document.createElement('button');
+            completeUc.type = 'button';
+            completeUc.className = 'cf-uc-full-action';
+            completeUc.textContent = fullConservationUnitKey === conservationUnitIdentity(feature).key
+                ? 'Ocultar UC completa'
+                : 'Visualizar UC completa';
+            completeUc.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleFullConservationUnit(feature, layerData, completeUc);
+            });
+            body.prepend(completeUc);
+        }
         root.append(head, body);
         return root;
     }

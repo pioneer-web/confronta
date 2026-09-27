@@ -1,0 +1,34 @@
+<article class="mc-source-card{% if source.slug == 'sicor-dominios' %} mc-source-card-subtle{% endif %}">
+    <div class="mc-source-card-top">
+        <div class="mc-source-monogram">{% if source.slug == 'cnuc' %}UC{% elif source.slug == 'icmbio' %}IC{% else %}{{ source.organization|slice:":2"|upper }}{% endif %}</div>
+        <div class="mc-source-head">
+            <strong>{% if source.slug == 'cnuc' %}Unidades de Conservação{% elif source.slug == 'icmbio' %}Embargos ICMBio{% elif source.slug == 'incra' %}Assentamentos e Quilombolas{% elif source.slug == 'sicor' %}Glebas SICOR{% else %}{{ source.label }}{% endif %}</strong>
+            <span>{% if source.slug == 'cnuc' %}Base principal · CNUC / MMA{% elif source.slug == 'icmbio' %}Fiscalização ambiental{% elif source.slug == 'incra' %}INCRA · um fluxo de importação{% else %}{{ source.organization }}{% endif %}</span>
+        </div>
+    </div>
+
+    <p>{% if source.slug == 'cnuc' %}Cadastro nacional de Unidades de Conservação, com complemento federal do ICMBio.{% elif source.slug == 'icmbio' %}Áreas associadas a embargos e à fiscalização ambiental do ICMBio.{% elif source.slug == 'incra' %}Um único fluxo de importação com seleção de perfil para assentamentos ou territórios quilombolas.{% elif source.slug == 'sigef' %}Parcelas certificadas do Sistema de Gestão Fundiária.{% elif source.slug == 'sncr' %}Dados cadastrais do Sistema Nacional de Cadastro Rural.{% elif source.slug == 'sicor-dominios' %}Tabelas auxiliares para tradução de códigos SICOR.{% else %}{{ source.purpose }}{% endif %}</p>
+
+    {% if source.slug == 'icmbio' %}
+    <div class="mc-source-profile-notes"><span>Perfil</span><b>Áreas Embargadas</b></div>
+    {% elif source.slug == 'cnuc' %}
+    <div class="mc-source-profile-notes"><span>Complemento federal · perfil ICMBio</span><b>Unidades de Conservação Federais</b></div>
+    {% elif source.slug == 'incra' %}
+    <div class="mc-source-profile-notes"><b>Projetos de assentamento</b><b>Territórios quilombolas</b></div>
+    {% elif source.slug == 'sicor-dominios' %}
+    <div class="mc-source-profile-notes"><span>Tabelas auxiliares</span></div>
+    {% endif %}
+
+    <div class="mc-source-actions">
+        {% if source.import_source_slug == 'ibama' %}
+        <form method="post" action="{% url 'administracao:atualizar_ibama_agora' %}">
+            {% csrf_token %}
+            <button type="submit" class="button primary mc-source-action">Atualizar agora</button>
+        </form>
+        {% endif %}
+        <a class="button primary mc-source-action" href="{% url 'administracao:novo_lote_importacao_fonte' source.import_source_slug %}">{% if source.slug == 'icmbio' %}Importar perfil · Embargos{% else %}Importar arquivos{% endif %}</a>
+        {% if source.slug == 'cnuc' %}
+        <a class="button button-secondary mc-source-action" href="{% url 'administracao:novo_lote_importacao_fonte' 'icmbio' %}">Importar perfil ICMBio · UCs</a>
+        {% endif %}
+    </div>
+</article>

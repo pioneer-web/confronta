@@ -50,6 +50,27 @@ class RepositorioTerritorial:
     LIMITE_OUTROS_CARS = 1000
     LIMITE_CARS_VISIVEIS = 750
 
+    UNIDADES_CONSERVACAO_COMPLETAS = {
+        'cnuc': {
+            'fonte': FonteDados.CNUC,
+            'schema': 'dados_cnuc',
+            'tabela': 'cnuc_unidade_conservacao',
+            'identificadores': {'codigo_cnuc', 'uc_id', 'wdpa_pid'},
+        },
+        'icmbio': {
+            'fonte': FonteDados.ICMBIO,
+            'schema': 'dados_icmbio',
+            'tabela': 'icmbio_unidade_conservacao_federal',
+            'identificadores': {'codigo_cnuc', 'uc_id'},
+        },
+    }
+    CAMPOS_PUBLICOS_UC_COMPLETA = (
+        'uc_id', 'codigo_cnuc', 'wdpa_pid', 'nome_uc', 'categoria_manejo',
+        'sigla_categoria', 'grupo_manejo', 'esfera', 'municipio', 'uf',
+        'orgao_gestor', 'gerencia_regional', 'situacao', 'ano_criacao',
+        'ato_criacao', 'plano_manejo', 'area_ha', 'data_base',
+    )
+
     CAMADAS_SICAR = {
         'app': {
             'dataset_slug': 'sicar-app',
@@ -1052,7 +1073,28 @@ class RepositorioTerritorial:
                     feature = features[index]
                     # Geometria CNUC é preferida quando as duas fontes existem.
                     if key not in feature_by_key or fonte == 'CNUC':
-                        feature_by_key[key] = feature
+                        feature_props = dict(feature.get('properties') or {})
+                        identifier_fields = (
+                            ('codigo_cnuc', 'uc_id', 'wdpa_pid')
+                            if fonte == 'CNUC'
+                            else ('codigo_cnuc', 'uc_id')
+                        )
+                        identifier_field = next((
+                            field for field in identifier_fields
+                            if feature_props.get(field) not in (None, '')
+                        ), '')
+                        raw_identifier = feature_props.get(identifier_field)
+                        if isinstance(raw_identifier, float) and raw_identifier.is_integer():
+                            raw_identifier = int(raw_identifier)
+                        feature_props['_confronta_uc_source'] = fonte.lower()
+                        feature_props['_confronta_uc_identifier_field'] = identifier_field
+                        feature_props['_confronta_uc_identifier'] = (
+                            '' if raw_identifier in (None, '') else str(raw_identifier)
+                        )
+                        feature_by_key[key] = {
+                            **feature,
+                            'properties': feature_props,
+                        }
 
         registros_finais = []
         features_finais = []
@@ -1063,6 +1105,14 @@ class RepositorioTerritorial:
             if feature:
                 props = dict(feature.get('properties') or {})
                 props.update(registro)
+                source_props = feature.get('properties') or {}
+                for field in (
+                    '_confronta_uc_source',
+                    '_confronta_uc_identifier_field',
+                    '_confronta_uc_identifier',
+                ):
+                    if source_props.get(field):
+                        props[field] = source_props[field]
                 features_finais.append({
                     'type': 'Feature',
                     'properties': props,
@@ -1093,6 +1143,77 @@ class RepositorioTerritorial:
             'motivo': '',
             'area_unica_sobreposta_ha': area_unica,
         }
+
+    def buscar_geometria_completa_uc(self, fonte, campo_identificador, identificador):
+        """Busca uma UC por chave estável, somente quando a visualização é solicitada."""
+        config = self.UNIDADES_CONSERVACAO_COMPLETAS.get(str(fonte or '').lower())
+        if not config or campo_identificador not in config['identificadores']:
+            raise ValueError('Identificador de Unidade de Conservação inválido.')
+        identificador = str(identificador or '').strip()
+        if not identificador or len(identificador) > 128 or any(
+            not (char.isalnum() or char in '._-') for char in identificador
+        ):
+            raise ValueError('Identificador de Unidade de Conservação inválido.')
+        if not self._camada_externa_ativa(
+            config['fonte'], config['schema'], config['tabela']
+        ):
+            return None
+
+        existentes = self._table_columns(config['schema'], config['tabela'])
+        geometry_column = 'geometry'
+        if campo_identificador not in existentes or geometry_column not in existentes:
+            return None
+        campos = tuple(
+            campo for campo in self.CAMPOS_PUBLICOS_UC_COMPLETA
+            if campo in existentes
+        )
+        selected = sql.SQL(', ').join(
+            sql.SQL('uc.{}').format(sql.Identifier(campo)) for campo in campos
+        )
+        if campos:
+            selected += sql.SQL(', ')
+        geom = sql.Identifier('geometry')
+        geom_geojson = sql.SQL(
+            "ST_AsGeoJSON(ST_Force2D(ST_Transform("
+            "ST_CollectionExtract(ST_MakeValid(uc.{geom}), 3), 4326)), 6)"
+        ).format(geom=geom)
+        query = sql.SQL(
+            'SELECT {fields}{geometry} '
+            'FROM {table} AS uc '
+            'WHERE uc.{identifier_field}::text = %s '
+            'AND uc.{geometry_column} IS NOT NULL '
+            'AND NOT ST_IsEmpty(uc.{geometry_column}) '
+            'AND ST_SRID(uc.{geometry_column}) > 0 '
+            'LIMIT 2'
+        ).format(
+            fields=selected,
+            geometry=geom_geojson,
+            table=sql.Identifier(config['schema'], config['tabela']),
+            identifier_field=sql.Identifier(campo_identificador),
+            geometry_column=geom,
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(query, [identificador])
+            rows = cursor.fetchall()
+        if len(rows) != 1 or not rows[0][-1]:
+            return None
+
+        properties = {
+            campo: self._serializar(value)
+            for campo, value in zip(campos, rows[0][:-1])
+            if value not in (None, '')
+        }
+        try:
+            geometry = json.loads(rows[0][-1])
+        except (TypeError, ValueError):
+            return None
+        if (
+            not isinstance(geometry, dict)
+            or geometry.get('type') not in {'Polygon', 'MultiPolygon'}
+            or not isinstance(geometry.get('coordinates'), list)
+        ):
+            return None
+        return {'type': 'Feature', 'properties': properties, 'geometry': geometry}
 
     def buscar_sobreposicoes_outros_cars(self, car):
         """Localiza interseções de área entre o CAR consultado e outros CARs.
