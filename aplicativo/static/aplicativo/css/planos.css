@@ -1,511 +1,286 @@
-/* ============================================================
-   CONFRONTA — Planos
-   ============================================================ */
-
-.client-topbar {
-    display: none !important;
+/* Assinatura CONFRONTA — identidade clara compartilhada com o Manage. */
+:root {
+    --plans-bg:#F5F6F8;
+    --plans-surface:#FFFFFF;
+    --plans-primary:#103A43;
+    --plans-primary-hover:#0B2D35;
+    --plans-primary-soft:#E8F1F2;
+    --plans-text:#181C22;
+    --plans-muted:#737B87;
+    --plans-border:#E4E7EC;
 }
 
+.cf-shell-v15.client-shell { min-height:100vh; background:var(--plans-bg) !important; }
+.cf-shell-v15 .client-main {
+    min-width:0;
+    min-height:100vh;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    background:var(--plans-bg) !important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+}
+.cf-shell-v15 .client-rail {
+    background:#fff !important;
+    border-right:1px solid var(--plans-border) !important;
+    box-shadow:none !important;
+}
+.cf-shell-v15 .client-rail-brand {
+    border:0 !important;
+    background:#fff !important;
+    box-shadow:none !important;
+    color:var(--plans-text) !important;
+}
+.cf-shell-v15 .client-rail-brand img {
+    filter:brightness(0) saturate(100%) invert(17%) sepia(18%) saturate(1390%) hue-rotate(145deg) brightness(91%) contrast(91%);
+}
+.cf-shell-v15 .client-rail-brand strong { color:var(--plans-text) !important; }
+.cf-shell-v15 .client-rail-link,
+.cf-shell-v15 .client-rail-link.car-rail-tool,
+.cf-shell-v15 .client-rail-link.car-rail-home { color:#66717C !important; }
+.cf-shell-v15 .client-rail-link:hover,
+.cf-shell-v15 .client-rail-link.car-rail-tool:hover,
+.cf-shell-v15 .client-rail-link.car-rail-home:hover {
+    color:var(--plans-primary) !important;
+    background:#F5F8F6 !important;
+}
+.cf-shell-v15 .client-rail-link.is-active,
+.cf-shell-v15 .client-rail-link.car-rail-tool.is-active {
+    color:var(--plans-primary) !important;
+    background:var(--plans-primary-soft) !important;
+    border-color:transparent !important;
+    box-shadow:inset 3px 0 0 var(--plans-primary) !important;
+}
+.cf-shell-v15 .client-rail-link.is-active svg { color:var(--plans-primary) !important; }
+.cf-shell-v15 .client-rail-footer { border-color:var(--plans-border) !important; }
+.cf-shell-v15 .client-rail-user-menu > summary { background:#F5F6F8 !important; border-color:var(--plans-border) !important; color:var(--plans-primary) !important; }
+.cf-shell-v15 .client-rail-user-popover { background:#fff !important; border-color:var(--plans-border) !important; box-shadow:0 12px 32px rgba(24,28,34,.12) !important; }
+.cf-shell-v15 .client-rail-user-popover,
+.cf-shell-v15 .client-rail-user-popover a,
+.cf-shell-v15 .client-rail-user-popover button { color:var(--plans-text) !important; }
+
+.client-topbar { display:none !important; }
 .plans-page-content {
-    padding-top: 0 !important;
+    min-height:100vh;
+    padding:0 !important;
+    overflow:visible !important;
+    background:var(--plans-bg) !important;
 }
-
 .cf-plans-page {
-    width: min(1180px, calc(100% - 48px));
-    margin: 0 auto;
-    padding: 54px 0 70px;
-    color: #193b47;
+    width:min(1080px, calc(100% - 56px));
+    margin:0 auto;
+    padding:28px 0 64px;
+    color:var(--plans-text);
 }
-
-.cf-plans-hero {
-    max-width: 760px;
-    margin-bottom: 28px;
-}
-
 .cf-kicker,
 .cf-plan-label {
-    display: block;
-    margin-bottom: 9px;
-    color: #17845e;
-    font-size: 11px;
-    line-height: 1;
-    font-weight: 800;
-    letter-spacing: .13em;
+    display:block;
+    margin:0 0 7px;
+    color:var(--plans-primary);
+    font-size:10px;
+    line-height:1.25;
+    font-weight:800;
+    letter-spacing:.11em;
 }
-
+.cf-plans-hero { max-width:720px; margin:0 0 17px; }
 .cf-plans-hero h1 {
-    margin: 0 0 10px;
-    color: #173e4b;
-    font-size: clamp(30px, 3vw, 42px);
-    line-height: 1.12;
-    font-weight: 800;
-    letter-spacing: -.035em;
+    margin:0 0 5px;
+    color:var(--plans-text);
+    font-size:clamp(23px, 2.5vw, 30px);
+    line-height:1.18;
+    font-weight:740;
+    letter-spacing:-.03em;
 }
-
-.cf-plans-hero p {
-    max-width: 650px;
-    margin: 0;
-    color: #667d86;
-    font-size: 15px;
-    line-height: 1.7;
-}
+.cf-plans-hero p { margin:0; color:var(--plans-muted); font-size:13px; line-height:1.5; }
 
 .cf-account-ready {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 20px;
-    margin-bottom: 28px;
-    border: 1px solid #cfe7dd;
-    border-radius: 16px;
-    background: #f4faf7;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:0 0 16px;
+    padding:10px 13px;
+    border:1px solid #D7EADF;
+    border-radius:9px;
+    background:#F0F8F3;
 }
-
 .cf-account-ready__icon {
-    display: grid;
-    flex: 0 0 42px;
-    width: 42px;
-    height: 42px;
-    place-items: center;
-    border-radius: 50%;
-    background: #dff4e9;
-    color: #128158;
-    font-size: 20px;
-    font-weight: 900;
+    display:grid;
+    flex:0 0 25px;
+    width:25px;
+    height:25px;
+    place-items:center;
+    border-radius:50%;
+    background:#DCEFE3;
+    color:#29734B;
+    font-size:13px;
+    font-weight:800;
 }
-
-.cf-account-ready strong {
-    display: block;
-    margin-bottom: 4px;
-    color: #204651;
-    font-size: 14px;
-}
-
-.cf-account-ready p {
-    margin: 0;
-    color: #617780;
-    font-size: 13px;
-    line-height: 1.55;
-}
-
-.cf-plan-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-    align-items: stretch;
-}
+.cf-account-ready strong { display:block; color:#24583D; font-size:12px; }
+.cf-account-ready p { margin:2px 0 0; color:#60776A; font-size:11px; line-height:1.4; }
 
 .cf-plans-page .cf-coverage-note {
-    width: 100%;
-    margin: 0 0 24px;
-    padding: 17px 20px;
-    border: 1px solid #dce9e1;
-    border-radius: 15px;
-    background: #f1f7f3;
-    color: #244b3b;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:3px 12px;
+    width:100%;
+    margin:0 0 14px;
+    padding:9px 12px;
+    border:1px solid var(--plans-border);
+    border-radius:8px;
+    background:rgba(255,255,255,.7);
+    color:var(--plans-muted);
 }
+.cf-plans-page .cf-coverage-note__title { color:#56636D; font-size:10px; font-weight:750; }
+.cf-plans-page .cf-coverage-note__regions { color:var(--plans-text); font-size:11px; font-weight:650; }
+.cf-plans-page .cf-coverage-note__expansion { color:var(--plans-muted); font-size:10px; }
 
-.cf-plans-page .cf-coverage-note__title { color: #1c6847; }
-.cf-plans-page .cf-coverage-note p { color: #52695e; }
-
+.cf-plan-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; align-items:stretch; }
 .cf-plan-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 100%;
-    padding: 31px;
-    overflow: hidden;
-    border: 1px solid #dbe6e7;
-    border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 14px 40px rgba(14, 51, 62, .07);
+    position:relative;
+    display:flex;
+    min-width:0;
+    min-height:300px;
+    flex-direction:column;
+    padding:22px 23px 20px;
+    overflow:hidden;
+    border:1px solid var(--plans-border);
+    border-radius:14px;
+    background:var(--plans-surface);
+    box-shadow:0 5px 18px rgba(24,28,34,.045);
 }
-
-.cf-plan-card--featured {
-    border: 2px solid #1c775d;
-    box-shadow: 0 18px 48px rgba(18, 89, 67, .12);
-}
-
+.cf-plan-card--featured { border-color:#C7DCDD; }
+.cf-plan-card--featured::before { position:absolute; inset:0 0 auto; height:3px; background:var(--plans-primary); content:""; }
 .cf-plan-badge {
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    padding: 7px 12px;
-    border-radius: 999px;
-    background: #e9a913;
-    color: #183a45;
-    font-size: 10px;
-    font-weight: 800;
+    position:absolute;
+    top:15px;
+    right:16px;
+    padding:5px 8px;
+    border:1px solid #C8DDDA;
+    border-radius:4px;
+    background:var(--plans-primary-soft);
+    color:var(--plans-primary);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.045em;
 }
-
-.cf-plan-card h2 {
-    margin: 0 0 20px;
-    color: #173e4b;
-    font-size: 21px;
-    font-weight: 800;
-}
-
-.cf-plan-price {
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    margin-bottom: 12px;
-    color: #153b47;
-}
-
-.cf-plan-price > span {
-    font-size: 19px;
-    font-weight: 800;
-}
-
-.cf-plan-price strong {
-    font-size: clamp(38px, 4vw, 50px);
-    line-height: 1;
-    font-weight: 850;
-    letter-spacing: -.055em;
-}
-
-.cf-plan-price small {
-    color: #607780;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.cf-plan-description {
-    min-height: 44px;
-    margin: 0;
-    color: #687e86;
-    font-size: 14px;
-    line-height: 1.55;
-}
-.cf-plan-divider {
-    height: 1px;
-    margin: 25px 0;
-    background: #e8eeee;
-}
-
-.cf-benefits {
-    flex: 1;
-}
-
-.cf-benefits__title {
-    display: block;
-    margin-bottom: 15px;
-    color: #274b56;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.cf-benefits ul {
-    display: grid;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.cf-benefits li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    color: #4d6871;
-    font-size: 13px;
-    line-height: 1.45;
-}
-
-.cf-benefit-check {
-    display: grid;
-    flex: 0 0 21px;
-    width: 21px;
-    height: 21px;
-    margin-top: -1px;
-    place-items: center;
-    border-radius: 50%;
-    background: #e7f5ef;
-    color: #15815b;
-    font-size: 11px;
-    font-weight: 900;
-}
-
-.cf-plan-card form {
-    margin-top: 29px;
-}
-
+.cf-plan-label { margin-bottom:6px; color:#68737B; font-size:9px; }
+.cf-plan-card--featured .cf-plan-label { color:var(--plans-primary); }
+.cf-plan-card h2 { margin:0 0 15px; color:var(--plans-text); font-size:16px; font-weight:720; letter-spacing:-.015em; }
+.cf-plan-price { display:flex; align-items:baseline; gap:4px; margin:0 0 9px; color:var(--plans-primary); }
+.cf-plan-price > span { font-size:17px; font-weight:700; }
+.cf-plan-price strong { font-size:clamp(34px,3.3vw,43px); line-height:1; font-weight:760; letter-spacing:-.055em; }
+.cf-plan-price small { color:var(--plans-muted); font-size:11px; font-weight:600; }
+.cf-plan-description { max-width:380px; margin:0; color:var(--plans-muted); font-size:11px; line-height:1.5; }
+.cf-plan-card form { margin-top:auto; padding-top:20px; }
 .cf-plan-button {
-    display: flex;
-    width: 100%;
-    min-height: 52px;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition:
-        transform .16s ease,
-        box-shadow .16s ease,
-        background .16s ease;
+    display:flex;
+    width:100%;
+    min-height:43px;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    border-radius:7px;
+    font-size:11px;
+    font-weight:750;
+    cursor:pointer;
+    transition:background .15s ease,border-color .15s ease,color .15s ease,transform .15s ease;
 }
+.cf-plan-button:not(:disabled):hover { transform:translateY(-1px); }
+.cf-plan-button--secondary { border:1px solid var(--plans-primary); background:#fff; color:var(--plans-primary); }
+.cf-plan-button--secondary:hover { background:var(--plans-primary-soft); }
+.cf-plan-button--primary { border:1px solid var(--plans-primary); background:var(--plans-primary); color:#fff; }
+.cf-plan-button--primary:hover { border-color:var(--plans-primary-hover); background:var(--plans-primary-hover); }
+.cf-plan-button:disabled { opacity:.55; cursor:not-allowed; }
 
-.cf-plan-button:not(:disabled):hover {
-    transform: translateY(-1px);
-}
+/* Preço anual reaproveita os valores dinâmicos do plano e do partial existente. */
+.cf-plan-card .cf-annual-price { display:grid; gap:7px; color:var(--plans-text); }
+.cf-plan-card .cf-annual-price__total { display:flex; align-items:baseline; gap:5px; }
+.cf-plan-card .cf-annual-price__total strong { color:var(--plans-primary); font-size:clamp(34px,3.3vw,43px); line-height:1; font-weight:760; letter-spacing:-.055em; }
+.cf-plan-card .cf-annual-price__total small { color:var(--plans-muted); font-size:11px; font-weight:650; }
+.cf-plan-card .cf-annual-price__installment { display:grid; gap:2px; width:fit-content; padding:0; border:0; background:transparent; }
+.cf-plan-card .cf-annual-price__installment > small { color:#65757A; font-size:8px; font-weight:750; letter-spacing:.06em; }
+.cf-plan-card .cf-annual-price__installment > strong { color:#34474A; font-size:12px; font-weight:700; }
+.cf-plan-card .cf-annual-price__installment > span { color:var(--plans-muted); font-size:9px; }
+.cf-plan-card .cf-annual-price__equivalent { color:var(--plans-muted); font-size:10px; }
+.cf-plan-card .cf-annual-price__equivalent strong { color:var(--plans-text); font-weight:700; }
+.cf-plan-card .cf-annual-price__saving { width:fit-content; padding:4px 7px; border-radius:4px; background:#E8F1F2; color:var(--plans-primary); font-size:9px; font-weight:750; }
 
-.cf-plan-button--secondary {
-    border: 1px solid #bfd0d3;
-    background: #fff;
-    color: #1b4653;
-}
-
-.cf-plan-button--secondary:hover {
-    border-color: #8aadb3;
-    background: #f7fbfb;
-}
-
-.cf-plan-button--primary {
-    border: 1px solid #123e4a;
-    background: #123e4a;
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(12, 61, 73, .14);
-}
-
-.cf-plan-button--primary:hover {
-    background: #0d3440;
-}
-
-.cf-plan-button:disabled {
-    opacity: .55;
-    cursor: not-allowed;
-}
+.cf-plan-benefits { margin:20px 0 0; padding:17px 18px 18px; border:1px solid var(--plans-border); border-radius:12px; background:rgba(255,255,255,.75); }
+.cf-plan-benefits__heading { margin-bottom:11px; }
+.cf-plan-benefits__heading .cf-kicker { margin-bottom:4px; }
+.cf-plan-benefits__heading h2 { margin:0; color:var(--plans-text); font-size:14px; font-weight:700; }
+.cf-plan-benefits ul { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 22px; margin:0; padding:0; list-style:none; }
+.cf-plan-benefits li { display:flex; min-width:0; align-items:flex-start; gap:8px; color:#4F5B63; font-size:10px; line-height:1.4; }
+.cf-plan-benefits li > span { display:grid; flex:0 0 16px; width:16px; height:16px; place-items:center; border-radius:50%; background:#E7F2ED; color:#28754C; font-size:9px; font-weight:800; }
 
 .cf-current-plan,
-.cf-payments-card {
-    margin-bottom: 30px;
-    padding: 26px;
-    border: 1px solid #dce7e8;
-    border-radius: 20px;
-    background: #fff;
-}
-
-.cf-current-plan__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 22px;
-}
-
-.cf-current-plan__header h1,
-.cf-section-title h2 {
-    margin: 0 0 6px;
-    color: #193f4b;
-    font-size: 23px;
-}
-
-.cf-current-plan__header p {
-    margin: 0;
-    color: #6d8188;
-    font-size: 13px;
-}
-
-.cf-current-plan__grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    border: 1px solid #e4ebec;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.cf-current-plan__grid > div {
-    padding: 16px;
-    background: #f8fafa;
-    border-right: 1px solid #e4ebec;
-}
-
-.cf-current-plan__grid > div:last-child {
-    border-right: 0;
-}
-
-.cf-current-plan__grid span {
-    display: block;
-    margin-bottom: 4px;
-    color: #7c8e94;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
-.cf-current-plan__grid strong {
-    color: #294b55;
-    font-size: 13px;
-}
-
-.cf-status {
-    padding: 7px 11px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.cf-status--success {
-    background: #e5f6ed;
-    color: #187653;
-}
-
-.cf-status--warning {
-    background: #fff5dd;
-    color: #946518;
-}
-
-.cf-status--neutral {
-    background: #edf2f3;
-    color: #587077;
-}
-
+.cf-payments-card,
 .cf-renewal-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 25px;
-    margin-top: 25px;
-    padding: 20px 22px;
-    border: 1px solid #dce6e7;
-    border-radius: 16px;
-    background: #fff;
+    margin:0 0 18px;
+    padding:18px;
+    border:1px solid var(--plans-border);
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 4px 14px rgba(24,28,34,.035);
+}
+.cf-current-plan__header { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:15px; }
+.cf-current-plan__header h1,.cf-section-title h2 { margin:0 0 4px; color:var(--plans-text); font-size:19px; font-weight:720; }
+.cf-current-plan__header p { margin:0; color:var(--plans-muted); font-size:11px; }
+.cf-current-plan__grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); overflow:hidden; border:1px solid var(--plans-border); border-radius:8px; }
+.cf-current-plan__grid > div { padding:11px; border-right:1px solid var(--plans-border); background:#FAFBFC; }
+.cf-current-plan__grid > div:last-child { border-right:0; }
+.cf-current-plan__grid span,.cf-current-plan__grid strong { display:block; }
+.cf-current-plan__grid span { margin-bottom:4px; color:var(--plans-muted); font-size:9px; font-weight:700; text-transform:uppercase; }
+.cf-current-plan__grid strong { color:var(--plans-text); font-size:11px; }
+.cf-status { padding:5px 8px; border-radius:999px; font-size:9px; font-weight:750; }
+.cf-status--success { background:#E7F3EB; color:#28754C; }
+.cf-status--warning { background:#FFF3DF; color:#8C641F; }
+.cf-status--neutral { background:#EEF1F3; color:#66717C; }
+.cf-renewal-card { display:flex; align-items:center; justify-content:space-between; gap:18px; }
+.cf-renewal-card strong { color:var(--plans-text); font-size:12px; }
+.cf-renewal-card p { max-width:700px; margin:4px 0 0; color:var(--plans-muted); font-size:10px; line-height:1.5; }
+.cf-cancel-button { padding:8px 11px; border:1px solid var(--plans-border); border-radius:6px; background:#fff; color:#7A4242; font-size:10px; font-weight:700; }
+.cf-payments-card { margin-top:18px; }
+.cf-table-wrap { margin-top:12px; overflow-x:auto; }
+.cf-table-wrap table { width:100%; border-collapse:collapse; }
+.cf-table-wrap th,.cf-table-wrap td { padding:10px; border-bottom:1px solid var(--plans-border); text-align:left; color:#4F5B63; font-size:10px; }
+.cf-table-wrap th { color:var(--plans-muted); font-size:9px; letter-spacing:.04em; text-transform:uppercase; }
+.cf-plans-empty { padding:20px; border:1px solid var(--plans-border); border-radius:10px; background:#fff; color:var(--plans-muted); }
+
+@media (max-width:900px) {
+    .cf-plan-grid { gap:12px; }
+    .cf-plan-card { padding:19px; }
+    .cf-current-plan__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .cf-current-plan__grid > div:nth-child(2) { border-right:0; }
+}
+@media (max-width:640px) {
+    .cf-plans-page { width:min(100% - 28px, 1080px); padding:23px 0 42px; }
+    .cf-plans-hero { margin-bottom:13px; }
+    .cf-plan-grid { grid-template-columns:1fr; gap:11px; }
+    .cf-plan-card { min-height:0; padding:19px 17px 16px; border-radius:12px; }
+    .cf-plan-card h2 { margin-bottom:12px; }
+    .cf-plan-price strong,.cf-plan-card .cf-annual-price__total strong { font-size:37px; }
+    .cf-plan-card form { padding-top:15px; }
+    .cf-plan-badge { top:13px; right:12px; padding:4px 6px; font-size:8px; }
+    .cf-plan-benefits { padding:14px 13px; }
+    .cf-plan-benefits ul { grid-template-columns:1fr; gap:8px; }
+    .cf-current-plan__header,.cf-renewal-card { align-items:flex-start; flex-direction:column; }
+    .cf-current-plan__grid { grid-template-columns:1fr 1fr; }
+    .cf-current-plan__grid > div { border-bottom:1px solid var(--plans-border); }
+    .cf-current-plan__grid > div:nth-child(2) { border-right:0; }
+    .cf-current-plan__grid > div:nth-last-child(-n+2) { border-bottom:0; }
+}
+@media (max-width:420px) {
+    .cf-plans-page { width:calc(100% - 22px); }
+    .cf-plans-page .cf-coverage-note { gap:3px 8px; }
+    .cf-plans-page .cf-coverage-note__regions { width:100%; }
+    .cf-plan-card { padding-right:14px; padding-left:14px; }
+    .cf-plan-badge { position:static; display:inline-flex; align-self:flex-end; margin:-4px 0 6px; }
 }
 
-.cf-renewal-card strong {
-    color: #274b55;
-    font-size: 14px;
-}
-
-.cf-renewal-card p {
-    max-width: 700px;
-    margin: 5px 0 0;
-    color: #71848b;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.cf-cancel-button {
-    padding: 10px 14px;
-    border: 1px solid #d3dddd;
-    border-radius: 9px;
-    background: #fff;
-    color: #7a4242;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.cf-payments-card {
-    margin-top: 25px;
-}
-
-.cf-table-wrap {
-    margin-top: 18px;
-    overflow-x: auto;
-}
-
-.cf-table-wrap table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.cf-table-wrap th,
-.cf-table-wrap td {
-    padding: 13px 12px;
-    border-bottom: 1px solid #e8eeee;
-    text-align: left;
-    color: #506b73;
-    font-size: 12px;
-}
-
-.cf-table-wrap th {
-    color: #7b8d93;
-    font-size: 10px;
-    letter-spacing: .05em;
-    text-transform: uppercase;
-}
-
-.cf-plans-empty {
-    padding: 24px;
-    border: 1px solid #dce6e7;
-    border-radius: 16px;
-    background: #fff;
-    color: #60757c;
-}
-
-@media (max-width: 900px) {
-    .cf-plan-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .cf-current-plan__grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .cf-current-plan__grid > div:nth-child(2) {
-        border-right: 0;
-    }
-}
-
-@media (max-width: 640px) {
-    .cf-plans-page {
-        width: min(100% - 28px, 1180px);
-        padding: 28px 0 45px;
-    }
-
-    .cf-plan-card {
-        padding: 23px 20px;
-        border-radius: 18px;
-    }
-
-    .cf-plan-badge {
-        position: static;
-        display: inline-flex;
-        width: fit-content;
-        margin-bottom: 17px;
-    }
-
-    .cf-current-plan__header,
-    .cf-renewal-card {
-        flex-direction: column;
-    }
-
-    .cf-current-plan__grid {
-        grid-template-columns: 1fr;
-    }
-
-    .cf-current-plan__grid > div {
-        border-right: 0;
-        border-bottom: 1px solid #e4ebec;
-    }
-
-    .cf-current-plan__grid > div:last-child {
-        border-bottom: 0;
-    }
-}
-
-/* ============================================================
-   Correção de rolagem — página de planos
-   O shell principal do mapa usa overflow:hidden.
-   Nesta página precisamos de rolagem vertical normal.
-   ============================================================ */
-
-.cf-shell-v15 .client-main {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
-}
-
-.plans-page-content {
-    min-height: 100vh;
-    overflow: visible !important;
-}
-
-.cf-plans-page {
-    padding-bottom: 90px;
+@media print {
+    .cf-shell-v15 .client-rail { display:none !important; }
+    .cf-shell-v15.client-shell { display:block; }
+    .cf-shell-v15 .client-main { overflow:visible !important; }
 }

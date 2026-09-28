@@ -4,12 +4,23 @@
 {% block title %}Planos — CONFRONTA{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'aplicativo/css/planos.css' %}?v=001">
+<link rel="stylesheet" href="{% static 'aplicativo/css/planos.css' %}?v=002-manage-subscription-redesign">
 {% endblock %}
 
 {% block client_topbar_query %}{% endblock %}
 {% block client_topbar_context %}{% endblock %}
 {% block client_content_class %}plans-page-content{% endblock %}
+
+{% block client_rail_tools %}
+<a class="client-rail-link client-rail-home" href="{% url 'aplicativo:inicio' %}" aria-label="Início">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.8l8.5 7v8.1a1.6 1.6 0 0 1-1.6 1.6H15v-6H9v6H5.1a1.6 1.6 0 0 1-1.6-1.6Z"/></svg>
+    <span class="client-rail-label">Início</span>
+</a>
+<a class="client-rail-link car-rail-tool is-active" href="{% url 'aplicativo:planos' %}" aria-label="Meu plano" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 14h4"/></svg>
+    <span class="client-rail-label">Meu plano</span>
+</a>
+{% endblock %}
 
 {% block content %}
 <div class="cf-plans-page">
@@ -70,11 +81,8 @@
                     Consulte sua assinatura, pagamentos e opções disponíveis.
                 </p>
             {% else %}
-                <h1>Escolha o plano ideal para você</h1>
-                <p>
-                    Tenha acesso completo às ferramentas de inteligência territorial
-                    do CONFRONTA.
-                </p>
+                <h1>Escolha seu plano</h1>
+                <p>Acesso completo às ferramentas territoriais do CONFRONTA.</p>
             {% endif %}
         </header>
 
@@ -84,17 +92,14 @@
             <div class="cf-account-ready__icon">✓</div>
             <div>
                 <strong>Conta criada com sucesso</strong>
-                <p>
-                    Escolha uma modalidade abaixo. Seu acesso será liberado
-                    automaticamente após a confirmação do pagamento.
-                </p>
+                <p>Escolha um plano para liberar o acesso após a confirmação do pagamento.</p>
             </div>
         </section>
         {% endif %}
 
 
         {% if plano_confronta %}
-        {% include 'aplicativo/partials/cobertura.html' %}
+        {% include 'aplicativo/partials/cobertura.html' with compacta=True %}
         <section class="cf-plan-grid">
 
             <article class="cf-plan-card">
@@ -113,21 +118,6 @@
                     </p>
                 </div>
 
-                <div class="cf-plan-divider"></div>
-
-                <div class="cf-benefits">
-                    <strong class="cf-benefits__title">Tudo que você precisa</strong>
-
-                    <ul>
-                        {% for recurso in plano_confronta.lista_recursos %}
-                        <li>
-                            <span class="cf-benefit-check">✓</span>
-                            <span>{{ recurso }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-
                 <form method="post" action="{% url 'billing:iniciar_checkout' %}">
                     {% csrf_token %}
                     <input type="hidden" name="ciclo" value="MONTHLY">
@@ -140,7 +130,7 @@
                         {% if acesso_aplicativo.possui_plano %}
                             Assinar plano mensal
                         {% else %}
-                            Continuar com plano mensal
+                            Assinar mensal
                         {% endif %}
                         <span>→</span>
                     </button>
@@ -149,28 +139,13 @@
 
 
             <article class="cf-plan-card cf-plan-card--featured">
-                <span class="cf-plan-badge">Melhor custo-benefício</span>
+                <span class="cf-plan-badge">MAIS VANTAJOSO</span>
 
                 <div class="cf-plan-card__top">
                     <span class="cf-plan-label">ANUAL</span>
                     <h2>CONFRONTA Anual</h2>
 
                     {% include 'aplicativo/partials/preco_anual.html' with plano=plano_confronta variante='card' %}
-                </div>
-
-                <div class="cf-plan-divider"></div>
-
-                <div class="cf-benefits">
-                    <strong class="cf-benefits__title">Tudo do plano mensal</strong>
-
-                    <ul>
-                        {% for recurso in plano_confronta.lista_recursos %}
-                        <li>
-                            <span class="cf-benefit-check">✓</span>
-                            <span>{{ recurso }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
                 </div>
 
                 <form method="post" action="{% url 'billing:iniciar_checkout' %}">
@@ -185,13 +160,24 @@
                         {% if acesso_aplicativo.possui_plano %}
                             Assinar plano anual
                         {% else %}
-                            Continuar com plano anual
+                            Assinar anual
                         {% endif %}
                         <span>→</span>
                     </button>
                 </form>
             </article>
 
+        </section>
+        <section class="cf-plan-benefits" aria-labelledby="cf-plan-benefits-title">
+            <div class="cf-plan-benefits__heading">
+                <span class="cf-kicker">INCLUÍDO EM TODOS OS PLANOS</span>
+                <h2 id="cf-plan-benefits-title">Tudo para explorar o território</h2>
+            </div>
+            <ul>
+                {% for recurso in plano_confronta.lista_recursos %}
+                <li><span aria-hidden="true">✓</span>{{ recurso }}</li>
+                {% endfor %}
+            </ul>
         </section>
         {% else %}
         <div class="cf-plans-empty">
