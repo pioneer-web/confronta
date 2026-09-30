@@ -175,11 +175,13 @@ class AsaasWebhookTests(TestCase):
         self.assertNotContains(response, 'webhook')
 
 
-    def test_checkout_anual_libera_um_ano_sem_renovacao(self):
+    def test_checkout_anual_parcelado_libera_um_ano_e_registra_intencao_de_renovar(self):
         self.checkout.ciclo = AsaasCheckout.Ciclo.YEARLY
+        self.checkout.modalidade = AsaasCheckout.Modalidade.YEARLY_INSTALLMENT
+        self.checkout.parcelas_maximas_ofertadas = 6
         self.checkout.valor = '598.80'
         self.checkout.save(
-            update_fields=['ciclo', 'valor', 'atualizado_em']
+            update_fields=['ciclo', 'modalidade', 'parcelas_maximas_ofertadas', 'valor', 'atualizado_em']
         )
 
         payload = {
@@ -212,7 +214,7 @@ class AsaasWebhookTests(TestCase):
         )
         self.assertIsNone(assinatura.asaas_subscription_id)
         self.assertIsNone(assinatura.proximo_vencimento)
-        self.assertFalse(self.perfil.renovacao_automatica)
+        self.assertTrue(self.perfil.renovacao_automatica)
         self.assertEqual(
             self.perfil.fim_acesso,
             assinatura.acesso_ate,
@@ -225,9 +227,10 @@ class AsaasWebhookTests(TestCase):
 
     def test_pagamento_anual_a_vista_nao_estende_novamente_acesso(self):
         self.checkout.ciclo = AsaasCheckout.Ciclo.YEARLY
+        self.checkout.modalidade = AsaasCheckout.Modalidade.YEARLY_CASH
         self.checkout.valor = '598.80'
         self.checkout.save(
-            update_fields=['ciclo', 'valor', 'atualizado_em']
+            update_fields=['ciclo', 'modalidade', 'valor', 'atualizado_em']
         )
 
         paid = {
@@ -285,6 +288,6 @@ class AsaasWebhookTests(TestCase):
             self.perfil.fim_acesso,
             acesso_original,
         )
-        self.assertFalse(
+        self.assertTrue(
             self.perfil.renovacao_automatica
         )

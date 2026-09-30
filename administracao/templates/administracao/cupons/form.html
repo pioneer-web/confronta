@@ -1,0 +1,6 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Cupom — CONFRONTA{% endblock %}
+{% block content %}
+<div class="page-header d-print-none"><div class="container-xl"><h2 class="page-title">{% if cupom %}Editar{% else %}Novo{% endif %} cupom</h2></div></div>
+<div class="page-body"><div class="container-xl"><form method="post" class="card card-md"><div class="card-body">{% csrf_token %}{{ form.as_p }}</div><div class="card-footer"><button class="btn btn-primary" type="submit">Salvar</button> <a class="btn btn-link" href="{% url 'administracao:cupons' %}">Cancelar</a></div></form></div></div>
+{% endblock %}

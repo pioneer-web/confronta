@@ -100,6 +100,17 @@
 
         {% if plano_confronta %}
         {% include 'aplicativo/partials/cobertura.html' with compacta=True %}
+        {% if assinatura_asaas.renovacao_status == 'PENDING_REAUTHORIZATION' or assinatura_asaas.renovacao_status == 'CHECKOUT_CREATED' %}
+        <section class="cf-plan-card">
+            <h2>Seu plano anual está pronto para renovação.</h2>
+            <p>Confirme novamente o pagamento no ambiente seguro do Asaas. O novo período só começa após a confirmação financeira.</p>
+            <form method="post" action="{% url 'billing:renovar_anual' %}">
+                {% csrf_token %}
+                <label>Cupom opcional <input name="codigo_cupom" type="text" autocomplete="off" placeholder="Cupom de desconto"></label>
+                <button class="cf-plan-button cf-plan-button--primary" type="submit">Renovar plano</button>
+            </form>
+        </section>
+        {% endif %}
         <section class="cf-plan-grid">
 
             <article class="cf-plan-card">
@@ -151,6 +162,18 @@
                 <form method="post" action="{% url 'billing:iniciar_checkout' %}">
                     {% csrf_token %}
                     <input type="hidden" name="ciclo" value="YEARLY">
+                    <label>Forma de pagamento anual
+                        <select name="modalidade">
+                            <option value="YEARLY_INSTALLMENT" selected>Parcelado — até 6x</option>
+                            <option value="YEARLY_CASH">À vista com renovação anual automática</option>
+                        </select>
+                    </label>
+                    <input type="hidden" name="parcelas_maximas_ofertadas" value="6">
+                    <label>Cupom de desconto (opcional)
+                        <input name="codigo_cupom" type="text" autocomplete="off" placeholder="Cupom de desconto">
+                    </label>
+                    <button type="button" class="btn btn-link" data-coupon-apply>Aplicar</button>
+                    <p data-coupon-result role="status" aria-live="polite"></p>
 
                     <button
                         class="cf-plan-button cf-plan-button--primary"
@@ -168,6 +191,24 @@
             </article>
 
         </section>
+        <script>
+        document.querySelectorAll('[data-coupon-apply]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const form = button.closest('form');
+                const data = new FormData(form);
+                const result = form.querySelector('[data-coupon-result]');
+                data.set('ciclo', 'YEARLY');
+                const response = await fetch('{% url "billing:validar_cupom" %}', {
+                    method: 'POST', body: data,
+                    headers: {'X-CSRFToken': data.get('csrfmiddlewaretoken')}
+                });
+                const body = await response.json();
+                result.textContent = body.ok
+                    ? `Cupom aplicado — Desconto: R$ ${body.desconto} — Novo valor: R$ ${body.valor_final}`
+                    : body.mensagem;
+            });
+        });
+        </script>
         <section class="cf-plan-benefits" aria-labelledby="cf-plan-benefits-title">
             <div class="cf-plan-benefits__heading">
                 <span class="cf-kicker">INCLUÍDO EM TODOS OS PLANOS</span>
@@ -186,14 +227,16 @@
         {% endif %}
 
 
-        {% if assinatura_asaas and assinatura_asaas.asaas_subscription_id and not assinatura_asaas.cancelamento_solicitado and assinatura_asaas.status != 'CANCELED' %}
+        {% if pode_cancelar_renovacao %}
         <section class="cf-renewal-card">
             <div>
-                <strong>Renovação automática ativa</strong>
-                <p>
-                    Ao cancelar, novas cobranças serão interrompidas.
-                    O acesso continuará disponível até o fim do período já pago.
-                </p>
+                {% if assinatura_asaas.modalidade == 'YEARLY_INSTALLMENT' %}
+                    <strong>Renovação anual mediante sua confirmação</strong>
+                    <p>Cancelar interrompe apenas a intenção de renovação futura. As parcelas da compra vigente não são alteradas; o acesso permanece até o fim da vigência.</p>
+                {% else %}
+                    <strong>Renovação automática ativa</strong>
+                    <p>Ao cancelar, novas cobranças serão interrompidas. O acesso continuará disponível até o fim do período já pago.</p>
+                {% endif %}
             </div>
 
             <form

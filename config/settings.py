@@ -253,3 +253,15 @@ ASAAS_CHECKOUT_EXPIRES_MINUTES=env_int('ASAAS_CHECKOUT_EXPIRES_MINUTES',60)
 # configure com uma URL de túnel (ex.: https://...trycloudflare.com).
 ASAAS_CALLBACK_BASE_URL=os.getenv('ASAAS_CALLBACK_BASE_URL','').strip().rstrip('/')
 BILLING_GRACE_DAYS=env_int('BILLING_GRACE_DAYS',5)
+BILLING_RENEWAL_NOTICE_DAYS=env_int('BILLING_RENEWAL_NOTICE_DAYS',15)
+BILLING_RENEWAL_SCAN_INTERVAL_SECONDS=env_int('BILLING_RENEWAL_SCAN_INTERVAL_SECONDS',21600)
+
+
+# CONFRONTA: suporte a Cloudflare Quick Tunnel em desenvolvimento
+# Restrito a DEBUG para não ampliar os hosts aceitos em produção.
+if DEBUG:
+    if '.trycloudflare.com' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('.trycloudflare.com')
+
+    if 'https://*.trycloudflare.com' not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append('https://*.trycloudflare.com')

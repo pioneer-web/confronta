@@ -1,0 +1,8 @@
+{% extends 'administracao/base.html' %}
+{% block title %}Cupons — CONFRONTA{% endblock %}
+{% block content %}
+<div class="page-header d-print-none"><div class="container-xl"><div class="row g-2 align-items-center"><div class="col"><h2 class="page-title">Cupons</h2></div><div class="col-auto"><a class="btn btn-primary" href="{% url 'administracao:cupom_novo' %}">Novo cupom</a></div></div></div></div>
+<div class="page-body"><div class="container-xl"><div class="card"><div class="table-responsive"><table class="table card-table table-vcenter"><thead><tr><th>Código</th><th>Desconto</th><th>Usos</th><th>Status</th><th></th></tr></thead><tbody>
+{% for cupom in cupons %}<tr><td>{{ cupom.codigo }}</td><td>{{ cupom.valor_desconto }}{% if cupom.tipo_desconto == 'PERCENTUAL' %}%{% else %} R${% endif %}</td><td>{{ cupom.quantidade_usos }}{% if cupom.limite_total_usos %} / {{ cupom.limite_total_usos }}{% endif %}</td><td>{% if cupom.ativo %}Ativo{% else %}Inativo{% endif %}</td><td><a href="{% url 'administracao:cupom_editar' cupom.pk %}">Editar</a></td></tr>{% empty %}<tr><td colspan="5">Nenhum cupom cadastrado.</td></tr>{% endfor %}
+</tbody></table></div></div></div></div>
+{% endblock %}

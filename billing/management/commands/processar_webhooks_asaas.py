@@ -1,6 +1,8 @@
 import time
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 
 from billing.models import EventoWebhookAsaas
 from billing.services.webhooks import processar_evento
@@ -35,8 +37,14 @@ class Command(BaseCommand):
         return len(eventos)
 
     def handle(self, *args, **options):
+        scan_interval = max(1, int(getattr(settings, 'BILLING_RENEWAL_SCAN_INTERVAL_SECONDS', 21600)))
+        last_scan = 0
         while True:
             self._rodada(options['limit'])
+            now = time.monotonic()
+            if now - last_scan >= scan_interval:
+                call_command('marcar_renovacoes_anuais')
+                last_scan = now
             if not options['loop']:
                 break
             time.sleep(max(1, options['interval']))

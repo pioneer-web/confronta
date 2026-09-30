@@ -12,6 +12,13 @@ def planos_view(request):
     plano = PlanoComercial.objects.filter(slug='confronta', ativo=True).first()
     assinatura = assinatura_atual(perfil) if perfil else None
     pagamentos = assinatura.pagamentos.all()[:8] if assinatura else []
+    pode_cancelar_renovacao = bool(
+        assinatura
+        and not assinatura.cancelamento_solicitado
+        and assinatura.status != 'CANCELED'
+        and assinatura.renovacao_status != 'CANCELED'
+        and (assinatura.modalidade == 'YEARLY_INSTALLMENT' or assinatura.asaas_subscription_id)
+    )
 
     return render(request, 'aplicativo/planos.html', {
         'perfil_cliente': perfil,
@@ -19,4 +26,5 @@ def planos_view(request):
         'plano_confronta': plano,
         'assinatura_asaas': assinatura,
         'pagamentos_asaas': pagamentos,
+        'pode_cancelar_renovacao': pode_cancelar_renovacao,
     })

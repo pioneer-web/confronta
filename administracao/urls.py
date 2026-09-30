@@ -1,6 +1,7 @@
 from django.urls import path
 from administracao.views import auth, dashboard, importacoes, bases
 from administracao.views import administradores, clientes, planos, alertas, avisos_clientes, financeiro, atendimentos, navigation
+from administracao.views import cupons
 
 app_name = 'administracao'
 
@@ -54,6 +55,9 @@ urlpatterns = [
     path('clientes/<int:pk>/excluir/', clientes.excluir_cliente, name='cliente_excluir'),
     path('planos/', planos.lista_planos, name='planos'),
     path('financeiro/asaas/', financeiro.financeiro_asaas, name='financeiro_asaas'),
+    path('cupons/', cupons.lista_cupons, name='cupons'),
+    path('cupons/novo/', cupons.editar_cupom, name='cupom_novo'),
+    path('cupons/<int:pk>/editar/', cupons.editar_cupom, name='cupom_editar'),
     path('planos/novo/', planos.novo_plano, name='plano_novo'),
     path('planos/<int:pk>/editar/', planos.editar_plano, name='plano_editar'),
     path('planos/<int:pk>/alternar/', planos.alternar_plano, name='plano_alternar'),
