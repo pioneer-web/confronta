@@ -260,7 +260,7 @@ def criar_checkout(request, perfil, ciclo, modalidade=None, parcelas_maximas_ofe
             payload['chargeTypes'] = ['RECURRENT']
             payload['subscription'] = {'cycle': 'YEARLY', 'nextDueDate': agora.strftime('%Y-%m-%d')}
         else:
-            payload['chargeTypes'] = ['DETACHED', 'INSTALLMENT']
+            payload['chargeTypes'] = ['INSTALLMENT']
             payload['installment'] = {'maxInstallmentCount': parcelas_maximas_ofertadas}
 
     # Não enviamos `customerData` nesta V1. O Asaas exige o conjunto cadastral

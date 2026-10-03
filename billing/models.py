@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.utils import timezone
 
 from aplicativo.models import PerfilCliente, PlanoComercial
@@ -196,6 +197,12 @@ class Cupom(models.Model):
 
     class Meta:
         ordering = ['codigo']
+        constraints = [
+            models.UniqueConstraint(
+                Lower('codigo'),
+                name='billing_cupom_codigo_ci_unico',
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         self.codigo = (self.codigo or '').strip().upper()
