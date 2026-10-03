@@ -48,6 +48,8 @@ def scrub_payloads(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
+
     dependencies = [('billing', '0001_initial')]
 
     operations = [
