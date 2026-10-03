@@ -1,5 +1,6 @@
 import json
 import logging
+import unicodedata
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
@@ -526,6 +527,57 @@ class RepositorioTerritorial:
             for row in rows
         ]
 
+    def buscar_municipios_sicar(self, texto, *, limite=10):
+        """Sugere municípios a partir dos atributos CAR e devolve apenas bbox.
+
+        Não há catálogo municipal operacional separado. A extensão é calculada
+        sob demanda sobre os CARs dos até 10 municípios sugeridos, sem ST_Union
+        e sem serializar as geometrias.
+        """
+        if not self._camada_ativa(self.DATASET_IMOVEIS, self.TABELA_IMOVEIS):
+            raise CamadaIndisponivel('A base operacional do SICAR não está disponível.')
+        srid = self._table_srid(self.SCHEMA_SICAR, self.TABELA_IMOVEIS)
+        if not srid:
+            raise CamadaIndisponivel('A base operacional do SICAR não possui SRID válido.')
+        texto = unicodedata.normalize('NFD', str(texto or '').strip())
+        texto = ''.join(char for char in texto if unicodedata.category(char) != 'Mn').upper()
+        if len(texto) < 2:
+            return []
+        limit = min(10, max(1, int(limite)))
+        table = sql.Identifier(self.SCHEMA_SICAR, self.TABELA_IMOVEIS)
+        normalized_name = sql.SQL("translate(upper(trim(municipio::text)), 'ÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ', 'AAAAAEEEEIIIIOOOOOUUUUC')")
+        geom_wgs84 = sql.SQL("CASE WHEN ST_SRID(geometry) = 4326 THEN geometry ELSE ST_Transform(geometry, 4326) END")
+        query = sql.SQL(
+            "WITH municipios AS MATERIALIZED ("
+            " SELECT trim(municipio::text) AS nome, upper(trim(uf::text)) AS uf, "
+            "        trim(codigo_municipio::text) AS codigo_ibge, "
+            "        CASE WHEN {norm} LIKE %s THEN 0 ELSE 1 END AS prioridade "
+            " FROM {table} WHERE municipio IS NOT NULL AND trim(municipio::text) <> '' "
+            "   AND {norm} LIKE %s "
+            " GROUP BY trim(municipio::text), upper(trim(uf::text)), trim(codigo_municipio::text), prioridade "
+            " ORDER BY prioridade, trim(municipio::text), upper(trim(uf::text)) "
+            " LIMIT %s"
+            "), extents AS ("
+            "SELECT m.nome, m.uf, m.codigo_ibge, m.prioridade, ST_3DExtent({geom}) AS bbox "
+            "FROM municipios m JOIN {table} i ON trim(i.municipio::text) = m.nome "
+            " AND upper(trim(i.uf::text)) = m.uf "
+            " AND coalesce(trim(i.codigo_municipio::text), '') = coalesce(m.codigo_ibge, '') "
+            "WHERE i.geometry IS NOT NULL AND NOT ST_IsEmpty(i.geometry) "
+            "GROUP BY m.nome, m.uf, m.codigo_ibge, m.prioridade "
+            ") SELECT nome, uf, codigo_ibge, ST_XMin(bbox), ST_YMin(bbox), ST_XMax(bbox), ST_YMax(bbox) "
+            "FROM extents ORDER BY prioridade, nome, uf"
+        ).format(table=table, norm=normalized_name, geom=geom_wgs84)
+        texto = texto.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+        pattern = f'%{texto}%'
+        with connection.cursor() as cursor:
+            cursor.execute(query, [f'{texto}%', pattern, limit])
+            rows = cursor.fetchall()
+        return [
+            {'nome': row[0] or '', 'uf': row[1] or '', 'codigo_ibge': row[2] or '',
+             'bbox': [float(value) for value in row[3:7]] if all(value is not None for value in row[3:7]) else None}
+            for row in rows
+        ]
+
     def buscar_cars_por_geojson(self, geometria, *, limite=20):
         """Localiza CARs com interseção de área real com Polygon/MultiPolygon WGS84."""
         if not self._camada_ativa(self.DATASET_IMOVEIS, self.TABELA_IMOVEIS):
@@ -1046,7 +1098,7 @@ class RepositorioTerritorial:
             )
 
         # Mantemos CNUC como fonte administrativa principal. ICMBio complementa
-        # UCs federais por código CNUC, sem duplicar a mesma APA no mapa/relatório.
+        # UCs federais por código CNUC, sem duplicar a mesma APA no mapa.
         merged = {}
         feature_by_key = {}
 

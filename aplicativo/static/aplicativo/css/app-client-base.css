@@ -163,7 +163,7 @@ input[type="tel"] {
 /* ======================================================================
    MÓDULO 2 — CONFRONTA v0.3.5
    Navegação fixa, home interna, tela operacional CAR, painel direito,
-   relatório e fluxo guiado de glebas.
+    painel territorial e fluxo guiado de glebas.
    ====================================================================== */
 .client-shell {
     min-height: 100vh;
@@ -329,20 +329,8 @@ input[type="tel"] {
 
 /* Glebas */
 
-.gleba-session-summary { margin-bottom: 9px; padding: 8px 9px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #f3f8f5; color: #607178; font-size: 9px; }
-.gleba-session-summary strong { color: var(--floresta); font-size: 12px; }
-.gleba-list { display: grid; gap: 8px; margin-bottom: 9px; }
-
-
-.gleba-overlap-warning { margin-top: 7px; padding: 6px; background: #fff7eb; color: #8a4b08; font-size: 8.5px; line-height: 1.4; }
-.gleba-workflow { min-height: 360px; }
-.gleba-workflow-head { margin-bottom: 12px; display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: start; gap: 8px; }
-.gleba-workflow-head h3 { margin: 2px 0 0; color: var(--petroleo); font-size: 14px; }
-.gleba-back-button, .gleba-cancel-button { border: 0; background: transparent; cursor: pointer; }
-.gleba-back-button { width: 28px; height: 28px; color: #0d8f87; font-size: 18px; }
-.gleba-cancel-button { padding: 5px 6px; color: #b33c3c; font-size: 9px; font-weight: 800; }
-.gleba-step > p { margin: 0 0 10px; color: #65767c; font-size: 10px; line-height: 1.45; }
-.gleba-color-grid { display: grid; grid-template-columns: repeat(5, 34px); gap: 8px; padding: 6px 0; }
+.gleba-list { display: grid; min-width: 0; }
+.gleba-color-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0; }
 .gleba-color-swatch { width: 32px; height: 32px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #cfd9d5; cursor: pointer; }
 .gleba-color-swatch[data-color="#2563EB"] { background: #2563EB; }
 .gleba-color-swatch[data-color="#FFFFFF"] { background: #FFFFFF; }
@@ -350,30 +338,6 @@ input[type="tel"] {
 .gleba-color-swatch[data-color="#F97316"] { background: #F97316; }
 .gleba-color-swatch[data-color="#A855F7"] { background: #A855F7; }
 
-
-.gleba-drawing-instruction { padding: 11px; border: 1px solid #c4dfec; background: #eff9fd; color: #49656f; }
-.gleba-drawing-instruction strong, .gleba-drawing-instruction span { display: block; }
-.gleba-drawing-instruction strong { color: #0b7285; font-size: 11px; }
-.gleba-drawing-instruction span { margin-top: 3px; font-size: 9px; line-height: 1.4; }
-.gleba-step label { margin-top: 4px; }
-.gleba-pending-metric { margin-top: 10px; padding: 9px; display: flex; justify-content: space-between; gap: 8px; background: #f3f8f5; color: #65767c; font-size: 9px; }
-.gleba-pending-metric strong { color: #315f43; font-size: 12px; }
-.gleba-save-actions { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-.gleba-import-status { margin-top: 7px; color: #607178; font-size: 9px; }
-.gleba-import-status.is-error { color: #a53737; }
-.gleba-import-status.is-success { color: #2f7a48; }
-
-/* Relatório */
-
-.report-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #e7ece9; }
-.report-head h2 { margin: 3px 0 0; color: var(--petroleo); font-size: 16px; }
-.report-section { padding: 12px 0; border-bottom: 1px solid #e7ece9; }
-.report-section h3 { margin: 0 0 8px; color: var(--petroleo); font-size: 13px; }
-.report-data { margin: 0; }
-.report-data div, .report-list > div { padding: 5px 0; display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid #f0f3f2; font-size: 9.5px; }
-
-.report-data dd { margin: 0; text-align: right; font-weight: 700; overflow-wrap: anywhere; }
-.report-list strong { text-align: right; color: #34484f; font-size: 9px; }
 
 /* Leaflet: a v0.3.5 não exibe seletor de mapa-base. */
 .leaflet-control-layers { display: none !important; }
@@ -400,17 +364,6 @@ input[type="tel"] {
     
 }
 
-@media print {
-    body { background: #fff !important; }
-    .client-rail, .client-topbar, .whatsapp-fixed, .territorial-map-column, .territorial-side-top,
-    [data-territorial-view-panel="map"], .message-stack, .new-query-drawer { display: none !important; }
-    .client-shell, .client-main, .client-content, .territorial-screen, .territorial-side-panel,
-    [data-territorial-view-panel="report"] { display: block !important; width: 100% !important; height: auto !important; border: 0 !important; overflow: visible !important; }
-    .territorial-report-view { padding: 0 !important; }
-    #print-current-report { display: none !important; }
-}
-
-
 /* v0.3.5 revisão — consulta limpa e sem cabeçalhos redundantes. */
 
 
@@ -435,38 +388,6 @@ input[type="tel"] {
 .map-live-area span { font-size: 9px; opacity: .82; }
 .map-live-area strong { font-size: 16px; font-weight: 800; }
 
-/* Ajuste — mapa vetorial no relatório impresso. */
-.report-map-section { break-inside: avoid; page-break-inside: avoid; }
-.report-map-preview {
-    width: 100%;
-    min-height: 220px;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    border: 1px solid #dce5e0;
-    background: #f7faf8;
-}
-.report-map-preview svg { display: block; width: 100%; height: auto; max-height: 420px; }
-.report-map-note { margin: 6px 0 0; color: #718087; font-size: 8.5px; line-height: 1.4; }
-.report-gleba-label {
-    paint-order: stroke;
-    stroke: #ffffff;
-    stroke-width: 4px;
-    stroke-linejoin: round;
-    fill: #0B2D3C;
-    font-family: Inter, Manrope, "Segoe UI", sans-serif;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-@media print {
-    .report-map-preview { min-height: 300px !important; border-color: #aebbb6 !important; }
-    
-    
-    
-}
-
-
 /* ======================================================================
    MÓDULO 2 — LOCALIZAÇÃO RÁPIDA DE CAR E GLEBAS
    ====================================================================== */
@@ -482,5 +403,3 @@ input[type="tel"] {
     outline: 2px solid #4FA36A;
     outline-offset: 2px;
 }
-
-

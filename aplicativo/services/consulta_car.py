@@ -21,7 +21,7 @@ class ConsultaCarService:
 
     As bases oficiais permanecem nas tabelas operacionais do Módulo 1. Os
     cruzamentos CAR × fontes externas são calculados no PostGIS a cada consulta
-    e entregues ao mapa/relatório, evitando caches territoriais que ficariam
+    e entregues ao mapa, evitando caches territoriais que ficariam
     obsoletos após uma atualização mensal das fontes.
     """
 

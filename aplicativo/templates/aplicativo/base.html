@@ -9,8 +9,8 @@
     <title>{% block title %}CONFRONTA{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'aplicativo/css/tailwind.css' %}?v=053">
     <link rel="stylesheet" href="{% static 'aplicativo/css/app-core.css' %}?v=001">
-    <link rel="stylesheet" href="{% static 'aplicativo/css/app-client-base.css' %}?v=001">
-    <link rel="stylesheet" href="{% static 'aplicativo/css/app-global.css' %}?v=002-unified-map-popups">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/app-client-base.css' %}?v=003-dark-glebas-drawer">
+    <link rel="stylesheet" href="{% static 'aplicativo/css/app-global.css' %}?v=004-shared-operational-drawer">
     <link rel="stylesheet" href="{% static 'aplicativo/css/preco-anual.css' %}?v=001">
     {% block extra_head %}{% endblock %}
 </head>
@@ -77,6 +77,8 @@
         </div>
     </aside>
 
+    {% block client_floating_controls %}{% endblock %}
+
     <section class="client-main cf-client-main">
         <header class="client-topbar cf-client-topbar">
             <div class="client-topbar-query-area">
@@ -107,7 +109,10 @@
             {% if messages %}
             <div class="message-stack cf-message-stack">
                 {% for message in messages %}
-                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}">{{ message }}</div>
+                <div class="alert query-result-notice {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}" aria-live="{% if message.tags == 'error' %}assertive{% else %}polite{% endif %}">
+                    <span class="query-result-notice-text">{{ message }}</span>
+                    <button type="button" class="query-result-notice-close" aria-label="Fechar notificação">×</button>
+                </div>
                 {% endfor %}
             </div>
             {% endif %}

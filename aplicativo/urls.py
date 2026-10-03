@@ -23,11 +23,15 @@ from aplicativo.views import (
     planos_view,
 )
 from aplicativo.views.cars_visiveis import cars_visiveis
+from aplicativo.views.cars_por_ponto import cars_por_ponto
+from aplicativo.views.municipios import buscar_municipios
 
 app_name = 'aplicativo'
 
 urlpatterns = [
     path('api/cars-visiveis/', cars_visiveis, name='cars_visiveis'),
+    path('api/cars-por-ponto/', cars_por_ponto, name='cars_por_ponto'),
+    path('api/municipios/', buscar_municipios, name='buscar_municipios'),
     path('api/unidade-conservacao/geometria-completa/', geometria_completa_uc, name='geometria_completa_uc'),
     path('login/', login_view, name='login'),
 

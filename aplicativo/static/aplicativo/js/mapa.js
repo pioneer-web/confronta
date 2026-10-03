@@ -247,6 +247,8 @@
     const canDraw = Boolean(configElement && configElement.dataset.canDraw === '1');
     const carCode = (configElement && configElement.dataset.car) || 'CAR';
     const layers = {};
+    const sicorOccurrenceLayers = new Map();
+    const overlapCarLayers = new Map();
     let perimeter = null;
     let selectedSicorFeatureLayer = null;
     let fullConservationUnitLayer = null;
@@ -254,27 +256,29 @@
     let fullConservationUnitRequestId = 0;
     let fullConservationUnitPendingButton = null;
 
-    const palette = {
-        perimetro: { color: '#FFFFFF', weight: 4.4, fillOpacity: 0.02, opacity: 1, fillColor: '#FFFFFF' },
-        app: { color: '#2b83cf', weight: 2.4, fillOpacity: 0.22, opacity: 0.98 },
-        reserva_legal: { color: '#16823B', weight: 2.7, fillColor: '#259E46', fillOpacity: 0.34, opacity: 1 },
-        vegetacao_nativa: { color: '#0DA663', weight: 2.7, fillColor: '#32C878', fillOpacity: 0.30, opacity: 1 },
-        area_consolidada: { color: '#d19a24', weight: 2.25, fillOpacity: 0.22, opacity: 0.98 },
+    const LAYER_STYLES = {
+        perimetro: { color: '#FFFFFF', weight: 3.2, fillOpacity: 0.01, opacity: 1, fillColor: '#FFFFFF' },
+        cars_contextuais: { color: '#16A34A', fillColor: '#4ADE80', weight: 1.5, fillOpacity: 0.08, opacity: 0.92 },
+        glebas_usuario: { color: '#1D4ED8', fillColor: '#3B82F6', weight: 1.8, fillOpacity: 0.34, opacity: 0.96 },
+        app: { color: '#2b83cf', fillColor: '#2b83cf', weight: 1.8, fillOpacity: 0.22, opacity: 0.98 },
+        reserva_legal: { color: '#65A30D', fillColor: '#84CC16', weight: 1.8, fillOpacity: 0.22, opacity: 1 },
+        vegetacao_nativa: { color: '#15803D', fillColor: '#22C55E', weight: 1.8, fillOpacity: 0.20, opacity: 1 },
+        area_consolidada: { color: '#D97706', fillColor: '#F59E0B', weight: 1.8, fillOpacity: 0.22, opacity: 0.98 },
         area_pousio: { color: '#b67a18', weight: 2.2, fillOpacity: 0.20, opacity: 0.97 },
         hidrografia: { color: '#0f8fd6', weight: 2.45, fillOpacity: 0.24, opacity: 0.98 },
         servidao_administrativa: { color: '#5f6b7a', weight: 2.15, fillOpacity: 0.18, opacity: 0.96 },
         uso_restrito: { color: '#99622a', weight: 2.2, fillOpacity: 0.22, opacity: 0.97 },
-        ext_ibama: { color: '#ef4444', weight: 2.55, fillOpacity: 0.28, opacity: 0.98 },
-        ext_prodes: { color: '#f97316', weight: 2.6, fillOpacity: 0.32, opacity: 0.99 },
-        ext_prodes_desmatamento: { color: '#dc2626', weight: 2.65, fillOpacity: 0.34, opacity: 0.99 },
-        ext_prodes_queimada: { color: '#f59e0b', weight: 2.55, fillOpacity: 0.30, opacity: 0.99 },
-        ext_assentamentos: { color: '#f59e0b', weight: 2.35, fillOpacity: 0.26, opacity: 0.98 },
-        ext_quilombolas: { color: '#9333ea', weight: 2.35, fillOpacity: 0.26, opacity: 0.98 },
-        ext_funai: { color: '#7c3aed', weight: 2.45, fillOpacity: 0.27, opacity: 0.99 },
-        ext_icmbio_embargo: { color: '#be123c', weight: 2.55, fillOpacity: 0.28, opacity: 0.99 },
-        ext_apa: { color: '#16a34a', weight: 2.35, fillOpacity: 0.24, opacity: 0.98 },
-        ext_sicor: { color: '#2563EB', fillColor: '#3B82F6', weight: 2, fillOpacity: 0.20, opacity: 0.9 },
-        ext_outros_car: { color: '#0891b2', weight: 2.55, fillOpacity: 0.22, opacity: 0.99 }
+        ext_ibama: { color: '#B91C1C', fillColor: '#EF4444', weight: 1.8, fillOpacity: 0.28, opacity: 0.98 },
+        ext_icmbio_embargo: { color: '#B91C1C', fillColor: '#EF4444', weight: 1.8, fillOpacity: 0.28, opacity: 0.99 },
+        ext_prodes: { color: '#C2410C', fillColor: '#F97316', weight: 1.8, fillOpacity: 0.25, opacity: 0.99 },
+        ext_prodes_desmatamento: { color: '#C2410C', fillColor: '#F97316', weight: 1.8, fillOpacity: 0.25, opacity: 0.99 },
+        ext_prodes_queimada: { color: '#C2410C', fillColor: '#F97316', weight: 1.8, fillOpacity: 0.25, opacity: 0.99 },
+        ext_assentamentos: { color: '#92400E', fillColor: '#D97706', weight: 1.8, fillOpacity: 0.19, opacity: 0.98 },
+        ext_quilombolas: { color: '#9F1239', fillColor: '#BE123C', weight: 1.8, fillOpacity: 0.21, opacity: 0.99 },
+        ext_funai: { color: '#6D28D9', fillColor: '#8B5CF6', weight: 1.8, fillOpacity: 0.21, opacity: 0.99 },
+        ext_apa: { color: '#047857', fillColor: '#10B981', weight: 1.8, fillOpacity: 0.17, opacity: 0.98 },
+        ext_sicor: { color: '#1D4ED8', fillColor: '#3B82F6', weight: 2, fillOpacity: 0.22, opacity: 0.98 },
+        ext_outros_car: { color: '#E11D48', fillColor: '#F43F5E', weight: 1.8, fillOpacity: 0.28, opacity: 0.99 }
     };
 
     function normalizeHexColor(value, fallback) {
@@ -283,12 +287,12 @@
     }
 
     function styleForKey(key) {
-        const base = palette[key] || { color: '#4FA36A', weight: 1.9, fillOpacity: 0.16, opacity: 0.92 };
+        const base = LAYER_STYLES[key] || { color: '#4FA36A', fillColor: '#4FA36A', weight: 1.9, fillOpacity: 0.16, opacity: 0.92 };
         return { ...base };
     }
 
     // A legenda usa exatamente a mesma cor da camada desenhada no mapa.
-    // palette é a única fonte de verdade para a simbologia.
+    // LAYER_STYLES é a única fonte de verdade para a simbologia.
     function syncLayerSwatches() {
         document.querySelectorAll(
             '#map-layer-drawer [data-layer-eye]'
@@ -300,7 +304,7 @@
 
             if (!key || !swatch) return;
 
-            const style = palette[key];
+            const style = LAYER_STYLES[key];
             if (!style) return;
 
             const color = normalizeHexColor(
@@ -356,6 +360,55 @@
         const style = styleForKey(layerKey);
         if (typeof L !== 'undefined' && featureLayer instanceof L.CircleMarker) featureLayer.setStyle(pointStyleFromVectorStyle(style));
         else featureLayer.setStyle(style);
+    }
+
+    function sicorOccurrenceDescriptor(feature, index) {
+        const props = feature?.properties || {};
+        const ref = String(props.ref_bacen || '').trim();
+        const order = String(props.nu_ordem || '').trim();
+        const year = String(props.ano_sicor || props._ano_arquivo || props.ano_operacao || '').trim();
+        const operationId = String(props.nu_identificador || '').trim();
+        const identity = [ref, order, year, operationId].map((part) => part || '-').join('|');
+        const fallback = !ref && !order && !year && !operationId
+            ? `feature-${index}-${String(props.nu_indice || props.nu_indice_gleba || props.indice_gleba || '')}`
+            : identity;
+        return {
+            key: `sicor:${fallback}`,
+            ref: ref || 'Referência não informada',
+            order,
+            hasReference: Boolean(ref)
+        };
+    }
+
+    function overlapCarIdentity(feature, index) {
+        const props = feature?.properties || {};
+        return String(props.cod_imovel || '').trim() || `car-feature-${index}`;
+    }
+
+    function distributeFeatureLayers(key, featureGroup) {
+        if (!['ext_sicor', 'ext_outros_car'].includes(key)) return featureGroup;
+        const destination = key === 'ext_sicor' ? sicorOccurrenceLayers : overlapCarLayers;
+        const masterGroup = L.layerGroup();
+        const featureLayers = [];
+        featureGroup.eachLayer((featureLayer) => featureLayers.push(featureLayer));
+        let index = 0;
+        featureLayers.forEach((featureLayer) => {
+            const feature = featureLayer.feature;
+            const identity = key === 'ext_sicor'
+                ? sicorOccurrenceDescriptor(feature, index)
+                : { key: overlapCarIdentity(feature, index) };
+            let subgroup = destination.get(identity.key);
+            if (!subgroup) {
+                subgroup = L.layerGroup();
+                subgroup._confrontaMenuIdentity = identity;
+                destination.set(identity.key, subgroup);
+                masterGroup.addLayer(subgroup);
+            }
+            featureGroup.removeLayer(featureLayer);
+            subgroup.addLayer(featureLayer);
+            index += 1;
+        });
+        return masterGroup;
     }
 
     function escapeHtml(value) {
@@ -1103,10 +1156,9 @@
                         }
                         selectedSicorFeatureLayer = layer;
                         layer.setStyle({
-                            color: '#1D4ED8',
+                            ...styleForKey('ext_sicor'),
                             weight: 3,
-                            opacity: 0.9,
-                            fillColor: '#3B82F6',
+                            opacity: 1,
                             fillOpacity: 0.35
                         });
                     });
@@ -1140,9 +1192,15 @@
                 });
             }
         });
-        layers[key] = group;
-        applyLayerStyleObject(group, styleForKey(key));
-        if (visibleByDefault) group.addTo(map);
+        const managedGroup = distributeFeatureLayers(key, group);
+        layers[key] = managedGroup;
+        applyLayerStyleObject(managedGroup, styleForKey(key));
+        if (['ext_sicor', 'ext_outros_car'].includes(key)) {
+            const occurrenceLayers = key === 'ext_sicor' ? sicorOccurrenceLayers : overlapCarLayers;
+            if (visibleByDefault) occurrenceLayers.forEach((occurrenceLayer) => occurrenceLayer.addTo(map));
+        } else if (visibleByDefault) {
+            managedGroup.addTo(map);
+        }
     }
 
     function ensureMapPane(name, zIndex, pointerEvents = 'auto') {
@@ -1188,7 +1246,7 @@
 
     const autoVisibleExternalLayers = new Set([
         'ext_ibama', 'ext_icmbio_embargo', 'ext_funai', 'ext_quilombolas',
-        'ext_apa', 'ext_assentamentos', 'ext_sicor', 'ext_prodes'
+        'ext_apa', 'ext_assentamentos', 'ext_sicor', 'ext_prodes', 'ext_outros_car'
     ]);
 
     if (consulta && consulta.imovel && consulta.imovel.geometry) {
@@ -1230,7 +1288,8 @@
 
     const visibleLayers = new Map();
     if (perimeter) visibleLayers.set('perimetro', true);
-    if (layers.ext_sicor) visibleLayers.set('ext_sicor', map.hasLayer(layers.ext_sicor));
+    if (layers.ext_sicor) visibleLayers.set('ext_sicor', [...sicorOccurrenceLayers.values()].some((layer) => map.hasLayer(layer)));
+    if (layers.ext_outros_car) visibleLayers.set('ext_outros_car', [...overlapCarLayers.values()].some((layer) => map.hasLayer(layer)));
 
     // Perímetros contextuais independentes das camadas da consulta atual.
     // O pane abaixo dos overlays preserva os desenhos e o CAR pesquisado em destaque.
@@ -1239,7 +1298,7 @@
             pane: 'carsContextuaisPane',
             interactive: true,
             bubblingMouseEvents: false,
-            style: { color: '#36A970', weight: 2, opacity: 0.94, fillColor: '#63C88D', fillOpacity: 0.14 },
+            style: styleForKey('cars_contextuais'),
             onEachFeature: function (feature, layer) {
                 if (configElement.dataset.freeMode === 'true') {
                     layer.on('click', function () {
@@ -1357,6 +1416,21 @@
     }
 
     function setLayerVisible(key, visible) {
+        const sicorChild = sicorOccurrenceLayers.get(key);
+        if (sicorChild) {
+            if (visible && !map.hasLayer(sicorChild)) sicorChild.addTo(map);
+            else if (!visible && map.hasLayer(sicorChild)) map.removeLayer(sicorChild);
+            syncSicorMasterVisibility();
+            return;
+        }
+        const overlapCarCode = key.startsWith('overlap-car:') ? key.slice('overlap-car:'.length) : key;
+        const overlapChild = overlapCarLayers.get(overlapCarCode);
+        if (overlapChild) {
+            if (visible && !map.hasLayer(overlapChild)) overlapChild.addTo(map);
+            else if (!visible && map.hasLayer(overlapChild)) map.removeLayer(overlapChild);
+            syncOverlapMasterVisibility();
+            return;
+        }
         if (key === 'cars_contextuais') {
             const contextual = layers.cars_contextuais;
             visibleLayers.set(key, Boolean(visible));
@@ -1373,10 +1447,15 @@
         }
         const layer = layers[key];
         if (!layer) return;
-        if (key === 'ext_sicor') {
-            if (visible && !map.hasLayer(layer)) layer.addTo(map);
-            else if (!visible && map.hasLayer(layer)) map.removeLayer(layer);
-            visibleLayers.set(key, Boolean(visible));
+        if (key === 'ext_sicor' || key === 'ext_outros_car') {
+            const sublayers = key === 'ext_sicor' ? sicorOccurrenceLayers : overlapCarLayers;
+            sublayers.forEach((sublayer) => {
+                if (visible && !map.hasLayer(sublayer)) sublayer.addTo(map);
+                else if (!visible && map.hasLayer(sublayer)) map.removeLayer(sublayer);
+            });
+            visibleLayers.set(key, Boolean(visible) && sublayers.size > 0);
+            if (key === 'ext_sicor') syncSicorMasterVisibility();
+            else syncOverlapMasterVisibility();
             return;
         }
         if (visible) {
@@ -1388,6 +1467,89 @@
         document.querySelectorAll(`.layer-toggle[data-layer="${CSS.escape(key)}"]`).forEach((toggle) => {
             if (!toggle.disabled) toggle.checked = visible;
         });
+    }
+
+    function updateMasterButton(key, visibleCount, totalCount) {
+        const button = document.querySelector(`#map-layer-drawer [data-layer-eye="${CSS.escape(key)}"]`);
+        if (!button) return;
+        const allVisible = totalCount > 0 && visibleCount === totalCount;
+        const partiallyVisible = visibleCount > 0 && visibleCount < totalCount;
+        button.classList.toggle('is-active', allVisible);
+        button.classList.toggle('is-partial', partiallyVisible);
+        button.setAttribute('aria-pressed', partiallyVisible ? 'mixed' : (allVisible ? 'true' : 'false'));
+        button.title = partiallyVisible ? 'Algumas ocorrências estão visíveis' : (allVisible ? 'Ocultar todas' : 'Exibir todas');
+    }
+
+    function syncSicorMasterVisibility() {
+        const visibleCount = [...sicorOccurrenceLayers.values()].filter((layer) => map.hasLayer(layer)).length;
+        visibleLayers.set('ext_sicor', visibleCount > 0);
+        updateMasterButton('ext_sicor', visibleCount, sicorOccurrenceLayers.size);
+    }
+
+    function syncOverlapMasterVisibility() {
+        const visibleCount = [...overlapCarLayers.values()].filter((layer) => map.hasLayer(layer)).length;
+        visibleLayers.set('ext_outros_car', visibleCount > 0);
+        updateMasterButton('ext_outros_car', visibleCount, overlapCarLayers.size);
+    }
+
+    function makeSubitemButton(key, label, title) {
+        const row = document.createElement('div');
+        row.className = 'layer-subitem';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'layer-subitem-toggle is-active';
+        button.dataset.layerEye = key;
+        button.setAttribute('aria-pressed', 'true');
+        button.setAttribute('aria-label', `Ocultar ${label}`);
+        button.title = title || label;
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.setAttribute('aria-hidden', 'true');
+        icon.innerHTML = '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/>';
+        const text = document.createElement('span');
+        text.className = 'layer-subitem-label';
+        text.textContent = label;
+        if (title) text.title = title;
+        button.appendChild(icon);
+        row.append(button, text);
+        return row;
+    }
+
+    function renderSicorOccurrencesMenu() {
+        const master = document.querySelector('#map-layer-drawer [data-layer-eye="ext_sicor"]');
+        if (!master) return;
+        const subitems = document.createElement('div');
+        subitems.className = 'layer-subitems';
+        subitems.dataset.layerSubitemsFor = 'ext_sicor';
+        const occurrences = [...sicorOccurrenceLayers.entries()];
+        const referenceCounts = new Map();
+        occurrences.forEach(([, layer]) => {
+            const ref = layer._confrontaMenuIdentity.ref;
+            referenceCounts.set(ref, (referenceCounts.get(ref) || 0) + 1);
+        });
+        occurrences.forEach(([key, layer]) => {
+            const identity = layer._confrontaMenuIdentity;
+            const label = `Ref. ${identity.ref}${referenceCounts.get(identity.ref) > 1 && identity.order ? ` · Ordem ${identity.order}` : ''}`;
+            subitems.appendChild(makeSubitemButton(key, label));
+        });
+        master.insertAdjacentElement('afterend', subitems);
+        subitems.hidden = !occurrences.length;
+        syncSicorMasterVisibility();
+    }
+
+    function renderOverlapCarsMenu() {
+        const master = document.querySelector('#map-layer-drawer [data-layer-eye="ext_outros_car"]');
+        if (!master) return;
+        const subitems = document.createElement('div');
+        subitems.className = 'layer-subitems';
+        subitems.dataset.layerSubitemsFor = 'ext_outros_car';
+        overlapCarLayers.forEach((layer, carCodeValue) => {
+            const label = layer._confrontaMenuIdentity.key;
+            subitems.appendChild(makeSubitemButton(`overlap-car:${carCodeValue}`, label, label));
+        });
+        master.insertAdjacentElement('afterend', subitems);
+        subitems.hidden = !overlapCarLayers.size;
+        syncOverlapMasterVisibility();
     }
 
     document.querySelectorAll('.layer-toggle').forEach((toggle) => {
@@ -1415,6 +1577,8 @@
             });
             if (!group.querySelector('[data-layer-eye]')) group.hidden = true;
         });
+        renderSicorOccurrencesMenu();
+        renderOverlapCarsMenu();
     }
 
     const fitButton = document.getElementById('fit-car');
@@ -1493,6 +1657,71 @@
         setLayerVisible,
         fitCar: enquadrarCar
     };
+
+    // Consulta complementar por clique: mantém o CAR atual até uma ação
+    // explícita em "Trabalhar neste CAR".
+    map.on('click', async function (event) {
+        const endpoint = configElement && configElement.dataset.carsPointUrl;
+        if (!endpoint || configElement.dataset.canConsult !== 'true') return;
+        const target = event?.originalEvent?.target;
+        if (window.CONFRONTA_QUERY_DRAW_ACTIVE || window.CONFRONTA_MEASURE_ACTIVE ||
+            document.body.classList.contains('is-drawing-gleba') ||
+            document.body.classList.contains('is-measuring-distance') ||
+            document.querySelector('#gleba-live-area-map.is-editing-gleba') ||
+            document.querySelector('.leaflet-draw-tooltip, .leaflet-editing-icon, .leaflet-vertex-icon') ||
+            (target && target.closest('.leaflet-control, .leaflet-popup, .leaflet-marker-icon, .leaflet-interactive, .leaflet-draw-tooltip'))) return;
+        const point = event.latlng;
+        const popup = L.popup({ maxWidth: 340, closeButton: true }).setLatLng(point).setContent('Localizando CARs…').openOn(map);
+        try {
+            const url = new URL(endpoint, window.location.origin);
+            url.searchParams.set('latitude', point.lat.toFixed(7));
+            url.searchParams.set('longitude', point.lng.toFixed(7));
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.erro || 'Não foi possível localizar CARs neste ponto.');
+            if (!map.hasLayer(popup)) return;
+            const content = document.createElement('div');
+            const cars = Array.isArray(payload.resultados) ? payload.resultados : (Array.isArray(payload.cars) ? payload.cars : []);
+            const title = document.createElement('strong');
+            title.textContent = cars.length ? `${cars.length}${payload.truncada ? '+' : ''} CAR${cars.length === 1 ? '' : 's'} encontrado${cars.length === 1 ? '' : 's'} neste ponto` : 'Nenhum CAR encontrado neste ponto.';
+            content.appendChild(title);
+            if (payload.truncada) {
+                const notice = document.createElement('p');
+                notice.className = 'map-point-truncated';
+                notice.textContent = 'Mais de 20 CARs encontrados neste ponto. Mostrando os primeiros 20.';
+                content.appendChild(notice);
+            }
+            cars.forEach((car) => {
+                const row = document.createElement('div');
+                row.className = 'map-point-car-option';
+                const details = document.createElement('p');
+                const area = Number(car.area_total_ha);
+                const areaText = car.area_total_ha !== null && car.area_total_ha !== '' && Number.isFinite(area)
+                    ? `${area.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ha · ` : '';
+                details.textContent = `CAR ${car.cod_imovel} · ${areaText}${car.municipio || ''}${car.uf ? ' - ' + car.uf : ''}`;
+                const choose = document.createElement('button');
+                choose.type = 'button';
+                choose.className = 'map-point-car-work';
+                choose.textContent = 'Trabalhar neste CAR';
+                choose.addEventListener('click', () => {
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = configElement.dataset.carQueryUrl;
+                    const token = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+                    if (token) {
+                        const csrf = document.createElement('input'); csrf.type = 'hidden'; csrf.name = 'csrfmiddlewaretoken'; csrf.value = token; form.appendChild(csrf);
+                    }
+                    const field = document.createElement('input'); field.type = 'hidden'; field.name = 'car'; field.value = car.cod_imovel; form.appendChild(field);
+                    document.body.appendChild(form); form.submit();
+                });
+                row.append(details, choose);
+                content.appendChild(row);
+            });
+            popup.setContent(content);
+        } catch (error) {
+            if (map.hasLayer(popup)) popup.setContent(error.message || 'Não foi possível localizar CARs neste ponto.');
+        }
+    });
 
     requestLocationAutomatically();
     window.setTimeout(() => map.invalidateSize(), 80);

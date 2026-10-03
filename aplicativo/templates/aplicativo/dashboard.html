@@ -14,19 +14,15 @@
 {% endif %}
 
 {# Overrides visuais do mapa — sempre carregados por último #}
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-base.css' %}?v=008">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=001">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-base.css' %}?v=010-full-map-layout">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-resumo.css' %}?v=002-cleanup-copy">
 <link rel="stylesheet" href="{% static 'aplicativo/css/mapa-popups.css' %}?v=013-complete-uc-action">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=006-grouped-layer-order">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-camadas.css' %}?v=011-shared-layer-polygon-sections">
 
-{% if pode_desenhar_glebas %}
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=006-project-workflow-refinement">
-{% endif %}
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-poligonos.css' %}?v=017-centered-print-query-toasts">
 
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio.css' %}?v=003-report-own-panel">
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=006-independent-report-mode">
+<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-alertas.css' %}?v=015-analysis-drawer-contrast">
 {% endif %}
-<link rel="stylesheet" href="{% static 'aplicativo/css/mapa-relatorio-print.css' %}?v=001">
 {% endblock %}
 
 {% block client_rail_tools %}
@@ -55,33 +51,22 @@
     <span class="client-rail-label">Camadas</span>
 </button>
 {% if pode_explorar_mapa %}
-<button type="button" class="client-rail-link car-rail-tool polygon-rail-tool" data-premium-lock {% if consulta and pode_desenhar_glebas %}id="rail-glebas"{% else %}data-requires-car="1"{% endif %} aria-label="Polígono">
+<button type="button" class="client-rail-link car-rail-tool polygon-rail-tool" data-premium-lock {% if consulta and pode_desenhar_glebas %}id="rail-glebas"{% else %}data-requires-car="1"{% endif %} aria-label="Polígonos" aria-expanded="false">
     <svg class="polygon-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M6.2 20.2 3.5 11 7.8 3.8h8.4l4.3 7.2-2.8 9.2Z"/>
         <path d="m7.2 15.7 4.1-3.2 5.8 2.1M11.3 12.5 10.2 6M17.1 14.6l1-6"/>
     </svg>
-    <span class="client-rail-label">Polígono</span>
+    <span class="client-rail-label">Polígonos</span>
 </button>
 <button type="button" class="client-rail-link car-rail-tool" data-premium-lock id="rail-measure-distance" aria-label="Medir distância">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 18 4"/><path d="M7 18H4v-3M15 4h3v3"/><path d="m8 14 2 2M11 11l2 2M14 8l2 2"/></svg>
     <span class="client-rail-label">Medir Distância</span>
 </button>
 {% endif %}
-<button type="button" class="client-rail-link car-rail-tool" data-premium-lock {% if consulta %}id="rail-report"{% else %}data-requires-car="1"{% endif %} aria-label="Relatórios">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h8.5L19 8v12.5H6Z"/><path d="M14.5 3.5V8H19M9.5 12h6M9.5 16h6"/></svg>
-    <span class="client-rail-label">Relatórios</span>
+    <button type="button" class="client-rail-link car-rail-tool" data-premium-lock data-empty-message="Selecione um CAR para visualizar o Mapa Crédito." {% if consulta %}id="rail-credit-map"{% else %}data-requires-car="1"{% endif %} aria-label="Mapa Crédito">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-7 9 7v9H3Z"/><path d="M8 20v-6h8v6M12 4v5"/></svg>
+    <span class="client-rail-label">Mapa Crédito</span>
 </button>
-{% if consulta %}
-<a class="client-rail-link car-rail-tool" href="{% url 'aplicativo:exportar_car_kml' %}" aria-label="Exportações">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg>
-    <span class="client-rail-label">Exportações</span>
-</a>
-{% else %}
-<button type="button" class="client-rail-link car-rail-tool" data-premium-lock data-requires-car="1" aria-label="Exportações">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M5 20h14"/></svg>
-    <span class="client-rail-label">Exportações</span>
-</button>
-{% endif %}
 <button type="button" class="client-rail-link car-rail-tool is-disabled" disabled aria-label="Histórico em breve">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/><path d="M12 7v5l3 2"/></svg>
     <span class="client-rail-label">Histórico</span>
@@ -94,21 +79,26 @@
 {% endblock %}
 
 {% block client_topbar_query %}
+{% endblock %}
+
+{% block client_floating_controls %}
 {% if pode_explorar_mapa %}
-<div class="top-query-cluster top-query-cluster-slim">
-    <button type="button" class="new-query-button" id="open-new-query" data-premium-lock aria-haspopup="dialog" aria-controls="new-query-modal">
-        <span aria-hidden="true">＋</span> Consulta
+<div class="floating-search top-query-cluster top-query-cluster-slim">
+    <button type="button" class="new-query-button" id="open-new-query" data-premium-lock aria-label="Abrir nova consulta" title="Abrir nova consulta" aria-haspopup="dialog" aria-controls="new-query-modal">
+        <span aria-hidden="true">＋</span><span class="new-query-label">Nova consulta</span><span class="new-query-label-compact">Consulta</span>
     </button>
-    <form class="client-global-search cf-global-search topbar-car-search" data-premium-lock method="post" action="{% url 'aplicativo:nova_consulta' %}" role="search">
-        {% csrf_token %}
-        <div class="client-global-search-field cf-global-search-field">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-            <input type="text" name="car" maxlength="120" autocomplete="off" spellcheck="false" placeholder="Buscar CAR (ex.: PE-1234567...)" aria-label="Buscar imóvel pelo número do CAR">
-        </div>
-        <button class="client-global-search-submit cf-search-submit" type="submit" aria-label="Buscar CAR">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-        </button>
-    </form>
+    <div class="floating-search-query">
+        <form class="client-global-search cf-global-search topbar-car-search" data-premium-lock method="post" action="{% url 'aplicativo:nova_consulta' %}" role="search">
+            {% csrf_token %}
+            <div class="client-global-search-field cf-global-search-field">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+                <input type="text" name="car" maxlength="120" autocomplete="off" spellcheck="false" placeholder="Buscar CAR, coordenada ou município..." aria-label="Buscar CAR, coordenada ou município">
+            </div>
+            <button class="client-global-search-submit cf-search-submit" type="submit" aria-label="Buscar CAR">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+            </button>
+        </form>
+    </div>
 </div>
 {% endif %}
 {% endblock %}
@@ -232,7 +222,21 @@
 {% else %}
 <section class="territorial-screen" id="territorial-screen">
     <div class="territorial-map-column">
+        <header class="credit-map-print-header" id="credit-map-print-header">
+            <strong>CONFRONTA · Mapa Crédito</strong>
+            <span>CAR: {{ consulta.imovel.cod_imovel }}</span>
+            <span>Município: {{ consulta.imovel.municipio|default:'Não informado' }}{% if consulta.imovel.uf %} - {{ consulta.imovel.uf }}{% endif %}</span>
+            <span>Área do imóvel: {% if consulta.imovel.area_total_ha != None %}{{ consulta.imovel.area_total_ha|floatformat:2 }} ha{% else %}Não informada{% endif %}</span>
+        </header>
         <div id="map" class="territorial-map" aria-label="Mapa de satélite do imóvel consultado"></div>
+        <footer class="credit-map-print-footer" id="credit-map-print-footer">
+            <span id="credit-map-print-summary">Nenhum polígono de crédito desenhado.</span>
+        </footer>
+        <button type="button" id="credit-map-print-button" class="credit-map-print-button" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M6 17H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M7 14h10v7H7zM18 11h.01"/></svg>
+            <span>Imprimir mapa</span>
+        </button>
+        <div id="credit-map-notice" class="credit-map-notice" hidden role="status" aria-live="polite"></div>
 
 
 
@@ -262,7 +266,7 @@
         </aside>
         {% endif %}
 
-        <aside class="map-layer-drawer" id="map-layer-drawer" hidden aria-label="Camadas do mapa">
+        <aside class="map-layer-drawer map-operational-drawer" id="map-layer-drawer" hidden aria-label="Camadas do mapa">
             <header class="map-layer-drawer-head">
                 <div>
                     <span>CAMADAS</span>
@@ -273,8 +277,8 @@
             <div class="map-layer-drawer-list">
                 <div class="map-layer-menu-source" data-map-layer-menu-source>
                 {% if pode_desenhar_glebas %}<button type="button" class="map-layer-eye is-active" data-layer-eye="glebas_usuario" aria-pressed="true">
-                    <span class="map-layer-swatch" style="background-color:#2563EB"></span>
-                    <span class="map-layer-name">Glebas desenhadas</span>
+                    <span class="map-layer-swatch"></span>
+                    <span class="map-layer-name">Polígonos desenhados</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="layer-eye-off-mark" d="M4 4l16 16"/></svg>
                 </button>{% endif %}
                 {% for chave, camada in consulta.camadas_externas.items %}
@@ -313,7 +317,7 @@
                     <h3>ÁREAS DO CAR</h3>
                 </section>
                 <section class="map-layer-menu-group" data-layer-menu-group="glebas">
-                    <h3>GLEBAS</h3>
+                    <h3>POLÍGONOS</h3>
                 </section>
                 <section class="map-layer-menu-group" data-layer-menu-group="externas">
                     <h3>INTERFERÊNCIAS / CAMADAS EXTERNAS</h3>
@@ -321,7 +325,7 @@
             </div>
         </aside>
         <div id="gleba-live-area-map" class="map-live-area" hidden aria-live="polite">
-            <span>Área do polígono</span>
+        <span>Área do polígono</span>
             <strong id="gleba-live-area-value">0,00 ha</strong>
             <div id="gleba-edit-controls" class="gleba-edit-controls" hidden>
                 <button type="button" id="gleba-edit-cancel" class="button button-secondary">Cancelar</button>
@@ -373,11 +377,11 @@
         </section>
     </div>
 
-    <aside class="territorial-side-panel territorial-tool-drawer" id="territorial-side-panel" hidden aria-label="Ferramentas do imóvel">
-        <header class="territorial-side-top territorial-tool-drawer-head">
-            <div class="territorial-tool-drawer-title">
-                <span id="territorial-tool-kicker">ANÁLISE DO IMÓVEL</span>
-                <strong id="territorial-tool-title">{{ consulta.imovel.cod_imovel }}</strong>
+    <aside class="territorial-side-panel territorial-tool-drawer map-operational-drawer" id="territorial-side-panel" hidden aria-label="Ferramentas do imóvel">
+            <header class="territorial-side-top territorial-tool-drawer-head">
+                <div class="territorial-tool-drawer-title">
+                    <span id="territorial-tool-kicker">ANÁLISE DO IMÓVEL</span>
+                    <strong id="territorial-tool-title">{{ consulta.imovel.cod_imovel }}</strong>
                 <small class="drawer-analysis-counts" id="drawer-analysis-counts"></small>
             </div>
             <button type="button" class="territorial-tool-close" id="territorial-tool-close" title="Fechar painel" aria-label="Fechar painel">×</button>
@@ -487,83 +491,20 @@
 
             {% if pode_desenhar_glebas %}
             <section class="territorial-tab-panel" data-side-panel="glebas">
-                <div id="gleba-list-view" class="polygon-session-view">
-                    <div class="polygon-tool-intro">
-                        <div class="polygon-tool-intro-icon" aria-hidden="true">
-                            <svg class="polygon-tool-icon" viewBox="0 0 24 24">
-                                <path d="M6.2 20.2 3.5 11 7.8 3.8h8.4l4.3 7.2-2.8 9.2Z"/>
-                                <path d="m7.2 15.7 4.1-3.2 5.8 2.1M11.3 12.5 10.2 6M17.1 14.6l1-6"/>
-                            </svg>
-                        </div>
-                        <div class="polygon-tool-intro-copy">
-                            <span class="eyebrow">POLÍGONOS</span>
-                            <h3>Polígonos da sessão</h3>
-                            <p>Desenhe no mapa ou importe um arquivo e gerencie cada área individualmente.</p>
-                        </div>
-                        <button type="button" class="button button-primary button-compact polygon-new-button" id="start-new-gleba">+ Novo polígono</button>
-                    </div>
-                    <div class="gleba-session-summary polygon-session-summary">
-                        <span id="gleba-status">Nenhum polígono salvo.</span>
-                        <strong id="gleba-area">0,00 ha</strong>
-                    </div>
-                    <div id="gleba-list" class="gleba-list polygon-list" aria-live="polite"></div>
-                    <div class="polygon-bulk-actions">
-                        <button type="button" class="button button-secondary" id="download-drawn-kml" disabled>Exportar todos em KML</button>
-                        <button type="button" class="button button-secondary" id="download-drawn-csv" disabled>Exportar todos em CSV</button>
-                    </div>
-                </div>
-
-                <div id="gleba-workflow" class="gleba-workflow" hidden>
-                    <div class="gleba-workflow-head polygon-workflow-head">
-                        <button type="button" class="gleba-back-button" id="gleba-workflow-back" aria-label="Voltar">←</button>
-                        <div class="polygon-workflow-title">
-                            <span class="eyebrow">NOVO POLÍGONO</span>
-                            <h3 id="gleba-workflow-title">Criar polígono</h3>
-                            <p>Desenhe diretamente no mapa ou importe uma geometria.</p>
-                        </div>
-                        <button type="button" class="gleba-cancel-button" id="gleba-workflow-cancel">Cancelar</button>
-                    </div>
-                    <div class="polygon-stepper" aria-label="Etapas da criação do polígono">
-                        <div class="polygon-stepper-item is-done"><span>✓</span><small>Iniciar</small></div>
-                        <i></i>
-                        <div class="polygon-stepper-item is-active"><span>2</span><small>Desenhar ou importar</small></div>
-                        <i></i>
-                        <div class="polygon-stepper-item"><span>3</span><small>Salvar</small></div>
-                    </div>
-
-                    <section class="gleba-step gleba-create-grid polygon-create-step" id="gleba-step-create">
-                        <div class="polygon-mode-tabs" role="tablist" aria-label="Forma de criar o polígono">
-                            <button type="button" class="polygon-mode-tab is-active" id="gleba-method-draw" role="tab" aria-selected="true">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                                <span>Desenhe o polígono</span>
-                            </button>
-                            <button type="button" class="polygon-mode-tab" id="gleba-method-import" role="tab" aria-selected="false">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M5 20h14"/></svg>
-                                <span>Importe um arquivo</span>
-                            </button>
-                        </div>
-                        <button type="button" class="polygon-draw-helper" id="polygon-draw-helper">
-                            <div class="polygon-helper-icon" aria-hidden="true">
-                                <svg class="polygon-tool-icon" viewBox="0 0 24 24">
-                                    <path d="M6.2 20.2 3.5 11 7.8 3.8h8.4l4.3 7.2-2.8 9.2Z"/>
-                                    <path d="m7.2 15.7 4.1-3.2 5.8 2.1M11.3 12.5 10.2 6M17.1 14.6l1-6"/>
-                                </svg>
-                            </div>
-                            <div><strong>Desenhar diretamente no mapa</strong><span>Marque os vértices e acompanhe a área em tempo real.</span></div>
-                            <span class="polygon-helper-action">Começar ›</span>
+                <div id="gleba-list-view" class="glebas-drawer-content">
+                    <section class="glebas-drawer-section map-layer-menu-group" aria-labelledby="glebas-actions-title">
+                        <h3 id="glebas-actions-title">AÇÕES</h3>
+                        <button type="button" class="map-layer-eye glebas-action-primary" id="start-new-gleba">
+                            <span class="glebas-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 19 1.2-4.2L15.8 4.2a2.1 2.1 0 0 1 3 3L8.2 17.8 4 19Z"/><path d="m14.5 5.5 4 4M3.5 20.5h17"/></svg></span><span class="map-layer-name">Desenhar novo polígono</span>
                         </button>
-                        <div class="polygon-import-panel" id="gleba-import-panel" hidden>
-                            <label class="polygon-import-dropzone" id="gleba-import-dropzone" for="import-gleba-file">
-                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v11H4Z"/><path d="M8 8.5 9.5 5h5L16 8.5"/><path d="M9 13h6M12 10v6"/></svg>
-                                <strong>Clique ou arraste um arquivo</strong>
-                                <span>KML, GeoJSON ou JSON · até 5 MB</span>
-                            </label>
-                            <input class="sr-only" id="import-gleba-file" type="file" accept=".kml,.geojson,.json,application/vnd.google-earth.kml+xml,application/geo+json,application/json">
-                            <div id="gleba-import-status" class="gleba-import-status" aria-live="polite"></div>
-                        </div>
-                        <div class="polygon-color-row">
-                            <div><strong>Cor do polígono</strong><span>Escolha uma cor com boa leitura sobre a imagem de satélite.</span></div>
-                            <div class="gleba-color-grid polygon-color-grid" id="gleba-color-picker" role="radiogroup" aria-label="Cor do novo polígono">
+                        <button type="button" class="map-layer-eye glebas-action-secondary" id="import-gleba-button">
+                            <span class="glebas-action-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 3H6v18h12V8z"/><path d="M13 3v5h5M12 17v-7m-3 3 3-3 3 3"/></svg></span><span class="map-layer-name">Importar arquivo</span>
+                        </button>
+                        <input class="sr-only" id="import-gleba-file" type="file" accept=".kml,.geojson,.json,application/vnd.google-earth.kml+xml,application/geo+json,application/json">
+                        <p id="gleba-import-status" class="glebas-import-status" aria-live="polite"></p>
+                        <div class="glebas-color-options">
+                            <span>Cor dos novos polígonos</span>
+                            <div class="gleba-color-grid" id="gleba-color-picker" role="radiogroup" aria-label="Cor dos novos polígonos">
                                 <button type="button" class="gleba-color-swatch is-selected" data-color="#2563EB" title="Azul" aria-label="Azul"></button>
                                 <button type="button" class="gleba-color-swatch" data-color="#0891B2" title="Ciano" aria-label="Ciano"></button>
                                 <button type="button" class="gleba-color-swatch" data-color="#EAB308" title="Amarelo" aria-label="Amarelo"></button>
@@ -575,157 +516,30 @@
                         </div>
                     </section>
 
-                    <section class="gleba-step" id="gleba-step-drawing" hidden>
-                        <div class="gleba-drawing-instruction">
-                            <strong>Modo desenho ativo</strong>
-                            <span>Marque os pontos no mapa. Use a barra inferior para desfazer, concluir ou cancelar.</span>
-                        </div>
+                    <section class="glebas-drawer-section map-layer-menu-group" aria-labelledby="glebas-list-title">
+                        <h3 id="glebas-list-title">POLÍGONOS DESENHADOS</h3>
+                        <div id="gleba-list" class="gleba-list" aria-live="polite"></div>
                     </section>
 
-                    <section class="gleba-step" id="gleba-step-name" hidden>
-                        <label for="gleba-pending-name">Nome do polígono</label>
-                        <input id="gleba-pending-name" type="text" maxlength="80" placeholder="Ex.: Polígono Norte">
-                        <div class="gleba-pending-metric">
-                            <span>Área aproximada</span>
-                            <strong id="gleba-pending-area">0,00 ha</strong>
-                        </div>
-                        <div class="gleba-save-actions">
-                            <button type="button" class="button button-secondary" id="gleba-pending-discard">Voltar</button>
-                            <button type="button" class="button button-primary" id="gleba-pending-save">Salvar polígono</button>
-                        </div>
+                    <section class="glebas-drawer-section map-layer-menu-group glebas-summary" aria-labelledby="glebas-summary-title">
+                        <h3 id="glebas-summary-title">RESUMO</h3>
+                        <div class="glebas-summary-row"><span id="gleba-status">Nenhum polígono desenhado.</span><strong><span>Área total:</span> <span id="gleba-area">0,00 ha</span></strong></div>
                     </section>
+
+                    <div id="gleba-pending-save-panel" class="glebas-pending-save" hidden>
+                        <label for="gleba-pending-name">NOME DO POLÍGONO</label>
+                        <input id="gleba-pending-name" type="text" maxlength="80" placeholder="Ex.: Polígono Norte">
+                        <div class="glebas-pending-area"><span>Área</span><strong id="gleba-pending-area">0,00 ha</strong></div>
+                        <div class="glebas-pending-actions">
+                            <button type="button" id="gleba-pending-discard">Descartar</button>
+                            <button type="button" id="gleba-pending-save">Salvar polígono</button>
+                        </div>
+                    </div>
                 </div>
 </section>
 {% endif %}
         </div>
 
-        <div class="territorial-side-body territorial-report-view" data-territorial-view-panel="report" hidden>
-            <div class="report-head">
-                <div>
-                    <span class="eyebrow">Relatório atual</span>
-                    <h2>Resumo do imóvel</h2>
-                </div>
-                <div class="report-actions">
-                    <button type="button" class="button button-secondary button-compact report-maximize-button" id="toggle-report-maximize" aria-pressed="false" title="Maximizar relatório">
-                        <span class="report-maximize-icon" aria-hidden="true">↗</span>
-                        <span class="report-maximize-label">Maximizar</span>
-                    </button>
-                    <button type="button" class="button button-secondary button-compact" id="print-current-report">Imprimir / Salvar PDF</button>
-                </div>
-            </div>
-
-            <section class="report-section report-map-section">
-                <h3>Mapa da consulta</h3>
-                <div id="report-map-preview" class="report-map-preview" role="img" aria-label="Perímetro do CAR e glebas atuais"></div>
-                <p class="report-map-note">O contorno do imóvel e as glebas representam as geometrias da consulta atual. Cada gleba é identificada pelo nome salvo na sessão.</p>
-            </section>
-
-            <section class="report-section">
-                <h3>Imóvel</h3>
-                <dl class="report-data">
-                    <div><dt>CAR</dt><dd>{{ consulta.imovel.cod_imovel }}</dd></div>
-                    <div><dt>Município</dt><dd>{{ consulta.imovel.municipio|default:'Não informado' }}</dd></div>
-                    <div><dt>UF</dt><dd>{{ consulta.imovel.uf|default:'Não informada' }}</dd></div>
-                    <div><dt>Área cadastrada</dt><dd>{% if consulta.imovel.area_total_ha != None %}{{ consulta.imovel.area_total_ha|floatformat:2 }} ha{% else %}Não informada{% endif %}</dd></div>
-                    <div><dt>Situação do CAR</dt><dd>{{ consulta.imovel.situacao_apresentacao|default:'Não informada' }}</dd></div>
-                    <div><dt>Módulos fiscais</dt><dd>{{ consulta.imovel.modulos_fiscais|display_value }}</dd></div>
-                </dl>
-            </section>
-
-            <section class="report-section">
-                <h3>Áreas do CAR</h3>
-                <div class="report-list">
-                    {% for chave, camada in consulta.camadas.items %}
-                    <div><span>{{ camada.label }}</span><strong>{% if camada.total_area_ha != None %}{{ camada.total_area_ha|floatformat:2 }} ha{% elif camada.disponivel %}Disponível{% else %}Não verificada{% endif %}</strong></div>
-                    {% endfor %}
-                </div>
-            </section>
-
-            <section class="report-section report-analysis-summary">
-                <h3>RESUMO DO IMÓVEL</h3>
-                <div class="report-data"><div><dt>Área</dt><dd>{% if consulta.imovel.area_total_ha != None %}{{ consulta.imovel.area_total_ha|floatformat:2 }} ha{% else %}Não informada{% endif %}</dd></div><div><dt>Município</dt><dd>{{ consulta.imovel.municipio|default:'Não informado' }}{% if consulta.imovel.uf %} - {{ consulta.imovel.uf }}{% endif %}</dd></div><div><dt>Situação do CAR</dt><dd>{{ consulta.imovel.situacao_apresentacao|default:'Não informada' }}</dd></div></div>
-                <h3>ALERTAS</h3><p><strong id="report-alert-count">—</strong> identificados</p>
-                <h3>INTERFERÊNCIAS TERRITORIAIS</h3><p><strong id="report-territorial-count">—</strong> identificadas</p>
-                <h3>CRÉDITO RURAL</h3><p><strong id="report-credit-count">—</strong> identificado</p>
-            </section>
-
-            <section class="report-section">
-                <h3>Detalhes da análise territorial</h3>
-                <div class="report-analysis-list">
-                    {% for chave, alerta in consulta.alertas.items %}
-                    {% if chave != 'tem_alerta' and chave != 'resumo_mapa' and chave != 'restricoes' and chave != 'resumo' %}
-                    <article class="report-analysis-card report-intel-card state-{{ alerta.estado }}">
-                        <div class="report-intel-head">
-                            <span class="report-intel-icon report-intel-icon-{{ chave }}" aria-hidden="true">
-                                {% if chave == 'assentamentos' %}
-                                <svg viewBox="0 0 24 24"><path d="M4 19h16M6 19v-7l6-5 6 5v7M9 19v-4h6v4M4 11l8-7 8 7"/></svg>
-                                {% elif chave == 'quilombolas' %}
-                                <svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="16" cy="10" r="2.5"/><path d="M3.5 19c.4-4 2.4-6 5.5-6s5.1 2 5.5 6M13 14c3.5-.5 6 1.2 6.7 5"/></svg>
-                                {% elif chave == 'ibama' %}
-                                <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8 7 10 4.2-2 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg>
-                                {% elif chave == 'prodes' %}
-                                <svg viewBox="0 0 24 24"><path d="M12 3 6 11h4l-4 6h12l-4-6h4L12 3Z"/><path d="M12 17v4"/></svg>
-                                {% elif chave == 'apa' %}
-                                <svg viewBox="0 0 24 24"><path d="M12 3c-4 3-7 6-7 10a7 7 0 0 0 14 0c0-4-3-7-7-10Z"/><path d="M9 15c2-1 4-3 6-6"/></svg>
-                                {% elif chave == 'sicor' %}
-                                <svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/><path d="M7 10h10M7 14h5"/><circle cx="17" cy="14" r="1.5"/></svg>
-                                {% elif chave == 'outros_cars' %}
-                                <svg viewBox="0 0 24 24"><path d="M5 5h10v10H5z"/><path d="M9 9h10v10H9z"/></svg>
-                                {% else %}
-                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16h.01"/></svg>
-                                {% endif %}
-                            </span>
-                            <div class="report-intel-title">
-                                <strong>{% if chave == 'prodes' %}INPE / PRODES{% elif chave == 'apa' %}Unidade de Conservação{% elif chave == 'assentamentos' %}Projeto de Assentamento — INCRA{% elif chave == 'quilombolas' %}Território Quilombola — INCRA{% elif chave == 'funai' %}Terra Indígena — FUNAI{% else %}{{ alerta.titulo }}{% endif %}</strong>
-                                <p>{{ alerta.mensagem }}</p>
-                            </div>
-                            <span class="report-status-badge state-{{ alerta.estado }}">
-                                {% if alerta.estado == 'alerta' or alerta.estado == 'atencao' %}✓{% else %}—{% endif %}
-                                {{ alerta.status }}
-                            </span>
-                        </div>
-
-                        {% if alerta.anos or alerta.tipos or alerta.nomes or alerta.area_soma_ocorrencias_ha != None or alerta.area_unica_sobreposta_ha != None %}
-                        <div class="report-fact-stack">
-                            {% if alerta.anos %}<div class="report-fact-row"><span>Ano(s)</span><strong>{{ alerta.anos|join:', ' }}</strong></div>{% endif %}
-                            {% if alerta.tipos %}<div class="report-fact-row"><span>Tipo(s)</span><strong>{{ alerta.tipos|join:', ' }}</strong></div>{% endif %}
-                            {% if alerta.nomes %}<div class="report-fact-row"><span>Área(s)</span><strong>{{ alerta.nomes|join:', ' }}</strong></div>{% endif %}
-                            {% if alerta.area_soma_ocorrencias_ha != None %}<div class="report-fact-row"><span>Soma das ocorrências dentro do CAR</span><strong>{{ alerta.area_soma_ocorrencias_ha|floatformat:4 }} ha</strong></div>{% endif %}
-                            {% if alerta.area_unica_sobreposta_ha != None %}<div class="report-fact-row"><span>Área física única sobreposta</span><strong>{{ alerta.area_unica_sobreposta_ha|floatformat:4 }} ha</strong></div>{% endif %}
-                        </div>
-                        {% endif %}
-
-                        {% if alerta.cobertura_status == 'COBERTURA_NAO_CONFIRMADA' %}
-                        <p class="report-caution"><b>PRODES:</b> não há geometria oficial de cobertura carregada para concluir ausência de ocorrências nesta localização.</p>
-                        {% endif %}
-                        {% if alerta.confirmacao_externa_necessaria %}
-                        <p class="report-caution"><b>Confirmação necessária:</b> consulte a declaração/consulta oficial do IBAMA para verificar a situação jurídica atual do registro.</p>
-                        {% endif %}
-
-                        {% if alerta.registros %}
-                        <div class="report-record-grid report-record-grid-open">
-                            {% for registro in alerta.registros %}
-                            <dl class="report-record-card">
-                                {% for campo, valor in registro.items %}
-                                <div><dt>{{ campo|field_label }}</dt><dd>{{ valor|display_value }}</dd></div>
-                                {% endfor %}
-                            </dl>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </article>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-            </section>
-
-            {% if pode_desenhar_glebas %}
-            <section class="report-section">
-                <h3>Polígonos atuais</h3>
-                <div id="report-glebas-list" class="report-list"><p class="muted">Nenhum polígono salvo nesta sessão.</p></div>
-            </section>
-            {% endif %}
-        </div>
     </aside>
 </section>
 
@@ -751,11 +565,16 @@
      data-can-consult="{% if pode_consultar %}true{% else %}false{% endif %}"
      data-free-mode="{% if not possui_plano %}true{% else %}false{% endif %}"
      data-can-draw="{% if pode_desenhar_glebas %}1{% else %}0{% endif %}"
-     {% if pode_explorar_mapa %}data-cars-url="{% url 'aplicativo:cars_visiveis' %}"{% endif %}
+      {% if pode_explorar_mapa %}data-cars-url="{% url 'aplicativo:cars_visiveis' %}"{% endif %}
+      {% if pode_explorar_mapa %}data-cars-point-url="{% url 'aplicativo:cars_por_ponto' %}"{% endif %}
+      data-car-query-url="{% url 'aplicativo:nova_consulta' %}"
+      data-coordinate-query-url="{% url 'aplicativo:nova_consulta_coordenada' %}"
+      data-municipalities-url="{% url 'aplicativo:buscar_municipios' %}"
      data-car-export-url="{% url 'aplicativo:exportar_car_kml' %}"
      data-layer-export-url="{% url 'aplicativo:exportar_camada_kml' 'CAMADA_PLACEHOLDER' %}"
       data-uc-full-geometry-url="{% url 'aplicativo:geometria_completa_uc' %}"
      data-car="{% if consulta %}{{ consulta.imovel.cod_imovel }}{% endif %}"
+     data-open-layers-on-car-load="{% if abrir_camadas_nova_consulta %}true{% else %}false{% endif %}"
      data-user-id="{{ request.user.pk|default:'' }}"></div>
 {% if not possui_plano %}
 <div class="free-feature-notice" id="free-feature-notice" hidden role="dialog" aria-modal="true" aria-labelledby="free-feature-title">
@@ -776,12 +595,12 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js" crossorigin=""></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
 {% endif %}
-<script src="{% static 'aplicativo/js/mapa.js' %}?v=074-complete-uc-on-demand"></script>
+<script src="{% static 'aplicativo/js/mapa.js' %}?v=079-layer-fill-hierarchy"></script>
 <script src="{% static 'aplicativo/js/query-tools.js' %}?v=055-home-intelligence"></script>
 <script src="{% static 'aplicativo/js/car-ocr.js' %}?v=003-reset-preview-crop"></script>
 {% if pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/medir-distancia.js' %}?v=058"></script>{% endif %}
-<script src="{% static 'aplicativo/js/interface.js' %}?v=057-report-print"></script>
-{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=060-unified-dark-popup"></script>{% endif %}
+<script src="{% static 'aplicativo/js/interface.js' %}?v=068-query-notification-print-layout"></script>
+{% if consulta and pode_desenhar_glebas %}<script src="{% static 'aplicativo/js/glebas.js' %}?v=073-visible-credit-print-bounds"></script>{% endif %}
 {% endif %}
 <script src="{% static 'aplicativo/js/suporte-chat.js' %}?v=062"></script>
 {% endblock %}

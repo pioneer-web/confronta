@@ -3,7 +3,204 @@
 
     const context = window.CONFRONTA_MAP_CONTEXT;
 
-    // MÓDULO 2 — alternância entre a visão operacional e o relatório atual.
+    const messageStack = document.querySelector('.cf-message-stack');
+    if (messageStack) {
+        let notificationTimer = null;
+        let activeNotification = null;
+        const dismissNotification = () => {
+            window.clearTimeout(notificationTimer);
+            notificationTimer = null;
+            if (activeNotification) activeNotification.remove();
+            activeNotification = null;
+            messageStack.hidden = true;
+        };
+        const activateLatestNotification = () => {
+            const notices = Array.from(messageStack.querySelectorAll('.query-result-notice'));
+            if (!notices.length) {
+                window.clearTimeout(notificationTimer);
+                notificationTimer = null;
+                activeNotification = null;
+                messageStack.hidden = true;
+                return;
+            }
+            const latest = notices[notices.length - 1];
+            if (latest === activeNotification && !messageStack.hidden) return;
+            window.clearTimeout(notificationTimer);
+            notices.slice(0, -1).forEach((notice) => notice.remove());
+            activeNotification = latest;
+            messageStack.hidden = false;
+            const duration = latest.classList.contains('alert-danger') ? 8000 : 5000;
+            notificationTimer = window.setTimeout(dismissNotification, duration);
+        };
+        messageStack.addEventListener('click', (event) => {
+            if (event.target.closest('.query-result-notice-close')) dismissNotification();
+        });
+        new MutationObserver(activateLatestNotification).observe(messageStack, { childList: true, subtree: true });
+        activateLatestNotification();
+    }
+
+    // Busca universal: CAR, coordenada ou município. Município nunca cai no
+    // POST de CAR; sugestões consultam somente atributos leves da base SICAR.
+    const universalSearch = document.querySelector('.topbar-car-search');
+    if (universalSearch) {
+        const field = universalSearch.querySelector('input[name="car"]');
+        const config = document.getElementById('app-config');
+        const feedback = document.createElement('div');
+        feedback.className = 'universal-search-feedback';
+        feedback.setAttribute('aria-live', 'polite');
+        universalSearch.insertAdjacentElement('afterend', feedback);
+        const suggestions = document.createElement('div');
+        suggestions.className = 'municipality-suggestions';
+        suggestions.hidden = true;
+        suggestions.setAttribute('role', 'listbox');
+        universalSearch.insertAdjacentElement('afterend', suggestions);
+        let debounceTimer = null;
+        let requestController = null;
+        let requestSequence = 0;
+        let selectedMunicipalityLabel = null;
+
+        function resolveInput(raw) {
+            const value = raw.trim();
+            const compact = value.replace(/[^a-z0-9]/gi, '').toUpperCase();
+            const looksCar = /^[A-Z]{2}\d/.test(compact) || (compact.length >= 28 && /^[A-Z0-9]+$/.test(compact));
+            if (looksCar) {
+                const match = compact.match(/^([A-Z]{2})(\d{7})([A-Z0-9]{32})$/);
+                return match ? { type: 'car', value: `${match[1]}-${match[2]}-${match[3]}` } : { type: 'invalid-car' };
+            }
+            const coordinate = value.match(/^\s*([+-]?\d+(?:[.,]\d+)?)\s*(?:[,;]|\s)\s*([+-]?\d+(?:[.,]\d+)?)\s*$/);
+            const resemblesCoordinate = /^[+-]?(?:\d|\.\d)/.test(value) && /[,;\s]/.test(value);
+            if (coordinate) {
+                const latitude = Number(coordinate[1].replace(',', '.'));
+                const longitude = Number(coordinate[2].replace(',', '.'));
+                return Number.isFinite(latitude) && Number.isFinite(longitude) && latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180
+                    ? { type: 'coordinate', latitude, longitude } : { type: 'invalid-coordinate' };
+            }
+            if (resemblesCoordinate) return { type: 'invalid-coordinate' };
+            return value ? { type: 'municipality', value } : { type: 'empty' };
+        }
+
+        function closeSuggestions() {
+            suggestions.hidden = true;
+            suggestions.replaceChildren();
+            requestSequence += 1;
+            if (requestController) requestController.abort();
+            requestController = null;
+        }
+        function showFeedback(message) {
+            selectedMunicipalityLabel = null;
+            feedback.classList.remove('is-municipality-result');
+            feedback.replaceChildren();
+            feedback.textContent = message || '';
+        }
+
+        function showSelectedMunicipality(label) {
+            selectedMunicipalityLabel = label;
+            feedback.classList.add('is-municipality-result');
+            feedback.replaceChildren();
+            const title = document.createElement('small');
+            title.className = 'municipality-result-title';
+            title.textContent = 'Município';
+            const name = document.createElement('strong');
+            name.className = 'municipality-result-name';
+            name.textContent = label;
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'municipality-result-close';
+            close.setAttribute('aria-label', 'Fechar município selecionado');
+            close.textContent = '×';
+            close.addEventListener('click', () => {
+                if (selectedMunicipalityLabel && field.value === selectedMunicipalityLabel) field.value = '';
+                showFeedback('');
+                field.focus({ preventScroll: true });
+            });
+            feedback.append(title, name, close);
+        }
+
+        async function loadMunicipalities(query) {
+            if (!config?.dataset.municipalitiesUrl || query.trim().length < 2) { closeSuggestions(); return []; }
+            if (requestController) requestController.abort();
+            requestController = new AbortController();
+            const current = ++requestSequence;
+            const url = new URL(config.dataset.municipalitiesUrl, window.location.origin);
+            url.searchParams.set('q', query.trim());
+            const response = await fetch(url, { signal: requestController.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const payload = await response.json();
+            if (current !== requestSequence) return [];
+            if (!response.ok) throw new Error(payload.erro || 'Não foi possível buscar municípios.');
+            return Array.isArray(payload.resultados) ? payload.resultados : [];
+        }
+
+        function selectMunicipality(item) {
+            closeSuggestions();
+            const label = `${item.nome}${item.uf ? ` - ${item.uf}` : ''}`;
+            field.value = label;
+            showSelectedMunicipality(label);
+            const bbox = Array.isArray(item.bbox) ? item.bbox.map(Number) : [];
+            if (bbox.length === 4 && bbox.every(Number.isFinite) && bbox[0] < bbox[2] && bbox[1] < bbox[3]) {
+                const map = window.CONFRONTA_MAP_CONTEXT?.map;
+                if (map && typeof map.fitBounds === 'function') map.fitBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]], { padding: [70, 70], maxZoom: 13 });
+            }
+        }
+
+        function renderMunicipalities(items) {
+            suggestions.replaceChildren();
+            if (!items.length) {
+                const empty = document.createElement('div'); empty.className = 'municipality-suggestion-empty'; empty.textContent = 'Nenhum município encontrado.';
+                suggestions.appendChild(empty);
+            } else items.slice(0, 10).forEach((item) => {
+                const option = document.createElement('button');
+                option.type = 'button'; option.className = 'municipality-suggestion'; option.setAttribute('role', 'option');
+                const name = document.createElement('strong'); name.textContent = item.nome;
+                const state = document.createElement('small'); state.textContent = item.uf || '';
+                option.append(name, state);
+                option.addEventListener('click', () => selectMunicipality(item));
+                suggestions.appendChild(option);
+            });
+            suggestions.hidden = false;
+        }
+
+        field?.addEventListener('input', () => {
+            window.clearTimeout(debounceTimer);
+            const resolved = resolveInput(field.value);
+            if (resolved.type !== 'municipality') { closeSuggestions(); showFeedback(resolved.type === 'car' ? 'CAR identificado' : resolved.type === 'coordinate' ? 'Coordenada identificada' : ''); return; }
+            showFeedback('Município');
+            if (resolved.value.length < 2) { closeSuggestions(); return; }
+            debounceTimer = window.setTimeout(async () => {
+                try { renderMunicipalities(await loadMunicipalities(resolved.value)); }
+                catch (error) { if (error.name !== 'AbortError') showFeedback(error.message); }
+            }, 300);
+        });
+
+        universalSearch.addEventListener('submit', async (event) => {
+            window.clearTimeout(debounceTimer);
+            const resolved = resolveInput(field?.value || '');
+            if (resolved.type === 'empty') { event.preventDefault(); field?.focus(); return; }
+            if (resolved.type === 'invalid-car') { event.preventDefault(); closeSuggestions(); showFeedback('CAR inválido. Confira UF, município e identificador.'); return; }
+            if (resolved.type === 'invalid-coordinate') { event.preventDefault(); closeSuggestions(); showFeedback('Coordenada inválida: latitude −90 a 90 e longitude −180 a 180.'); return; }
+            if (resolved.type === 'car') { field.value = resolved.value; closeSuggestions(); showFeedback('CAR identificado'); return; }
+            if (resolved.type === 'coordinate') {
+                event.preventDefault(); closeSuggestions(); showFeedback('Coordenada identificada');
+                const form = document.createElement('form'); form.method = 'post';
+                form.action = config?.dataset.coordinateQueryUrl || universalSearch.action;
+                const token = universalSearch.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+                [['csrfmiddlewaretoken', token], ['latitude', resolved.latitude], ['longitude', resolved.longitude]].forEach(([name, value]) => {
+                    const input = document.createElement('input'); input.type = 'hidden'; input.name = name; input.value = value ?? ''; form.appendChild(input);
+                });
+                document.body.appendChild(form); form.submit(); return;
+            }
+            event.preventDefault();
+            try {
+                const matches = await loadMunicipalities(resolved.value);
+                renderMunicipalities(matches);
+                showFeedback(matches.length ? 'Escolha um município para enquadrar o mapa.' : 'Nenhum município encontrado.');
+            } catch (error) { if (error.name !== 'AbortError') showFeedback(error.message); }
+        });
+        document.addEventListener('click', (event) => { if (!universalSearch.contains(event.target) && !suggestions.contains(event.target)) closeSuggestions(); });
+        document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeSuggestions(); });
+        document.getElementById('open-new-query')?.addEventListener('click', closeSuggestions);
+    }
+
+    // MÓDULO 2 — a navegação permanece na mesma instância do mapa.
     const viewButtons = document.querySelectorAll('[data-territorial-view]');
     const viewPanels = document.querySelectorAll('[data-territorial-view-panel]');
 
@@ -121,366 +318,6 @@
 
     renderCarPreview();
 
-    // Relatório atual: recebe a fotografia das glebas emitida por glebas.js.
-    const reportGlebas = document.getElementById('report-glebas-list');
-    const reportMap = document.getElementById('report-map-preview');
-    let currentReportGlebas = [];
-
-    function geometryCoordinates(geometry) {
-        if (!geometry || !geometry.coordinates) return [];
-        if (geometry.type === 'Polygon') return geometry.coordinates.flat();
-        if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat(2);
-        return [];
-    }
-
-    function geometryRings(geometry) {
-        if (!geometry || !geometry.coordinates) return [];
-        if (geometry.type === 'Polygon') return geometry.coordinates;
-        if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat();
-        return [];
-    }
-
-    function reportLabelPoint(geometry) {
-        if (!geometry) return null;
-        if (typeof turf !== 'undefined' && typeof turf.pointOnFeature === 'function') {
-            try {
-                const point = turf.pointOnFeature({ type: 'Feature', properties: {}, geometry });
-                if (point && point.geometry && Array.isArray(point.geometry.coordinates)) return point.geometry.coordinates;
-            } catch (error) {
-                // O centro pelo envelope abaixo mantém o relatório disponível mesmo sem Turf.
-            }
-        }
-        const coords = geometryCoordinates(geometry).filter((coord) => Array.isArray(coord) && coord.length >= 2);
-        if (!coords.length) return null;
-        const xs = coords.map((coord) => Number(coord[0])).filter(Number.isFinite);
-        const ys = coords.map((coord) => Number(coord[1])).filter(Number.isFinite);
-        if (!xs.length || !ys.length) return null;
-        return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
-    }
-
-    function renderReportMap(items) {
-        if (!reportMap) return;
-        reportMap.replaceChildren();
-
-        const carGeometry = context && context.consulta && context.consulta.imovel && context.consulta.imovel.geometry;
-        if (!carGeometry) {
-            reportMap.textContent = 'Geometria do CAR indisponível para o relatório.';
-            return;
-        }
-
-        const safeItems = Array.isArray(items) ? items.filter((item) => item && item.geometry) : [];
-        const allCoordinates = [carGeometry, ...safeItems.map((item) => item.geometry)]
-            .flatMap(geometryCoordinates)
-            .filter((coord) => Array.isArray(coord) && coord.length >= 2);
-
-        const xs = allCoordinates.map((coord) => Number(coord[0])).filter(Number.isFinite);
-        const ys = allCoordinates.map((coord) => Number(coord[1])).filter(Number.isFinite);
-        if (!xs.length || !ys.length) return;
-
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        const dx = Math.max(maxX - minX, 1e-9);
-        const dy = Math.max(maxY - minY, 1e-9);
-        const width = 760;
-        const height = 440;
-        const pad = 34;
-        const scale = Math.min((width - pad * 2) / dx, (height - pad * 2) / dy);
-        const ox = (width - dx * scale) / 2;
-        const oy = (height - dy * scale) / 2;
-
-        function project(coord) {
-            return [
-                ox + (Number(coord[0]) - minX) * scale,
-                height - (oy + (Number(coord[1]) - minY) * scale)
-            ];
-        }
-
-        function pathForGeometry(geometry) {
-            return geometryRings(geometry).map((ring) => {
-                if (!Array.isArray(ring) || !ring.length) return '';
-                return ring.map((coord, index) => {
-                    const point = project(coord);
-                    return `${index ? 'L' : 'M'}${point[0].toFixed(2)} ${point[1].toFixed(2)}`;
-                }).join(' ') + ' Z';
-            }).join(' ');
-        }
-
-        const ns = 'http://www.w3.org/2000/svg';
-        const svg = document.createElementNS(ns, 'svg');
-        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        svg.setAttribute('role', 'img');
-        svg.setAttribute('aria-label', 'Mapa vetorial do CAR com os polígonos atuais');
-
-        const background = document.createElementNS(ns, 'rect');
-        background.setAttribute('x', '0');
-        background.setAttribute('y', '0');
-        background.setAttribute('width', String(width));
-        background.setAttribute('height', String(height));
-        background.setAttribute('fill', '#f7faf8');
-        svg.appendChild(background);
-
-        const carPath = document.createElementNS(ns, 'path');
-        carPath.setAttribute('d', pathForGeometry(carGeometry));
-        carPath.setAttribute('fill', 'rgba(167,213,176,.14)');
-        carPath.setAttribute('stroke', '#0B2D3C');
-        carPath.setAttribute('stroke-width', '3');
-        carPath.setAttribute('vector-effect', 'non-scaling-stroke');
-        svg.appendChild(carPath);
-
-        safeItems.forEach((item) => {
-            const path = document.createElementNS(ns, 'path');
-            const color = String(item.cor || '#2563EB');
-            path.setAttribute('d', pathForGeometry(item.geometry));
-            path.setAttribute('fill', color === '#FFFFFF' ? 'rgba(255,255,255,.65)' : color);
-            path.setAttribute('fill-opacity', color === '#FFFFFF' ? '1' : '.22');
-            path.setAttribute('stroke', color === '#FFFFFF' ? '#65767c' : color);
-            path.setAttribute('stroke-width', '3');
-            path.setAttribute('vector-effect', 'non-scaling-stroke');
-            svg.appendChild(path);
-
-            const labelCoordinate = reportLabelPoint(item.geometry);
-            if (!labelCoordinate) return;
-            const labelPoint = project(labelCoordinate);
-
-            const labelGroup = document.createElementNS(ns, 'g');
-            const text = document.createElementNS(ns, 'text');
-            text.setAttribute('x', labelPoint[0].toFixed(2));
-            text.setAttribute('y', labelPoint[1].toFixed(2));
-            text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('dominant-baseline', 'middle');
-            text.setAttribute('class', 'report-gleba-label');
-            text.textContent = item.nome || 'Polígono';
-            labelGroup.appendChild(text);
-            svg.appendChild(labelGroup);
-        });
-
-        reportMap.appendChild(svg);
-    }
-
-    function renderReportGlebas(items) {
-        currentReportGlebas = Array.isArray(items) ? items : [];
-        renderReportMap(currentReportGlebas);
-        if (!reportGlebas) return;
-        if (!currentReportGlebas.length) {
-            reportGlebas.innerHTML = '<p class="muted">Nenhum polígono salvo nesta sessão.</p>';
-            return;
-        }
-        reportGlebas.replaceChildren();
-        currentReportGlebas.forEach((item) => {
-            const row = document.createElement('div');
-            const name = document.createElement('span');
-            const value = document.createElement('strong');
-            name.textContent = item.nome || 'Polígono';
-            const alerts = Array.isArray(item.alertas) && item.alertas.length ? ` · ${item.alertas.join(', ')}` : '';
-            value.textContent = `${Number(item.area_ha || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ha${alerts}`;
-            row.append(name, value);
-            reportGlebas.appendChild(row);
-        });
-    }
-
-    window.addEventListener('confronta:glebas-updated', (event) => {
-        renderReportGlebas(event.detail && event.detail.items);
-    });
-
-    if (window.CONFRONTA_GLEBAS_SNAPSHOT) renderReportGlebas(window.CONFRONTA_GLEBAS_SNAPSHOT);
-    else renderReportMap([]);
-
-    const printButton = document.getElementById('print-current-report');
-    let activePrintRoot = null;
-
-    function normalizePrintLabel(value) {
-        return String(value || '')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim()
-            .toLowerCase();
-    }
-
-    function addPrintMeta(container, label, value) {
-        const item = document.createElement('div');
-        item.className = 'cf-print-meta-item';
-
-        const key = document.createElement('span');
-        key.textContent = label;
-
-        const content = document.createElement('strong');
-        content.textContent = value || 'Não informado';
-
-        item.append(key, content);
-        container.appendChild(item);
-    }
-
-    function cleanupPrintReport() {
-        document.body.classList.remove('is-printing-report');
-
-        if (activePrintRoot && activePrintRoot.parentNode) {
-            activePrintRoot.parentNode.removeChild(activePrintRoot);
-        }
-
-        activePrintRoot = null;
-    }
-
-    function buildPrintReport() {
-        const source = document.querySelector(
-            '[data-territorial-view-panel="report"]'
-        );
-
-        if (!source) return null;
-
-        const root = document.createElement('div');
-        root.id = 'cf-print-root';
-
-        const report = source.cloneNode(true);
-        report.removeAttribute('hidden');
-        report.classList.add('cf-print-report');
-
-        /* Elementos exclusivos da tela. */
-        report.querySelectorAll(
-            '.report-actions, #print-current-report, #toggle-report-maximize'
-        ).forEach((element) => element.remove());
-
-        /* Ícones ficam fora do PDF.
-           Evita o problema dos SVG gigantes na impressão. */
-        report.querySelectorAll('.report-intel-icon')
-            .forEach((element) => element.remove());
-
-        /* Nunca expõe geometria bruta ou campos internos no relatório. */
-        report.querySelectorAll('.report-record-card > div')
-            .forEach((row) => {
-                const label = normalizePrintLabel(
-                    row.querySelector('dt')?.textContent
-                );
-
-                const internalLabels = new Set([
-                    'confronta full geometry',
-                    'full geometry',
-                    'geometry',
-                    'geom',
-                    'geojson',
-                    'wkt'
-                ]);
-
-                if (internalLabels.has(label)) {
-                    row.remove();
-                }
-            });
-
-        /* Remove registros que ficaram vazios. */
-        report.querySelectorAll('.report-record-card')
-            .forEach((card) => {
-                if (!card.children.length) card.remove();
-            });
-
-        /* Cabeçalho próprio do PDF. */
-        const header = document.createElement('header');
-        header.className = 'cf-print-cover-head';
-
-        const brandRow = document.createElement('div');
-        brandRow.className = 'cf-print-brand-row';
-
-        const brandBox = document.createElement('div');
-
-        const brand = document.createElement('div');
-        brand.className = 'cf-print-brand';
-        brand.textContent = 'CONFRONTA';
-
-        const documentTitle = document.createElement('div');
-        documentTitle.className = 'cf-print-document-title';
-        documentTitle.textContent = 'Relatório de análise territorial';
-
-        brandBox.append(brand, documentTitle);
-
-        const generated = document.createElement('div');
-        generated.className = 'cf-print-generated';
-        generated.textContent = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
-
-        brandRow.append(brandBox, generated);
-
-        const meta = document.createElement('div');
-        meta.className = 'cf-print-meta';
-
-        const imovel =
-            context &&
-            context.consulta &&
-            context.consulta.imovel
-                ? context.consulta.imovel
-                : {};
-
-        const areaNumber = Number(imovel.area_total_ha);
-        const areaText = Number.isFinite(areaNumber)
-            ? `${areaNumber.toLocaleString('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            })} ha`
-            : 'Não informada';
-
-        const municipio = [
-            imovel.municipio,
-            imovel.uf
-        ].filter(Boolean).join(' / ');
-
-        addPrintMeta(
-            meta,
-            'CAR',
-            imovel.cod_imovel || 'Não informado'
-        );
-
-        addPrintMeta(
-            meta,
-            'Município',
-            municipio || 'Não informado'
-        );
-
-        addPrintMeta(
-            meta,
-            'Área',
-            areaText
-        );
-
-        addPrintMeta(
-            meta,
-            'Situação',
-            imovel.situacao_apresentacao ||
-            imovel.situacao ||
-            'Não informada'
-        );
-
-        header.append(brandRow, meta);
-
-        const mapSection = report.querySelector('.report-map-section');
-
-        if (mapSection) {
-            report.insertBefore(header, mapSection);
-        } else {
-            report.prepend(header);
-        }
-
-        root.appendChild(report);
-        return root;
-    }
-
-    if (printButton) {
-        printButton.addEventListener('click', () => {
-            setTerritorialView('report');
-
-            cleanupPrintReport();
-
-            activePrintRoot = buildPrintReport();
-            if (!activePrintRoot) return;
-
-            document.body.appendChild(activePrintRoot);
-            document.body.classList.add('is-printing-report');
-
-            window.setTimeout(() => {
-                window.print();
-            }, 100);
-        });
-    }
-
-    window.addEventListener('afterprint', cleanupPrintReport);
-
     // ==================================================================
     // HOME v14 — ferramentas visíveis antes da consulta.
     // Elas não simulam operações sem um CAR: apenas orientam o usuário a
@@ -506,6 +343,7 @@
     document.querySelectorAll('[data-requires-car="1"]').forEach((button) => {
         button.addEventListener('click', (event) => {
             event.preventDefault();
+            if (selectCarMessage) selectCarMessage.textContent = button.dataset.emptyMessage || 'Use a busca do CAR ou o botão Nova consulta.';
             showSelectCarMessage();
         });
     });
@@ -518,24 +356,19 @@
     const railAlerts = document.getElementById('rail-alerts');
     const railLayers = document.getElementById('rail-layers');
     const railFitCar = document.getElementById('rail-fit-car');
-    const railReport = document.getElementById('rail-report');
+    const railCreditMap = document.getElementById('rail-credit-map');
     const railGlebas = document.getElementById('rail-glebas');
-    const railSummary = document.getElementById('rail-summary');
     const layerDrawer = document.getElementById('map-layer-drawer');
     const layerDrawerClose = document.getElementById('close-layer-drawer');
     const toolDrawer = document.getElementById('territorial-side-panel');
+    const toolDrawerHeader = toolDrawer?.querySelector('.territorial-tool-drawer-head');
     const toolDrawerClose = document.getElementById('territorial-tool-close');
     const toolKicker = document.getElementById('territorial-tool-kicker');
     const toolTitle = document.getElementById('territorial-tool-title');
-    const propertySummary = document.getElementById('map-property-summary');
-    const propertySummaryCollapse = document.getElementById('toggle-map-summary-collapse');
-    const propertySummaryCollapseLabel = propertySummaryCollapse ? propertySummaryCollapse.querySelector('span') : null;
-    const summaryGlebasCount = document.getElementById('map-summary-glebas-count');
-    const restrictionCount = document.getElementById('map-summary-restrictions-count');
-    const restrictionDetails = document.getElementById('map-summary-restrictions-details');
-    const reportMaximizeButton = document.getElementById('toggle-report-maximize');
-    const reportMaximizeLabel = reportMaximizeButton ? reportMaximizeButton.querySelector('.report-maximize-label') : null;
-    const reportMaximizeIcon = reportMaximizeButton ? reportMaximizeButton.querySelector('.report-maximize-icon') : null;
+    const creditMapNotice = document.getElementById('credit-map-notice');
+    const creditMapPrintButton = document.getElementById('credit-map-print-button');
+    const creditMapPrintSummary = document.getElementById('credit-map-print-summary');
+    let creditMapLayerState = null;
     const drawerAnalysisCounts = document.getElementById('drawer-analysis-counts');
     const analysisItems = Array.from(document.querySelectorAll('[data-analysis-item]'));
 
@@ -551,12 +384,6 @@
         if (header) header.textContent = `${alertText} • ${counts.territorial} interferências • ${counts.credit} SICOR`;
         if (summary) summary.textContent = `${counts.alert} alertas · ${counts.territorial} interferência${counts.territorial === 1 ? '' : 's'} · ${counts.credit} SICOR`;
         if (detail) detail.textContent = 'Ocorrências, sobreposições e crédito rural';
-        const reportAlerts = document.getElementById('report-alert-count');
-        const reportTerritorial = document.getElementById('report-territorial-count');
-        const reportCredit = document.getElementById('report-credit-count');
-        if (reportAlerts) reportAlerts.textContent = String(counts.alert);
-        if (reportTerritorial) reportTerritorial.textContent = String(counts.territorial);
-        if (reportCredit) reportCredit.textContent = String(counts.credit);
         document.querySelectorAll('[data-analysis-group]').forEach((group) => {
             const rows = Array.from(group.querySelectorAll('[data-analysis-item]'));
             rows.sort((a, b) => Number(['alerta', 'atencao'].includes(b.dataset.state)) - Number(['alerta', 'atencao'].includes(a.dataset.state)));
@@ -578,6 +405,7 @@
 
     function openLayerDrawer() {
         if (!layerDrawer) return;
+        if (creditMapLayerState) toggleCreditMapMode();
         const willOpen = layerDrawer.hidden;
         closeToolDrawer();
         layerDrawer.hidden = !willOpen;
@@ -587,11 +415,9 @@
     function closeToolDrawer() {
         if (!toolDrawer) return;
         toolDrawer.hidden = true;
-        toolDrawer.classList.remove('is-open', 'is-report-mode', 'is-glebas-mode', 'is-alerts-mode', 'is-report-maximized');
-        if (reportMaximizeButton) reportMaximizeButton.setAttribute('aria-pressed', 'false');
-        if (reportMaximizeLabel) reportMaximizeLabel.textContent = 'Maximizar';
-        if (reportMaximizeIcon) reportMaximizeIcon.textContent = '↗';
-        setRailPressed(railReport, false);
+        toolDrawer.classList.remove('is-open', 'is-glebas-mode', 'is-alerts-mode');
+        toolDrawerHeader?.classList.remove('map-layer-drawer-head');
+        setRailPressed(railCreditMap, Boolean(creditMapLayerState));
         setRailPressed(railGlebas, false);
         setRailPressed(railAlerts, false);
         if (context && context.map) window.setTimeout(() => context.map.invalidateSize(), 40);
@@ -599,34 +425,25 @@
 
     function openToolDrawer(mode) {
         if (!toolDrawer) return;
+        if (creditMapLayerState && mode !== 'glebas') toggleCreditMapMode();
         closeLayerDrawer();
         toolDrawer.hidden = false;
         toolDrawer.classList.add('is-open');
-        toolDrawer.classList.toggle('is-report-mode', mode === 'report');
         toolDrawer.classList.toggle('is-glebas-mode', mode === 'glebas');
         toolDrawer.classList.toggle('is-alerts-mode', mode === 'alerts');
-        if (mode !== 'report') toolDrawer.classList.remove('is-report-maximized');
+        toolDrawerHeader?.classList.toggle('map-layer-drawer-head', mode === 'glebas');
         if (drawerAnalysisCounts) {
-            drawerAnalysisCounts.hidden = mode !== 'alerts' && mode !== 'glebas';
-            drawerAnalysisCounts.textContent = mode === 'glebas'
-                ? 'Desenhe, importe e gerencie polígonos da sessão.'
-                : analysisCountText();
+            drawerAnalysisCounts.hidden = mode !== 'alerts';
+            drawerAnalysisCounts.textContent = analysisCountText();
         }
 
-        if (mode === 'report') {
-            setTerritorialView('report');
-            if (toolKicker) toolKicker.textContent = 'RELATÓRIO';
-            if (toolTitle) toolTitle.textContent = 'Resumo do imóvel';
-            setRailPressed(railReport, true);
-            setRailPressed(railGlebas, false);
-            setRailPressed(railAlerts, false);
-        } else if (mode === 'glebas') {
+        if (mode === 'glebas') {
             setTerritorialView('map');
             setSideTab('glebas');
-            if (toolKicker) toolKicker.textContent = 'PROJETO';
-            if (toolTitle) toolTitle.textContent = 'Polígonos';
+            if (toolKicker) toolKicker.textContent = 'POLÍGONOS';
+            if (toolTitle) toolTitle.textContent = 'Polígonos desenhados para o crédito';
             setRailPressed(railGlebas, true);
-            setRailPressed(railReport, false);
+            setRailPressed(railCreditMap, Boolean(creditMapLayerState));
             setRailPressed(railAlerts, false);
         } else if (mode === 'alerts') {
             setTerritorialView('map');
@@ -634,7 +451,7 @@
             if (toolKicker) toolKicker.textContent = 'ANÁLISE DO IMÓVEL';
             if (toolTitle) toolTitle.textContent = context?.consulta?.imovel?.cod_imovel || 'Análise territorial';
             setRailPressed(railAlerts, true);
-            setRailPressed(railReport, false);
+            setRailPressed(railCreditMap, false);
             setRailPressed(railGlebas, false);
             window.setTimeout(() => {
                 const target = toolDrawer.querySelector('.alert-title') || toolDrawer.querySelector('.property-alert-list');
@@ -658,28 +475,170 @@
         });
     }
 
-    if (reportMaximizeButton && toolDrawer) {
-        reportMaximizeButton.addEventListener('click', () => {
-            const maximized = !toolDrawer.classList.contains('is-report-maximized');
-            toolDrawer.classList.toggle('is-report-maximized', maximized);
-            reportMaximizeButton.setAttribute('aria-pressed', maximized ? 'true' : 'false');
-            reportMaximizeButton.setAttribute('title', maximized ? 'Restaurar relatório' : 'Maximizar relatório');
-            if (reportMaximizeLabel) reportMaximizeLabel.textContent = maximized ? 'Restaurar' : 'Maximizar';
-            if (reportMaximizeIcon) reportMaximizeIcon.textContent = maximized ? '↙' : '↗';
-            if (context && context.map) window.setTimeout(() => context.map.invalidateSize(), 60);
+    function toggleCreditMapMode() {
+        if (!context || !context.map || !context.consulta?.imovel?.geometry) {
+            if (creditMapNotice) {
+                creditMapNotice.textContent = 'Selecione um CAR para visualizar o Mapa Crédito.';
+                creditMapNotice.hidden = false;
+            }
+            return;
+        }
+        if (creditMapLayerState) {
+            creditMapLayerState.forEach(({ key, visible }) => {
+                context.setLayerVisible(key, visible);
+                syncLayerEye(key, visible);
+            });
+            creditMapLayerState = null;
+            document.body.classList.remove('is-credit-map-mode');
+            if (creditMapPrintButton) creditMapPrintButton.hidden = true;
+            setRailPressed(railCreditMap, false);
+            window.dispatchEvent(new CustomEvent('confronta:credit-map-mode', { detail: { active: false } }));
+            if (creditMapNotice) creditMapNotice.hidden = true;
+            window.setTimeout(() => context.map.invalidateSize({ pan: false }), 60);
+            return;
+        }
+        const controls = Array.from(document.querySelectorAll('#map-layer-drawer [data-layer-eye]'));
+        creditMapLayerState = controls.map((button) => ({
+            key: button.dataset.layerEye,
+            visible: button.getAttribute('aria-pressed') === 'true'
+        })).filter((item) => item.key);
+
+        const internalKeys = new Set(Object.entries(context.consulta.camadas || {})
+            .filter(([, layerData]) => layerData?.disponivel && Array.isArray(layerData.features) && layerData.features.length)
+            .map(([key]) => key));
+        const creditVisibleKeys = new Set(['perimetro', 'glebas_usuario', ...internalKeys]);
+        creditMapLayerState.forEach(({ key }) => {
+            const keepInCreditMap = creditVisibleKeys.has(key)
+                && (key !== 'perimetro' || Boolean(context.perimeter));
+            context.setLayerVisible(key, keepInCreditMap);
+            syncLayerEye(key, keepInCreditMap);
+        });
+
+        document.body.classList.add('is-credit-map-mode');
+        if (creditMapPrintButton) creditMapPrintButton.hidden = false;
+        setRailPressed(railCreditMap, true);
+        if (creditMapNotice) {
+            creditMapNotice.textContent = (window.CONFRONTA_GLEBAS_SNAPSHOT || []).length
+                ? '' : 'Nenhuma gleba de crédito desenhada.';
+            creditMapNotice.hidden = !creditMapNotice.textContent;
+        }
+        window.dispatchEvent(new CustomEvent('confronta:credit-map-mode', { detail: { active: true } }));
+        openToolDrawer('glebas');
+        window.setTimeout(() => {
+            context.map.invalidateSize({ pan: false });
+            window.dispatchEvent(new CustomEvent('confronta:credit-map-fit'));
+        }, 100);
+    }
+
+    if (creditMapPrintButton) {
+        creditMapPrintButton.addEventListener('click', () => {
+            if (!creditMapLayerState) return;
+            const check = { blockedReason: '' };
+            window.dispatchEvent(new CustomEvent('confronta:credit-map-print-check', { detail: check }));
+            if (check.blockedReason) {
+                window.alert(check.blockedReason);
+                return;
+            }
+
+            const printMap = context.map;
+            const previousView = { center: printMap.getCenter(), zoom: printMap.getZoom() };
+            const internalKeys = Object.keys(context.consulta.camadas || {}).filter((key) => key !== 'perimetro');
+            const visibility = internalKeys.map((key) => ({
+                key,
+                visible: Boolean(context.layers[key] && printMap.hasLayer(context.layers[key]))
+            }));
+            let finished = false;
+            const finishPrint = () => {
+                if (finished) return;
+                finished = true;
+                document.body.classList.remove('is-credit-map-printing');
+                window.removeEventListener('afterprint', finishPrint);
+                visibility.forEach(({ key, visible }) => context.setLayerVisible(key, visible));
+                requestAnimationFrame(() => {
+                    printMap.invalidateSize({ pan: false });
+                    printMap.setView(previousView.center, previousView.zoom, { animate: false });
+                });
+            };
+            window.addEventListener('afterprint', finishPrint, { once: true });
+            document.body.classList.add('is-credit-map-printing');
+            visibility.forEach(({ key }) => context.setLayerVisible(key, false));
+
+            const waitFor = (eventName, timeout = 500) => new Promise((resolve) => {
+                let timer;
+                const done = () => {
+                    window.clearTimeout(timer);
+                    printMap.off(eventName, done);
+                    resolve();
+                };
+                printMap.once(eventName, done);
+                timer = window.setTimeout(done, timeout);
+            });
+            const waitForTiles = () => new Promise((resolve) => {
+                const tileLayers = [];
+                printMap.eachLayer((layer) => {
+                    const loading = typeof layer.isLoading === 'function' ? layer.isLoading() : Boolean(layer._loading);
+                    if (layer instanceof L.TileLayer && loading) tileLayers.push(layer);
+                });
+                if (!tileLayers.length) { resolve(); return; }
+                let remaining = tileLayers.length;
+                let timer;
+                const done = () => {
+                    tileLayers.forEach((layer) => layer.off('load', onLoad));
+                    window.clearTimeout(timer);
+                    resolve();
+                };
+                const onLoad = () => { if (--remaining <= 0) done(); };
+                tileLayers.forEach((layer) => layer.once('load', onLoad));
+                timer = window.setTimeout(done, 1200);
+            });
+
+            (async () => {
+                await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                printMap.invalidateSize({ pan: false });
+                await new Promise((resolve) => requestAnimationFrame(resolve));
+                const fitRequest = { bounds: null };
+                window.dispatchEvent(new CustomEvent('confronta:credit-map-print-bounds', { detail: fitRequest }));
+                const bounds = fitRequest.bounds?.isValid?.() ? fitRequest.bounds : context.perimeter?.getBounds?.();
+                if (bounds?.isValid?.()) {
+                    const moving = waitFor('moveend');
+                    printMap.fitBounds(bounds, {
+                        padding: [28, 28],
+                        maxZoom: context.maxNativeZoom || 17,
+                        animate: false
+                    });
+                    await moving;
+                }
+                await new Promise((resolve) => requestAnimationFrame(resolve));
+                await waitForTiles();
+                await new Promise((resolve) => requestAnimationFrame(resolve));
+                window.print();
+            })().catch(() => finishPrint());
         });
     }
 
-    document.querySelectorAll('[data-layer-eye]').forEach((button) => {
-        button.addEventListener('click', () => {
+    window.addEventListener('beforeprint', () => {
+        if (document.body.classList.contains('is-credit-map-printing') && context?.map) {
+            context.map.invalidateSize({ pan: false });
+        }
+    });
+
+    if (layerDrawer) {
+        layerDrawer.addEventListener('click', (event) => {
+            const button = event.target.closest('button[data-layer-eye]');
+            if (!button || !layerDrawer.contains(button)) return;
             const key = button.dataset.layerEye;
             if (!key || !context || typeof context.setLayerVisible !== 'function') return;
             const currentlyVisible = button.getAttribute('aria-pressed') === 'true';
             const nextVisible = !currentlyVisible;
             context.setLayerVisible(key, nextVisible);
             syncLayerEye(key, nextVisible);
+            const layerLabel = button.closest('.layer-subitem')?.querySelector('.layer-subitem-label')?.textContent
+                || button.querySelector('.map-layer-name')?.textContent
+                || button.getAttribute('aria-label')
+                || 'camada';
+            button.setAttribute('aria-label', `${nextVisible ? 'Ocultar' : 'Exibir'} ${layerLabel}`);
         });
-    });
+    }
 
     // Se uma camada for alterada por outro controle já existente, mantém o
     // ícone de olho da nova gaveta sincronizado.
@@ -700,18 +659,26 @@
     if (railLayers) railLayers.addEventListener('click', openLayerDrawer);
     if (layerDrawerClose) layerDrawerClose.addEventListener('click', closeLayerDrawer);
 
+    if (layerDrawer && context?.consulta?.imovel?.geometry && document.getElementById('app-config')?.dataset.openLayersOnCarLoad === 'true' && !creditMapLayerState) {
+        closeToolDrawer();
+        layerDrawer.hidden = false;
+        setRailPressed(railLayers, true);
+    }
+
     if (railFitCar) {
         railFitCar.addEventListener('click', () => {
+            if (creditMapLayerState) toggleCreditMapMode();
             closeLayerDrawer();
             closeToolDrawer();
             if (context && typeof context.fitCar === 'function') context.fitCar();
         });
     }
 
-    if (railReport) {
-        railReport.addEventListener('click', () => {
-            if (toolDrawer && !toolDrawer.hidden && toolDrawer.classList.contains('is-report-mode')) closeToolDrawer();
-            else openToolDrawer('report');
+    if (railCreditMap) {
+        railCreditMap.addEventListener('click', () => {
+            closeLayerDrawer();
+            closeToolDrawer();
+            toggleCreditMapMode();
         });
     }
 
@@ -724,60 +691,17 @@
 
     if (toolDrawerClose) toolDrawerClose.addEventListener('click', closeToolDrawer);
 
-    if (propertySummaryCollapse && propertySummary) {
-        propertySummaryCollapse.addEventListener('click', () => {
-            const collapsed = !propertySummary.classList.contains('is-collapsed');
-            propertySummary.classList.toggle('is-collapsed', collapsed);
-            propertySummaryCollapse.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-            propertySummaryCollapse.setAttribute('title', collapsed ? 'Expandir informações' : 'Recolher informações');
-            if (propertySummaryCollapseLabel) propertySummaryCollapseLabel.textContent = collapsed ? 'Expandir' : 'Recolher';
-        });
-    }
 
-    function updateSummaryGlebas(items) {
-        if (!summaryGlebasCount) return;
-        const quantidade = Array.isArray(items) ? items.length : 0;
-        summaryGlebasCount.textContent = `${quantidade} ${quantidade === 1 ? 'polígono' : 'polígonos'}`;
-    }
     window.addEventListener('confronta:glebas-updated', (event) => {
-        updateSummaryGlebas(event.detail && event.detail.items);
-    });
-    if (window.CONFRONTA_GLEBAS_SNAPSHOT) updateSummaryGlebas(window.CONFRONTA_GLEBAS_SNAPSHOT);
-
-    if (railSummary && propertySummary) {
-        railSummary.addEventListener('click', () => {
-            const willShow = propertySummary.hidden;
-            propertySummary.hidden = !willShow;
-            setRailPressed(railSummary, willShow);
-        });
-    }
-
-    // A faixa inferior recebe do backend somente as classes de restrição
-    // aprovadas: CAR×CAR, Assentamento, Quilombola e PRODES. IBAMA permanece
-    // como atenção que exige confirmação oficial e APA é informação territorial.
-    if (restrictionCount && context && context.consulta) {
-        const restrictionData = context.consulta.restricoes ||
-            (context.consulta.alertas && context.consulta.alertas.restricoes) || {};
-        const identified = Number(restrictionData.quantidade || 0);
-        const tipos = Array.isArray(restrictionData.tipos) ? restrictionData.tipos : [];
-        if (identified > 0) {
-            restrictionCount.textContent = `${identified} ${identified === 1 ? 'identificado' : 'identificados'}`;
-            restrictionCount.classList.add('has-restrictions');
-            restrictionCount.classList.remove('no-restrictions');
-            if (restrictionDetails) {
-                restrictionDetails.textContent = tipos.join(' • ');
-                restrictionDetails.hidden = false;
-            }
-            restrictionCount.parentElement?.setAttribute('title', tipos.join(' • '));
-        } else {
-            restrictionCount.textContent = 'Nenhum identificado';
-            restrictionCount.classList.add('no-restrictions');
-            restrictionCount.classList.remove('has-restrictions');
-            if (restrictionDetails) {
-                restrictionDetails.textContent = '';
-                restrictionDetails.hidden = true;
-            }
+        const items = event.detail && event.detail.items;
+        if (creditMapLayerState && creditMapNotice) {
+            creditMapNotice.textContent = Array.isArray(items) && items.length ? '' : 'Nenhuma gleba de crédito desenhada.';
+            creditMapNotice.hidden = !creditMapNotice.textContent;
         }
+    });
+    if (window.CONFRONTA_GLEBAS_SNAPSHOT && creditMapLayerState && creditMapNotice) {
+        creditMapNotice.textContent = window.CONFRONTA_GLEBAS_SNAPSHOT.length ? '' : 'Nenhuma gleba de crédito desenhada.';
+        creditMapNotice.hidden = !creditMapNotice.textContent;
     }
 
     const summaryCards = [

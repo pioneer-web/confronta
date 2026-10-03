@@ -1,611 +1,412 @@
-/* =========================================================
-   CONFRONTA — MAPA / POLÍGONOS
-   CSS consolidado.
-   Base funcional + identidade visual atual.
-   ========================================================= */
+/* CONFRONTA — lista operacional de Glebas e controles sobre o mapa. */
+.polygon-tool-icon { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.polygon-rail-tool .polygon-tool-icon { width:23px; height:23px; }
 
-
-/* =========================================================
-   BASE FUNCIONAL
-   ========================================================= */
-
-/* CONFRONTA v0.5.6 — Ferramenta Polígono */
-.polygon-tool-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.polygon-rail-tool .polygon-tool-icon{width:23px;height:23px}
-.territorial-tool-drawer.is-glebas-mode{width:min(430px,calc(100vw - 76px))}
-.polygon-session-view,.gleba-workflow{padding:2px 0 16px}
-.polygon-tool-intro{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 0 16px;border-bottom:1px solid #dbe5e3}
-.polygon-tool-intro-icon,.polygon-helper-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;color:#0f8f83;background:#eef8f6;border:1px solid #cbe5e0}
-.polygon-tool-intro-copy{min-width:0}.polygon-tool-intro-copy .eyebrow,.polygon-workflow-title .eyebrow{display:block;margin-bottom:2px;color:#0f8f83;font-size:10px;font-weight:800;letter-spacing:.11em}
-.polygon-tool-intro-copy h3,.polygon-workflow-title h3{margin:0;color:#0b2d3c;font-size:15px;line-height:1.25}
-.polygon-tool-intro-copy p,.polygon-workflow-title p{margin:4px 0 0;color:#6a7b80;font-size:11px;line-height:1.45}
-.polygon-new-button{white-space:nowrap;border-radius:9px}
-.polygon-session-summary{margin:13px 0;padding:10px 12px;border:1px solid #dce7e5;border-radius:10px;background:#f7faf9}
-.polygon-session-summary span{color:#64757a;font-size:11px}.polygon-session-summary strong{color:#0b7567;font-size:13px}
-.polygon-list:empty::before{content:"Nenhum polígono criado nesta sessão.";display:block;padding:22px 14px;text-align:center;color:#819095;font-size:11px;border:1px dashed #cbd9d6;border-radius:10px;background:#fbfdfc}
-.polygon-item{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:9px;padding:11px;border:1px solid #d8e4e1;border-radius:11px;background:#fff;box-shadow:0 4px 14px rgba(11,45,60,.045);transition:.18s ease}
-.polygon-item:hover{border-color:#b7d6d0;box-shadow:0 6px 18px rgba(11,45,60,.075)}.polygon-item.is-hidden{opacity:.62}
-.polygon-item-preview{display:grid;place-items:center;width:76px;height:58px;padding:4px;border:0;border-radius:9px;background:#f5f8f7;cursor:pointer}.polygon-item-preview svg{width:100%;height:100%}
-.polygon-item-main{min-width:0}.polygon-name-input{width:100%;padding:0;border:0;outline:0;background:transparent;color:#17343e;font-size:12px;font-weight:700;text-overflow:ellipsis}.polygon-name-input:focus{box-shadow:0 1px 0 #0f8f83}
-.polygon-item-meta{display:flex;gap:8px;align-items:center;margin-top:5px;color:#7b8a8e;font-size:10px}.polygon-item-meta strong{color:#52666c;font-weight:700}
-.polygon-item-actions{display:grid;grid-template-columns:34px 42px 42px;gap:5px;align-items:center}
-.polygon-action-icon,.polygon-export-button{height:32px;border:1px solid #d7e2e0;border-radius:7px;background:#fff;color:#607278;font-size:10px;font-weight:800;cursor:pointer}.polygon-action-icon{display:grid;place-items:center;padding:0}
-.polygon-action-icon svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.polygon-eye .polygon-eye-off-mark{display:block}.polygon-eye.is-active{border-color:#9fd0c7;color:#0f8f83;background:#eff9f7}.polygon-eye.is-active .polygon-eye-off-mark{display:none}
-.polygon-export-button:hover,.polygon-action-icon:hover{border-color:#9fc8c0;color:#0b7567;background:#f1f8f6}
-.polygon-item-secondary-actions{grid-column:2/4;display:flex;gap:13px;justify-content:flex-end;margin-top:-2px}.polygon-text-action{padding:0;border:0;background:transparent;color:#587077;font-size:10px;font-weight:700;cursor:pointer}.polygon-text-action:hover{color:#0b7567;text-decoration:underline}.polygon-text-action.is-danger{color:#a94b4b}.polygon-text-action:disabled{opacity:.42;cursor:not-allowed;text-decoration:none}
-.polygon-warning{grid-column:1/-1;margin-top:2px;border-radius:7px}
-.polygon-bulk-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}.polygon-bulk-actions .button{min-height:37px;padding-inline:10px;font-size:11px}
-.polygon-workflow-head{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;align-items:start;padding:7px 0 13px;border-bottom:1px solid #dbe5e3}.polygon-workflow-title{min-width:0}
-.polygon-stepper{display:grid;grid-template-columns:auto 1fr auto 1fr auto;gap:6px;align-items:start;padding:17px 4px 18px}.polygon-stepper>i{height:1px;margin-top:13px;background:#d4dfdd}
-.polygon-stepper-item{display:grid;justify-items:center;gap:4px;min-width:58px;color:#9aa7aa}.polygon-stepper-item>span{display:grid;place-items:center;width:27px;height:27px;border:1px solid #d7e1df;border-radius:50%;background:#fff;font-size:11px;font-weight:800}.polygon-stepper-item small{max-width:86px;text-align:center;font-size:9px;line-height:1.2}
-.polygon-stepper-item.is-done,.polygon-stepper-item.is-active{color:#0f8f83}.polygon-stepper-item.is-done>span{border-color:#9fd5ca;background:#eff9f7}.polygon-stepper-item.is-active>span{border-color:#0f8f83;background:#0f8f83;color:#fff}
-.polygon-create-step{display:block}.polygon-mode-tabs{display:grid;grid-template-columns:1fr 1fr;margin-bottom:14px;border:1px solid #d3dfdd;border-radius:9px;overflow:hidden;background:#fff}
-.polygon-mode-tab{display:flex;gap:7px;align-items:center;justify-content:center;min-height:39px;padding:7px 8px;border:0;border-right:1px solid #d3dfdd;background:#fff;color:#63757a;font-size:10px;font-weight:750;cursor:pointer}.polygon-mode-tab:last-child{border-right:0}.polygon-mode-tab svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.polygon-mode-tab.is-active{background:#0f8f83;color:#fff}
-.polygon-draw-helper{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:11px;align-items:center;width:100%;min-height:92px;padding:14px;border:1px dashed #a9cec7;border-radius:10px;background:#f8fcfb;color:#0b2d3c;text-align:left;cursor:pointer}
-.polygon-draw-helper strong,.polygon-color-row strong{display:block;font-size:11px}.polygon-draw-helper span,.polygon-color-row span{display:block;margin-top:3px;color:#738388;font-size:10px;line-height:1.4}.polygon-helper-action{color:#0f8f83!important;font-weight:800;white-space:nowrap}
-.polygon-import-dropzone{display:grid;justify-items:center;gap:7px;min-height:130px;padding:20px 14px;border:1.5px dashed #75bbb0;border-radius:10px;background:#fbfefd;text-align:center;cursor:pointer;transition:.18s ease}.polygon-import-dropzone:hover,.polygon-import-dropzone.is-dragging{border-color:#0f8f83;background:#eef9f6}.polygon-import-dropzone.is-dragging{transform:scale(1.008)}
-.polygon-import-dropzone svg{width:34px;height:34px;fill:none;stroke:#0f8f83;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.polygon-import-dropzone strong{color:#50656b;font-size:12px}.polygon-import-dropzone span{color:#89979a;font-size:10px}
-.polygon-color-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-top:14px;padding:11px 12px;border:1px solid #e0e8e6;border-radius:9px;background:#fafcfc}.polygon-color-grid{margin:0}
-@media(max-width:680px){.territorial-tool-drawer.is-glebas-mode{width:calc(100vw - 16px);max-width:none}.polygon-tool-intro{grid-template-columns:42px 1fr}.polygon-new-button{grid-column:1/-1;width:100%}.polygon-item{grid-template-columns:68px minmax(0,1fr)}.polygon-item-actions,.polygon-item-secondary-actions{grid-column:1/-1;justify-content:flex-end}.polygon-item-actions{display:flex}.polygon-bulk-actions{grid-template-columns:1fr}.polygon-stepper-item small{display:none}.polygon-color-row{grid-template-columns:1fr}}
-
-
-/* =========================================================
-   VISUAL ATUAL
-   ========================================================= */
-
-/* =========================================================
-   CONFRONTA — MAPA / POLÍGONOS
-   Override visual modular sobre poligonos.css
-   ========================================================= */
-
-:root {
-    --poly-text: #183943;
-    --poly-muted: #5b7077;
-    --poly-line: #d8e2df;
-    --poly-soft: #f6f9f8;
-    --poly-primary: #0f6467;
-    --poly-danger: #b95757;
-}
-
-
-/* PAINEL */
-
+/* O drawer de Polígonos usa a mesma superfície estrutural do drawer Camadas. */
 .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode {
-    width: min(460px, calc(100vw - 90px)) !important;
-    border: 1px solid var(--poly-line) !important;
-    border-radius: 5px !important;
-    background: #fff !important;
-    box-shadow: -10px 0 30px rgba(8,31,39,.16) !important;
+    box-sizing:border-box !important;
+    top:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    left:auto !important;
+    width:min(420px,calc(100vw - var(--cf-map-rail,108px) - 12px)) !important;
+    max-width:calc(100vw - var(--cf-map-rail,108px) - 12px) !important;
+    height:100% !important;
+    max-height:100% !important;
+    overflow:hidden !important;
+    border:0 !important;
+    border-left:1px solid rgba(80,220,180,.16) !important;
+    border-radius:0 !important;
+    background:var(--cf-layer-panel,#082B33) !important;
+    color:var(--cf-layer-text,#E6F2EF) !important;
+    box-shadow:0 14px 34px rgba(0,15,20,.30) !important;
 }
-
-
-/* CABEÇALHO */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tool-drawer-head {
-    min-height: 62px !important;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid var(--poly-line) !important;
-    background: #fff !important;
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .car-summary-card,
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tabs { display:none !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tool-close { border-radius:2px !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode [data-side-panel="layers"] { display:none !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode [data-side-panel="glebas"] { display:block !important; padding:0 !important; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-side-body {
+    box-sizing:border-box;
+    min-width:0;
+    max-height:calc(100% - 62px) !important;
+    padding:8px 9px 10px !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    background:var(--cf-layer-panel,#082B33) !important;
+    color:var(--cf-layer-text,#E6F2EF) !important;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(156,184,179,.5) transparent;
 }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-side-body::-webkit-scrollbar { width:6px; }
+.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-side-body::-webkit-scrollbar-thumb { border-radius:6px; background:rgba(156,184,179,.45); }
 
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tool-drawer-title span {
-    color: #687d84 !important;
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    letter-spacing: .08em !important;
-    opacity: 1 !important;
+.glebas-drawer-content { min-width:0; padding:0 0 4px; }
+.glebas-drawer-section { min-width:0; }
+.glebas-drawer-section .map-layer-eye.glebas-action-primary,
+.glebas-drawer-section .map-layer-eye.glebas-action-secondary {
+    grid-template-columns:20px minmax(0,1fr) 26px !important;
+    gap:9px !important;
 }
+.glebas-action-icon { width:19px; height:19px; display:grid; place-items:center; color:#5DD6B4; }
+.glebas-action-icon svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.65; stroke-linecap:round; stroke-linejoin:round; }
+.glebas-action-primary .map-layer-name { color:#E6F2EF !important; font-weight:600 !important; }
+.glebas-action-secondary .map-layer-name { color:#B4C8C3 !important; }
+.glebas-import-status { display:none; margin:7px 3px 2px; color:var(--cf-layer-muted,#9CB8B3); font-size:11px; line-height:1.4; overflow-wrap:anywhere; }
+.glebas-import-status:not(:empty) { display:block; }
+.glebas-import-status.is-error { color:#fca5a5; }
+.glebas-import-status.is-success { color:#86efac; }
+.glebas-color-options { padding:8px 3px 0; border-top:1px solid rgba(255,255,255,.06); }
+.glebas-color-options > span { display:block; padding:0 0 2px; color:var(--cf-layer-muted,#9CB8B3); font-size:10px; }
+.glebas-color-options .gleba-color-grid { display:flex; flex-wrap:wrap; gap:9px; padding:8px 2px 5px; }
+.glebas-color-options .gleba-color-swatch { width:20px; height:20px; flex:0 0 20px; }
+.glebas-color-options .gleba-color-swatch.is-selected { outline:2px solid var(--cf-layer-accent,#2DD4BF); outline-offset:2px; }
 
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tool-drawer-title strong {
-    margin-top: 3px !important;
-    color: var(--poly-text) !important;
-    font-size: 17px !important;
-    font-weight: 600 !important;
-    opacity: 1 !important;
+.gleba-list { display:grid; gap:0; min-width:0; }
+.gleba-item {
+    box-sizing:border-box;
+    min-width:0;
+    width:100%;
+    display:grid;
+    grid-template-columns:68px minmax(0,1fr);
+    gap:8px;
+    align-items:center;
+    padding:9px 4px;
+    border:0;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:transparent;
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tool-close {
-    width: 34px !important;
-    height: 34px !important;
-    border: 1px solid var(--poly-line) !important;
-    border-radius: 4px !important;
-    background: #f4f7f6 !important;
-    color: #526970 !important;
+.gleba-item:last-child { border-bottom:0; }
+.gleba-item.is-hidden { opacity:.62; }
+.gleba-item.is-editing { border-left:2px solid var(--cf-layer-accent,#2DD4BF); background:rgba(45,212,191,.035); }
+.gleba-item-visual { min-width:0; display:flex; align-items:center; gap:5px; }
+.gleba-item-eye {
+    width:23px;
+    height:28px;
+    flex:0 0 23px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    color:#718B91;
+    cursor:pointer;
 }
-
-
-/* ABA POLÍGONOS */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tabs {
-    border-bottom: 1px solid var(--poly-line) !important;
+.gleba-item-eye svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.7; }
+.gleba-item-eye .gleba-eye-off-mark { display:block; }
+.gleba-item-eye.is-active { color:var(--cf-layer-accent,#2DD4BF); }
+.gleba-item-eye.is-active .gleba-eye-off-mark { display:none; }
+.gleba-item-eye:hover { background:rgba(255,255,255,.05); }
+.gleba-item-geometry {
+    width:38px;
+    height:34px;
+    flex:0 0 38px;
+    display:grid;
+    place-items:center;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:5px;
+    background:rgba(255,255,255,.035);
+    color:var(--gleba-color,#2DD4BF);
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tab {
-    min-height: 42px !important;
-    font-size: 12.5px !important;
-    font-weight: 600 !important;
+.gleba-item-geometry svg { width:29px; height:25px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.gleba-item-geometry svg path:first-child { fill:var(--gleba-color,#2DD4BF); fill-opacity:.24; }
+.gleba-item-main { min-width:0; }
+.gleba-item-heading { min-width:0; display:flex; align-items:center; }
+.gleba-name-trigger {
+    min-width:0;
+    max-width:100%;
+    padding:1px 0;
+    overflow:hidden;
+    border:0;
+    background:transparent;
+    color:var(--cf-layer-text,#E6F2EF);
+    font:inherit;
+    font-size:12px;
+    font-weight:650;
+    text-align:left;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    cursor:pointer;
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.territorial-tab-panel {
-    padding: 16px 14px 22px !important;
+.gleba-name-trigger:hover { color:#fff; }
+.gleba-name-trigger:focus-visible { outline:1px solid var(--cf-layer-accent,#2DD4BF); outline-offset:3px; }
+.gleba-item-meta { display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; margin-top:2px; color:var(--cf-layer-muted,#9CB8B3); font-size:10px; }
+.gleba-item-meta strong { color:#c7d9d5; font-size:10px; font-weight:500; }
+.gleba-item-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; min-width:0; margin-top:5px; }
+.gleba-item-action { padding:2px 0; border:0; background:transparent; color:var(--cf-layer-muted,#9CB8B3); font:inherit; font-size:10px; cursor:pointer; }
+.gleba-item-action:hover:not(:disabled) { color:#fff; text-decoration:underline; }
+.gleba-item-action.is-danger { color:#d58c8c; }
+.gleba-item-action:disabled { opacity:.45; cursor:not-allowed; text-decoration:none; }
+.gleba-item-actions .gleba-item-action {
+    min-height:23px;
+    padding:3px 7px;
+    border:1px solid rgba(255,255,255,.09);
+    font-size:9px;
+    line-height:1;
 }
+.gleba-item-actions .gleba-item-action.is-danger { border-color:rgba(220,120,120,.15); }
+.gleba-item-actions .gleba-item-action:hover:not(:disabled) { background:rgba(255,255,255,.045); text-decoration:none; }
+.gleba-item-actions .gleba-item-action:disabled { opacity:.45; }
+.gleba-item-actions .gleba-item-action.is-save { border-color:rgba(45,212,191,.24); color:#9de7d7; }
 
+.glebas-summary-row { display:flex; justify-content:space-between; align-items:center; gap:8px; color:var(--cf-layer-muted,#9CB8B3); font-size:11px; }
+.glebas-summary-row strong { flex:0 0 auto; color:#d8eee8; font-size:12px; font-weight:600; }
+.glebas-pending-save { margin:6px 0 10px; padding:10px 7px; border-top:1px solid rgba(80,220,180,.16); border-bottom:1px solid rgba(80,220,180,.16); background:rgba(255,255,255,.025); }
+.glebas-pending-save[hidden] { display:none !important; }
+.glebas-pending-save label { display:block; margin:0 0 5px; color:var(--cf-layer-muted,#9CB8B3); font-size:10px; }
+.glebas-pending-save input { width:100%; min-height:34px; padding:6px 8px; border:1px solid rgba(255,255,255,.12); border-radius:2px; background:rgba(0,0,0,.12); color:var(--cf-layer-text,#E6F2EF); font-size:12px; }
+.glebas-pending-save input:focus { border-color:var(--cf-layer-accent,#2DD4BF); outline:0; }
+.glebas-pending-area { display:flex; justify-content:space-between; gap:8px; margin-top:8px; color:var(--cf-layer-muted,#9CB8B3); font-size:10px; }
+.glebas-pending-area strong { color:#d8eee8; font-size:11px; }
+.glebas-pending-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+.glebas-pending-actions button { min-height:32px; padding:5px 9px; border:1px solid rgba(255,255,255,.12); border-radius:2px; background:rgba(255,255,255,.04); color:var(--cf-layer-muted,#9CB8B3); font-size:10px; cursor:pointer; }
+.glebas-pending-actions button:last-child { border-color:rgba(45,212,191,.35); background:rgba(45,212,191,.12); color:#d8fff7; }
 
-/* INTRO */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-tool-intro {
-    grid-template-columns: 50px minmax(0,1fr) auto !important;
-    gap: 12px !important;
-    padding: 14px 0 18px !important;
+/* Mantidos para o modo Mapa Crédito e para os controles GIS sobre o mapa. */
+.credit-map-notice { position:absolute; z-index:700; left:50%; bottom:22px; transform:translateX(-50%); max-width:calc(100% - 32px); padding:9px 14px; border:1px solid rgba(80,220,180,.18); border-radius:9px; background:rgba(8,43,51,.92); color:#E6F2EF; font-size:12px; box-shadow:0 8px 24px rgba(0,15,20,.25); }
+.credit-map-print-header,
+.credit-map-print-footer { display:none; }
+.cf-shell-v15 .cf-message-stack {
+    position:fixed;
+    z-index:1800;
+    top:76px;
+    left:calc(50% + 32px);
+    width:min(440px,calc(100vw - 132px));
+    margin:0;
+    transform:translateX(-50%);
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-tool-intro-icon {
-    width: 46px !important;
-    height: 46px !important;
-    border-radius: 5px !important;
+.cf-shell-v15 .cf-message-stack[hidden] { display:none !important; }
+.cf-shell-v15 .query-result-notice {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    min-height:42px;
+    margin:0 !important;
+    padding:8px 10px 8px 14px !important;
+    border:1px solid rgba(16,58,67,.16) !important;
+    border-radius:8px !important;
+    background:#F7FBFA !important;
+    color:#193A40 !important;
+    box-shadow:0 5px 18px rgba(8,28,34,.14) !important;
+    font-size:12px;
+    line-height:1.4;
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-tool-intro-copy .eyebrow {
-    color: #14786f !important;
-    font-size: 10.5px !important;
-    font-weight: 600 !important;
+.cf-shell-v15 .query-result-notice-text { min-width:0; }
+.cf-shell-v15 .query-result-notice-close {
+    flex:0 0 26px;
+    width:26px;
+    height:26px;
+    padding:0;
+    border:0;
+    border-radius:6px;
+    background:transparent;
+    color:#31585D;
+    font-size:21px;
+    line-height:1;
+    cursor:pointer;
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-tool-intro-copy h3 {
-    color: var(--poly-text) !important;
-    font-size: 17px !important;
-    font-weight: 600 !important;
+.cf-shell-v15 .query-result-notice-close:hover { background:rgba(16,58,67,.09); color:#103A43; }
+.cf-shell-v15 .query-result-notice-close:focus-visible { outline:2px solid #178779; outline-offset:1px; }
+.credit-map-print-button[hidden] { display:none !important; }
+.cf-shell-v15 .credit-map-print-button {
+    position:fixed;
+    z-index:1050;
+    left:calc((100vw + var(--cf-map-rail,108px))/2);
+    bottom:22px;
+    transform:translateX(-50%);
+    min-height:42px;
+    padding:0 15px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border:1px solid #103A43;
+    border-radius:7px;
+    background:#103A43;
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+    box-shadow:0 5px 16px rgba(0,20,26,.22);
+    cursor:pointer;
 }
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-tool-intro-copy p {
-    margin-top: 5px !important;
-    color: var(--poly-muted) !important;
-    font-size: 12.5px !important;
-    font-weight: 400 !important;
-    line-height: 1.5 !important;
+.cf-shell-v15 .credit-map-print-button:hover { background:#164A55; border-color:#164A55; }
+.cf-shell-v15 .credit-map-print-button:focus-visible { outline:3px solid #8FE4B0; outline-offset:2px; }
+.cf-shell-v15 .credit-map-print-button svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.cf-shell-v15:has(#territorial-side-panel:not([hidden])) .credit-map-print-button {
+    left:calc((var(--cf-map-rail,108px) + 100vw - min(420px,calc(100vw - var(--cf-map-rail,108px) - 12px)))/2);
 }
-
-
-/* NOVO POLÍGONO */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-new-button {
-    min-height: 38px !important;
-    padding: 8px 12px !important;
-    border-radius: 4px !important;
-    background: #183943 !important;
-    font-size: 11.5px !important;
-    font-weight: 600 !important;
-}
-
-
-/* RESUMO */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-session-summary {
-    min-height: 44px !important;
-    margin: 13px 0 !important;
-    padding: 10px 12px !important;
-
-    border: 1px solid var(--poly-line) !important;
-    border-radius: 4px !important;
-
-    background: var(--poly-soft) !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-session-summary span {
-    color: var(--poly-muted) !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-session-summary strong {
-    color: var(--poly-primary) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-
-/* ITEM DA LISTA */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item {
-    grid-template-columns: 76px minmax(0,1fr) auto !important;
-    gap: 11px !important;
-
-    margin-bottom: 10px !important;
-    padding: 12px !important;
-
-    border: 1px solid var(--poly-line) !important;
-    border-radius: 5px !important;
-
-    background: #fff !important;
-
-    box-shadow: none !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item:hover {
-    border-color: #aac9c2 !important;
-    box-shadow: none !important;
-}
-
-
-/* MINIATURA */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item-preview {
-    width: 76px !important;
-    height: 62px !important;
-
-    border-radius: 4px !important;
-
-    background: #f4f7f6 !important;
-}
-
-
-/* NOME */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-name-input {
-    min-height: 40px !important;
-
-    padding: 8px 10px !important;
-
-    border: 1px solid #becfc9 !important;
-    border-radius: 4px !important;
-
-    background: #fff !important;
-
-    color: var(--poly-text) !important;
-
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-name-input:focus {
-    border-color: #458d82 !important;
-    box-shadow: 0 0 0 2px rgba(15,100,103,.09) !important;
-}
-
-
-/* META */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item-meta {
-    margin-top: 6px !important;
-    gap: 8px !important;
-
-    color: var(--poly-muted) !important;
-
-    font-size: 11.5px !important;
-    font-weight: 400 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item-meta strong {
-    color: #405d65 !important;
-    font-size: 11.5px !important;
-    font-weight: 600 !important;
-}
-
-
-/* AÇÕES KML CSV OLHO */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item-actions {
-    grid-template-columns: 38px 45px 45px !important;
-    gap: 6px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-action-icon,
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-export-button {
-    height: 38px !important;
-
-    border: 1px solid #cedbd7 !important;
-    border-radius: 4px !important;
-
-    background: #fff !important;
-
-    color: #506a72 !important;
-
-    font-size: 11px !important;
-    font-weight: 600 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-action-icon svg {
-    width: 18px !important;
-    height: 18px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-eye.is-active {
-    border-color: #73bcb0 !important;
-    background: #eef8f6 !important;
-    color: #0f756c !important;
-}
-
-
-/* EDITAR / EXCLUIR */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-item-secondary-actions {
-    margin-top: 1px !important;
-    gap: 16px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-text-action {
-    color: #516970 !important;
-
-    font-size: 11.5px !important;
-    font-weight: 500 !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-text-action.is-danger {
-    color: var(--poly-danger) !important;
-}
-
-
-/* EXPORTAR TODOS */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-bulk-actions {
-    gap: 9px !important;
-    margin-top: 15px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-bulk-actions .button {
-    min-height: 42px !important;
-
-    border-radius: 4px !important;
-
-    font-size: 12px !important;
-    font-weight: 500 !important;
-}
-
-
-/* WORKFLOW */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-workflow-head {
-    padding-bottom: 14px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-workflow-title h3 {
-    color: var(--poly-text) !important;
-    font-size: 17px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-workflow-title p {
-    color: var(--poly-muted) !important;
-    font-size: 12px !important;
-}
-
-
-/* abas desenhar/importar */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-mode-tabs {
-    border-radius: 4px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-mode-tab {
-    min-height: 42px !important;
-
-    font-size: 11.5px !important;
-    font-weight: 600 !important;
-}
-
-
-/* DESENHAR */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-draw-helper {
-    min-height: 100px !important;
-
-    border-radius: 4px !important;
-
-    color: var(--poly-text) !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-draw-helper strong {
-    font-size: 13px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-draw-helper span {
-    font-size: 11.5px !important;
-}
-
-
-/* IMPORTAÇÃO */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-import-dropzone {
-    border-radius: 4px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-import-dropzone strong {
-    font-size: 13px !important;
-}
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-import-dropzone span {
-    font-size: 11.5px !important;
-}
-
-
-/* COR */
-
-.cf-shell-v15
-.territorial-tool-drawer.is-glebas-mode
-.polygon-color-row {
-    border-radius: 4px !important;
-}
-
-
-/* MOBILE */
-
+.credit-gleba-label { border:1px solid rgba(255,255,255,.55)!important; border-radius:5px!important; background:rgba(8,43,51,.88)!important; color:#fff!important; font-size:11px!important; font-weight:700!important; box-shadow:0 2px 7px rgba(0,0,0,.25)!important; pointer-events:none!important; }
+.credit-gleba-label:before { display:none!important; }
+body.is-credit-map-mode .map-top-insight-bar { display:none!important; }
+
+.map-live-area.is-editing-gleba { left:12px; right:auto; bottom:14px; display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; min-width:0; max-width:min(680px,calc(100% - 28px)); padding:9px 12px; transform:none; pointer-events:auto; }
+.map-live-area.is-editing-gleba > span,.map-live-area.is-editing-gleba > strong { white-space:nowrap; }
+.gleba-edit-controls { display:flex; gap:7px; margin-left:4px; }
+.gleba-edit-controls[hidden] { display:none!important; }
+.gleba-edit-controls .button { min-height:32px; padding:6px 12px; font-size:11px; }
 @media(max-width:720px) {
-    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode {
-        width: calc(100vw - 8px) !important;
-    }
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-glebas-mode
-    .polygon-tool-intro {
-        grid-template-columns: 46px 1fr !important;
-    }
-
-    .cf-shell-v15
-    .territorial-tool-drawer.is-glebas-mode
-    .polygon-new-button {
-        grid-column: 1 / -1 !important;
-        width: 100% !important;
-    }
+    .cf-shell-v15 .credit-map-print-button { bottom:16px; min-height:40px; padding:0 12px; font-size:11px; }
+    .map-live-area.is-editing-gleba { left:8px; right:auto; bottom:10px; max-width:calc(100% - 16px); justify-content:flex-start; transform:none; }
+    .gleba-edit-controls { margin-left:auto; }
 }
 
-/* Controles de edição usam a leitura de área já posicionada sobre o mapa. */
-.map-live-area.is-editing-gleba {
-    left: 12px;
-    right: auto;
-    bottom: 14px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 12px;
-    min-width: 0;
-    max-width: min(680px, calc(100% - 28px));
-    padding: 9px 12px;
-    transform: none;
-    pointer-events: auto;
+@page {
+    size:A4 landscape;
+    margin:8mm;
 }
-.map-live-area.is-editing-gleba > span { white-space: nowrap; }
-.map-live-area.is-editing-gleba > strong { white-space: nowrap; }
-.gleba-edit-controls { display: flex; gap: 7px; margin-left: 4px; }
-.gleba-edit-controls[hidden] { display: none !important; }
-.gleba-edit-controls .button { min-height: 32px; padding: 6px 12px; font-size: 11px; }
-.polygon-overlaps { display: block; max-width: 100%; margin-top: 4px; overflow: hidden; color: #687b80; font-size: 9px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
-.polygon-overlaps.has-overlaps { color: #8a5809; }
-@media(max-width:560px) {
-    .map-live-area.is-editing-gleba { left: 8px; right: auto; bottom: 10px; max-width: calc(100% - 16px); justify-content: flex-start; transform: none; }
-    .map-live-area.is-editing-gleba > span { width: auto; }
-    .gleba-edit-controls { margin-left: auto; }
+body.is-credit-map-printing .client-shell { display:block !important; width:100vw !important; height:100vh !important; }
+body.is-credit-map-printing * { visibility:hidden !important; }
+body.is-credit-map-printing #territorial-screen,
+body.is-credit-map-printing #map,
+body.is-credit-map-printing #map * { visibility:visible !important; }
+body.is-credit-map-printing .client-rail,
+body.is-credit-map-printing .client-topbar,
+body.is-credit-map-printing .client-global-search,
+body.is-credit-map-printing .cf-message-stack,
+body.is-credit-map-printing .map-layer-drawer,
+body.is-credit-map-printing .territorial-tool-drawer,
+body.is-credit-map-printing .credit-map-print-button,
+body.is-credit-map-printing .map-property-summary,
+body.is-credit-map-printing .map-top-insight-bar,
+body.is-credit-map-printing .credit-map-notice { display:none !important; }
+body.is-credit-map-printing .client-main,
+body.is-credit-map-printing .client-content-app { display:block !important; width:100% !important; height:100% !important; margin:0 !important; padding:0 !important; overflow:hidden !important; background:#fff !important; }
+body.is-credit-map-printing #territorial-screen {
+    position:fixed !important;
+    z-index:2147483000 !important;
+    inset:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    border:0 !important;
+    background:#fff !important;
+    box-shadow:none !important;
 }
-
-/* Refinamento da ferramenta: hierarquia de projeto sem alterar seus controles. */
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .territorial-tab-panel { padding:16px 18px 24px !important; background:#F7F9F9; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro { grid-template-columns:46px minmax(0,1fr) auto !important; gap:11px !important; padding:5px 0 15px !important; border-color:#E2EAE8 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-icon { width:42px !important; height:42px !important; border:1px solid #D6E8E3 !important; border-radius:8px !important; background:#EAF4F1 !important; color:#176B60 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-copy .eyebrow,
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-workflow-title .eyebrow { color:#548078 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-copy h3,
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-workflow-title h3 { color:#103A43 !important; font-weight:750 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro-copy p,
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-workflow-title p { color:#737B87 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-new-button { min-height:36px !important; border:0 !important; border-radius:4px !important; background:#103A43 !important; box-shadow:0 3px 9px rgba(16,58,67,.14); }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-new-button:hover { background:#0B2D35 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-session-summary { display:flex; justify-content:space-between; align-items:center; min-height:42px !important; margin:12px 0 !important; padding:9px 11px !important; border:1px solid #E1E9E7 !important; border-radius:4px !important; background:#fff !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-session-summary span { color:#737B87 !important; font-size:10px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-session-summary strong { color:#176B60 !important; font-size:12px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper { gap:5px !important; align-items:center !important; padding:14px 2px 18px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper > i { height:2px !important; margin-top:13px !important; background:#DCE6E3 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item { min-width:54px !important; gap:5px !important; color:#929D9A !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item > span { width:27px !important; height:27px !important; border:1px solid #D7E1DE !important; background:#fff !important; color:#788681 !important; font-size:10px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item.is-done > span { border-color:#87BFAE !important; background:#E8F3EF !important; color:#176B60 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item.is-active { color:#103A43 !important; font-weight:750 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item.is-active > span { border:2px solid #103A43 !important; background:#103A43 !important; color:#fff !important; box-shadow:0 0 0 3px #DDECE7; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-stepper-item small { color:inherit; font-size:9px !important; font-weight:650; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tabs { gap:6px !important; margin-bottom:12px !important; padding:4px !important; border:1px solid #E0E8E6 !important; border-radius:4px !important; background:#EEF3F1 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tab { display:flex; gap:7px !important; min-height:40px !important; border:0 !important; border-radius:3px !important; background:transparent !important; color:#65736F !important; font-size:10px !important; font-weight:700 !important; transition:background .16s ease,color .16s ease,box-shadow .16s ease; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tab:hover { background:rgba(255,255,255,.7) !important; color:#103A43 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-mode-tab.is-active { background:#fff !important; color:#103A43 !important; box-shadow:0 1px 4px rgba(16,58,67,.12) !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper { grid-template-columns:42px minmax(0,1fr) auto !important; gap:11px !important; min-height:84px !important; padding:12px !important; border:1px solid #D5E5E0 !important; border-radius:4px !important; background:linear-gradient(135deg,#fff 0%,#F1F7F5 100%) !important; box-shadow:0 4px 12px rgba(16,58,67,.04); transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper:hover { transform:translateY(-1px); border-color:#83B8A9 !important; box-shadow:0 7px 16px rgba(16,58,67,.09); }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-helper-icon { width:40px !important; height:40px !important; border:0 !important; border-radius:6px !important; background:#E4F1EC !important; color:#176B60 !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper strong { color:#17343E; font-size:11px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper span { color:#737B87 !important; font-size:9.5px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-draw-helper .polygon-helper-action { color:#176B60 !important; font-size:10px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row { grid-template-columns:minmax(0,1fr) auto !important; gap:10px !important; margin-top:12px !important; padding:10px 11px !important; border:1px solid #E1E9E7 !important; border-radius:4px !important; background:#fff !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row strong { color:#34474A; font-size:10px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row span { color:#7B878A !important; font-size:9px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid { grid-template-columns:repeat(4,26px) !important; gap:7px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid .gleba-color-swatch { width:24px !important; height:24px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid .gleba-color-swatch.is-selected { outline:2px solid #103A43 !important; outline-offset:2px !important; }
-.cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-import-dropzone { border-radius:4px !important; background:#fff !important; }
-@media(max-width:680px) {
-    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-tool-intro { grid-template-columns:42px minmax(0,1fr) !important; }
-    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-row { grid-template-columns:1fr !important; }
-    .cf-shell-v15 .territorial-tool-drawer.is-glebas-mode .polygon-color-grid { grid-template-columns:repeat(7,26px) !important; }
+body.is-credit-map-printing .territorial-map-column {
+    display:block !important;
+    flex:0 0 auto !important;
+    width:min(281mm,calc(100vw - 32px)) !important;
+    height:min(194mm,calc(100vh - 32px)) !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+}
+body.is-credit-map-printing #map {
+    position:relative !important;
+    inset:auto !important;
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    margin:0 !important;
+    transform:none !important;
+    overflow:hidden !important;
+}
+@media print {
+    html, body { width:100% !important; min-width:0 !important; min-height:0 !important; margin:0 !important; padding:0 !important; background:#fff !important; }
+    body.is-credit-map-printing * { visibility:hidden !important; }
+    body.is-credit-map-printing,
+    body.is-credit-map-printing .client-shell,
+    body.is-credit-map-printing .client-main,
+    body.is-credit-map-printing .client-content-app,
+    body.is-credit-map-printing #territorial-screen,
+    body.is-credit-map-printing .territorial-map-column {
+        display:block !important;
+        position:static !important;
+        width:100% !important;
+        height:auto !important;
+        min-width:0 !important;
+        min-height:0 !important;
+        max-width:none !important;
+        max-height:none !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:visible !important;
+        border:0 !important;
+        border-radius:0 !important;
+        background:#fff !important;
+        box-shadow:none !important;
+    }
+    body.is-credit-map-printing .client-shell { display:block !important; }
+    body.is-credit-map-printing .client-rail,
+    body.is-credit-map-printing .client-topbar,
+    body.is-credit-map-printing .client-global-search,
+    body.is-credit-map-printing .cf-message-stack,
+    body.is-credit-map-printing .map-layer-drawer,
+    body.is-credit-map-printing .territorial-tool-drawer,
+    body.is-credit-map-printing .credit-map-print-button,
+    body.is-credit-map-printing .map-property-summary,
+    body.is-credit-map-printing .map-top-insight-bar,
+    body.is-credit-map-printing .credit-map-notice { display:none !important; }
+    body.is-credit-map-printing #territorial-screen {
+        position:relative !important;
+        inset:auto !important;
+        display:flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:100% !important;
+        height:194mm !important;
+        min-height:194mm !important;
+        margin:0 !important;
+        padding:0 !important;
+        overflow:hidden !important;
+        background:#fff !important;
+    }
+    body.is-credit-map-printing .territorial-map-column {
+        display:block !important;
+        flex:0 0 auto !important;
+        width:100% !important;
+        height:194mm !important;
+        min-height:194mm !important;
+        margin:0 !important;
+        break-inside:avoid !important;
+    }
+    body.is-credit-map-printing .territorial-map-column > * { display:none !important; }
+    body.is-credit-map-printing #map {
+        display:block !important;
+        position:relative !important;
+        inset:auto !important;
+        width:100% !important;
+        height:194mm !important;
+        min-width:0 !important;
+        min-height:0 !important;
+        max-width:none !important;
+        max-height:none !important;
+        margin:0 !important;
+        transform:none !important;
+        visibility:visible !important;
+        overflow:hidden !important;
+        background:#fff !important;
+        print-color-adjust:exact !important;
+        -webkit-print-color-adjust:exact !important;
+    }
+    body.is-credit-map-printing #map,
+    body.is-credit-map-printing #map * { visibility:visible !important; }
+    body.is-credit-map-printing #map .leaflet-control-container { visibility:visible !important; }
+    body.is-credit-map-printing #map .leaflet-control-container .leaflet-control:not(.leaflet-control-attribution),
+    body.is-credit-map-printing #map .leaflet-popup-pane,
+    body.is-credit-map-printing #map .leaflet-draw-tooltip,
+    body.is-credit-map-printing #map .leaflet-editing-icon,
+    body.is-credit-map-printing #map .leaflet-vertex-icon { display:none !important; }
+    body.is-credit-map-printing #map .leaflet-control-attribution {
+        display:block !important;
+        padding:1px 3px !important;
+        background:rgba(255,255,255,.88) !important;
+        color:#36484c !important;
+        font-size:6pt !important;
+    }
+    body.is-credit-map-printing #map .confronta-selected-car-pane path { filter:drop-shadow(0 0 2px #10252b) drop-shadow(0 0 1px #10252b); }
+    html:has(body.is-credit-map-printing), body.is-credit-map-printing { background:#fff !important; }
+    body.is-credit-map-printing .leaflet-control:not(.leaflet-control-attribution) { display:none !important; }
 }

@@ -39,6 +39,10 @@ def _contexto_base(request, *, form=None, consulta=None, erro_consulta=None):
         .values_list('aviso_id', flat=True)
     )
 
+    abrir_camadas_nova_consulta = bool(
+        consulta and request.session.pop('confronta:abrir_camadas_nova_consulta', False)
+    )
+
     return {
         'form': form or ConsultaCarForm(),
         'consulta': consulta,
@@ -50,6 +54,7 @@ def _contexto_base(request, *, form=None, consulta=None, erro_consulta=None):
         'pode_consultar': acesso.pode_consultar,
         'pode_desenhar_glebas': acesso.pode_desenhar_glebas,
         'consulta_origem': request.session.get(SESSION_CONSULTA_ORIGEM, 'car'),
+        'abrir_camadas_nova_consulta': abrir_camadas_nova_consulta,
         'glebas_temporarias': (
             request.session.pop(SESSION_GLEBAS_TEMPORARIAS, None)
             if consulta else None
@@ -101,6 +106,7 @@ def inicio(request):
     except ConsultaCarErro as exc:
         # Não mantém na sessão um CAR que não pôde ser aberto.
         request.session.pop(SESSION_CAR_ATUAL, None)
+        request.session.pop('confronta:abrir_camadas_nova_consulta', None)
         messages.error(request, str(exc))
         return render(
             request,
@@ -160,6 +166,7 @@ def nova_consulta(request):
 
     request.session[SESSION_CAR_ATUAL] = car_normalizado
     request.session[SESSION_CONSULTA_ORIGEM] = 'car'
+    request.session['confronta:abrir_camadas_nova_consulta'] = True
     request.session.modified = True
     return redirect('aplicativo:inicio')
 
@@ -170,6 +177,7 @@ def _registrar_car_localizado(request, candidatos, *, origem):
     selecionado = candidatos[0]
     request.session[SESSION_CAR_ATUAL] = selecionado['cod_imovel']
     request.session[SESSION_CONSULTA_ORIGEM] = origem
+    request.session['confronta:abrir_camadas_nova_consulta'] = True
     request.session.modified = True
     if len(candidatos) > 1:
         messages.info(
